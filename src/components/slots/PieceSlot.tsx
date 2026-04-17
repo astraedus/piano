@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { Slot } from "../Slot";
-import type { Piece } from "@/lib/types";
+import type { Piece, KeyId } from "@/lib/types";
+import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META } from "@/lib/music";
 import { useAppState } from "@/hooks/useAppState";
 
 export function PieceSlot({ piece, printAlways }: { piece?: Piece; printAlways?: boolean }) {
@@ -13,15 +14,16 @@ export function PieceSlot({ piece, printAlways }: { piece?: Piece; printAlways?:
   const [sheetUrl, setSheetUrl] = useState(piece?.sheetUrl ?? "");
   const [referenceUrl, setReferenceUrl] = useState(piece?.referenceUrl ?? "");
   const [notes, setNotes] = useState(piece?.notes ?? "");
+  const [keyId, setKeyId] = useState<KeyId | "">(piece?.keyId ?? "");
 
   const save = () => {
     const now = new Date().toISOString();
     if (!piece) {
       const id = "piece-" + now.replace(/[^\d]/g, "").slice(0, 14);
-      const np: Piece = { id, title: title.trim() || "Untitled", composer: composer.trim() || undefined, section: section.trim() || undefined, sheetUrl: sheetUrl.trim() || undefined, referenceUrl: referenceUrl.trim() || undefined, notes: notes.trim() || undefined, status: "learning", startedAt: now, minutes: 0 };
+      const np: Piece = { id, title: title.trim() || "Untitled", composer: composer.trim() || undefined, keyId: (keyId || undefined) as Piece["keyId"], section: section.trim() || undefined, sheetUrl: sheetUrl.trim() || undefined, referenceUrl: referenceUrl.trim() || undefined, notes: notes.trim() || undefined, status: "learning", startedAt: now, minutes: 0 };
       patch({ pieces: [...(state.pieces ?? []), np], currentPieceId: np.id });
     } else {
-      const updated = state.pieces.map((p) => p.id === piece.id ? { ...p, title: title.trim(), composer: composer.trim() || undefined, section: section.trim() || undefined, sheetUrl: sheetUrl.trim() || undefined, referenceUrl: referenceUrl.trim() || undefined, notes: notes.trim() || undefined } : p);
+      const updated = state.pieces.map((p) => p.id === piece.id ? { ...p, title: title.trim(), composer: composer.trim() || undefined, keyId: (keyId || undefined) as Piece["keyId"], section: section.trim() || undefined, sheetUrl: sheetUrl.trim() || undefined, referenceUrl: referenceUrl.trim() || undefined, notes: notes.trim() || undefined } : p);
       patch({ pieces: updated });
     }
     setEditing(false);
@@ -74,6 +76,17 @@ export function PieceSlot({ piece, printAlways }: { piece?: Piece; printAlways?:
         >
           <Field label="title"><input className={fieldCls} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Tickery Tockery" /></Field>
           <Field label="composer"><input className={fieldCls} value={composer} onChange={(e) => setComposer(e.target.value)} placeholder="Charlton" /></Field>
+          <Field label="key">
+            <select className={fieldCls} value={keyId} onChange={(e) => setKeyId(e.target.value as KeyId | "")}>
+              <option value="">— unset —</option>
+              <optgroup label="major">
+                {CIRCLE_MAJORS.map((k) => (<option key={k} value={k}>{KEY_META[k].name}</option>))}
+              </optgroup>
+              <optgroup label="minor">
+                {CIRCLE_MINORS.map((k) => (<option key={k} value={k}>{KEY_META[k].name}</option>))}
+              </optgroup>
+            </select>
+          </Field>
           <Field label="section"><input className={fieldCls} value={section} onChange={(e) => setSection(e.target.value)} placeholder="bars 9–16" /></Field>
           <Field label="sheet url"><input className={fieldCls} value={sheetUrl} onChange={(e) => setSheetUrl(e.target.value)} placeholder="musescore / pdf / flat link" /></Field>
           <Field label="reference"><input className={fieldCls} value={referenceUrl} onChange={(e) => setReferenceUrl(e.target.value)} placeholder="youtube / soundcloud url" /></Field>

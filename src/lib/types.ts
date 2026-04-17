@@ -184,4 +184,17 @@ export interface AppState {
   northStarHiddenUntil?: string; // ISO
   // freshness for chain drills
   recentDrillIds: string[];
+  // Per-skill reps — "I did this" counters keyed by slug e.g. "scale:C:hs", "progression:am:i-iv-V"
+  skillReps?: Record<string, { count: number; maxBpm?: number; lastAt?: string }>;
+}
+
+// Skill rep id helpers.
+export function scaleRepId(keyId: KeyId, handed: "hs" | "ht" = "hs"): string {
+  return `scale:${keyId}:${handed}`;
+}
+export function progressionRepId(keyId: KeyId, name: string): string {
+  return `progression:${keyId}:${name}`;
+}
+export function drillRepId(drillId: string): string {
+  return `drill:${drillId}`;
 }

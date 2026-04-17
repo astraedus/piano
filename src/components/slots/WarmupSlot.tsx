@@ -2,14 +2,21 @@
 import { useEffect, useRef, useState } from "react";
 import { Slot } from "../Slot";
 import type { Warmup, KeyId } from "@/lib/types";
+import { scaleRepId } from "@/lib/types";
 import { KEY_META, scale } from "@/lib/music";
 import { Keyboard } from "../Keyboard";
+import { Metronome } from "../Metronome";
 import { ensureAudio, playSequence } from "@/lib/audio";
+import { useAppState } from "@/hooks/useAppState";
 
 export function WarmupSlot({ warmup, ghostName, ghostKey, printAlways }: { warmup: Warmup; ghostName: string; ghostKey: KeyId; printAlways?: boolean }) {
+  const { state, bumpRep } = useAppState();
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [bpm, setBpm] = useState(80);
   const iv = useRef<ReturnType<typeof setInterval> | null>(null);
+  const repId = scaleRepId(ghostKey);
+  const reps = state.skillReps?.[repId];
 
   useEffect(() => {
     if (running) {
@@ -52,16 +59,32 @@ export function WarmupSlot({ warmup, ghostName, ghostKey, printAlways }: { warmu
               {KEY_META[ghostKey].name} scale · 2 octaves
             </div>
             <Keyboard notes={scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 2)} rangeStart="C4" octaves={2} />
-            <button
-              type="button"
-              onClick={async () => {
-                await ensureAudio();
-                await playSequence(scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 1), { noteDurationSec: 0.34 });
-              }}
-              className="mt-2 text-xs px-3 py-1 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-[color:var(--accent-soft)] hover:text-[color:var(--accent)] no-print"
-            >
-              hear the scale
-            </button>
+            <div className="mt-2 flex flex-wrap gap-3 items-center no-print">
+              <button
+                type="button"
+                onClick={async () => {
+                  await ensureAudio();
+                  await playSequence(scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 1), { noteDurationSec: 0.34 });
+                }}
+                className="text-xs px-3 py-1 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-[color:var(--accent-soft)] hover:text-[color:var(--accent)]"
+              >
+                hear the scale
+              </button>
+              <button
+                type="button"
+                onClick={() => bumpRep(repId, { bpm })}
+                className="text-xs px-3 py-1 rounded-full border border-[color:var(--accent-soft)] text-[color:var(--accent)] hover:bg-[color:var(--accent)]/10"
+              >
+                I played it
+              </button>
+              <Metronome defaultBpm={80} onBpmChangeAction={setBpm} />
+            </div>
+            {reps && (
+              <p className="text-xs text-[color:var(--ink-3)] italic mt-2">
+                {reps.count} rep{reps.count === 1 ? "" : "s"} of this scale
+                {reps.maxBpm ? ` · best ${reps.maxBpm} bpm` : ""}.
+              </p>
+            )}
           </div>
         )}
         <div className="pt-2 flex items-center gap-3 no-print">

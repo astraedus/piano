@@ -10,6 +10,7 @@ interface Ctx {
   setState: (next: AppState) => void;
   patch: (partial: Partial<AppState>) => void;
   dismissUnlock: (id: string) => void;
+  bumpRep: (id: string, opts?: { bpm?: number }) => void;
 }
 
 const AppStateContext = createContext<Ctx | null>(null);
@@ -60,8 +61,23 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     // For now there's no "dismissed" state — unlocks live in state.unlocks.
   }, []);
 
+  const bumpRep = useCallback((id: string, opts?: { bpm?: number }) => {
+    _setState((prev) => {
+      const reps = { ...(prev.skillReps ?? {}) };
+      const cur = reps[id] ?? { count: 0 };
+      reps[id] = {
+        count: cur.count + 1,
+        maxBpm: opts?.bpm != null ? Math.max(cur.maxBpm ?? 0, opts.bpm) : cur.maxBpm,
+        lastAt: new Date().toISOString(),
+      };
+      const next = { ...prev, skillReps: reps };
+      saveState(next);
+      return next;
+    });
+  }, []);
+
   return (
-    <AppStateContext.Provider value={{ state, ready, setState, patch, dismissUnlock }}>
+    <AppStateContext.Provider value={{ state, ready, setState, patch, dismissUnlock, bumpRep }}>
       {children}
     </AppStateContext.Provider>
   );
