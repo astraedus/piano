@@ -49,6 +49,7 @@ export function Onboarding() {
       keyId: "C" as const,
       status: "learning" as const,
       section: "bars 9–16",
+      referenceUrl: "https://www.youtube.com/results?search_query=Tickery+Tockery+Charlton+Trinity+piano",
       startedAt: now,
       minutes: 0,
     };

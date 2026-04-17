@@ -1,19 +1,28 @@
 "use client";
-import { useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { AppStateProvider, useAppState } from "@/hooks/useAppState";
 import { computeTodayPlan } from "@/lib/todayPlan";
 import { KEY_META } from "@/lib/music";
+import { findDrill } from "@/lib/chainDrills";
+import type { KeyId, ChainDrill } from "@/lib/types";
 
 export default function PrintPage() {
   return (
     <AppStateProvider>
-      <PrintSheet />
+      <Suspense fallback={null}>
+        <PrintSheet />
+      </Suspense>
     </AppStateProvider>
   );
 }
 
 function PrintSheet() {
   const { state, ready } = useAppState();
+  const searchParams = useSearchParams();
+  const drillOverrideId = searchParams?.get("drill") ?? null;
+  const ghostOverride = (searchParams?.get("ghost") ?? null) as KeyId | null;
+
   useEffect(() => {
     if (!ready) return;
     const t = setTimeout(() => { try { window.print(); } catch {} }, 350);
@@ -23,7 +32,10 @@ function PrintSheet() {
   const plan = useMemo(() => ready ? computeTodayPlan(state, new Date()) : null, [state, ready]);
   if (!ready || !plan) return <div className="p-8 text-[color:var(--ink-3)]">preparing…</div>;
 
-  const ghost = KEY_META[plan.ghostKey];
+  // Allow overrides from query params so print matches the stand exactly.
+  const effectiveDrill: ChainDrill | null = (drillOverrideId && findDrill(drillOverrideId)) || plan.chainDrill || null;
+  const effectiveGhost = ghostOverride ?? plan.ghostKey;
+  const ghost = KEY_META[effectiveGhost];
   const piece = state.pieces.find((p) => p.id === state.currentPieceId);
   const dateLine = new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
@@ -63,15 +75,15 @@ function PrintSheet() {
             )}
           </Item>
 
-          <Item index={3} title="chain drill" duration={plan.chainDrill ? `${plan.chainDrill.minutes} min` : undefined}>
-            {plan.chainDrill ? (
+          <Item index={3} title="chain drill" duration={effectiveDrill ? `${effectiveDrill.minutes} min` : undefined}>
+            {effectiveDrill ? (
               <>
                 <ol className="space-y-1">
-                  {plan.chainDrill.steps.map((s, i) => (
+                  {effectiveDrill.steps.map((s, i) => (
                     <li key={i}>{i + 1}) {s.instruction} — <span className="text-black/60">{s.durationSec}s</span></li>
                   ))}
                 </ol>
-                <p className="italic text-black/70 mt-2">↑ {plan.chainDrill.closingNote}</p>
+                <p className="italic text-black/70 mt-2">↑ {effectiveDrill.closingNote}</p>
               </>
             ) : (
               <p className="italic text-black/60">quiet tonight. just the piece.</p>

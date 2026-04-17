@@ -29,7 +29,9 @@ export function miniShelfLineFor(state: AppState, date: Date = new Date()): stri
     if (last) candidates.push(`latest unlock: ${last.title.toLowerCase()}`);
   }
   if (touchedKeys.length > 0 && touchedKeys.length < 24) {
-    candidates.push(`${touchedKeys.length} keys touched on the map. ${24 - touchedKeys.length} grey.`);
+    const k = touchedKeys.length;
+    const left = 24 - k;
+    candidates.push(`${k} ${k === 1 ? "key" : "keys"} touched on the map. ${left} grey.`);
   }
   if (homeKeys.length > 0) {
     const name = KEY_META[homeKeys[0] as keyof typeof KEY_META]?.name;

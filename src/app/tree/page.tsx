@@ -22,7 +22,8 @@ export default function TreePage() {
 function TreeShell() {
   const [tab, setTab] = useState<Tab>("map");
   const { state } = useAppState();
-  const hours = Math.round((state.sessions ?? []).reduce((s, x) => s + x.minutes, 0) / 60 * 10) / 10;
+  const totalMin = (state.sessions ?? []).reduce((s, x) => s + x.minutes, 0);
+  const timeStr = totalMin <= 0 ? "—" : totalMin < 60 ? `${totalMin} min` : `${Math.floor(totalMin / 60)}h${totalMin % 60 ? ` ${totalMin % 60}m` : ""}`;
   const sessions = (state.sessions ?? []).length;
   const pieces = (state.pieces ?? []).length;
   return (
@@ -30,7 +31,7 @@ function TreeShell() {
       <header className="space-y-1">
         <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">the tree</p>
         <h1 className="font-serif text-3xl text-[color:var(--ink)]" style={{ fontVariationSettings: "'opsz' 40, 'SOFT' 50" }}>what you've built.</h1>
-        <p className="text-sm text-[color:var(--ink-3)] italic">{hours}h · {sessions} sessions · {pieces} pieces on the shelf.</p>
+        <p className="text-sm text-[color:var(--ink-3)] italic">{timeStr} · {sessions} session{sessions === 1 ? "" : "s"} · {pieces} piece{pieces === 1 ? "" : "s"} on the shelf.</p>
       </header>
       <div className="flex gap-2 border-b border-[color:var(--rule)]">
         <TabButton active={tab === "map"}  onClickAction={() => setTab("map")}>the key map</TabButton>

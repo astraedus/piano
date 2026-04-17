@@ -19,7 +19,7 @@ function Timeline() {
   const { state } = useAppState();
   const sessions = [...(state.sessions ?? [])].sort((a: SessionLog, b: SessionLog) => b.startedAt.localeCompare(a.startedAt));
   const totalMin = sessions.reduce((s, x) => s + x.minutes, 0);
-  const hours = Math.round((totalMin / 60) * 10) / 10;
+  const timeStr = fmtTime(totalMin);
 
   // Build a factual list: last 30 days with gaps marked.
   const rows = buildRows(sessions);
@@ -29,7 +29,7 @@ function Timeline() {
       <header>
         <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">timeline</p>
         <h1 className="font-serif text-3xl text-[color:var(--ink)]">what's been here.</h1>
-        <p className="text-sm text-[color:var(--ink-3)] italic mt-1">{hours}h total · {sessions.length} sessions.</p>
+        <p className="text-sm text-[color:var(--ink-3)] italic mt-1">{timeStr} total · {sessions.length} sessions.</p>
       </header>
       {sessions.length === 0 ? (
         <p className="text-[color:var(--ink-3)] font-serif italic">nothing yet. the first session writes the first line.</p>
@@ -83,6 +83,15 @@ function buildRows(sessions: SessionLog[]): Row[] {
     d.setDate(d.getDate() - 1);
   }
   return rows;
+}
+
+function fmtTime(totalMin: number) {
+  if (totalMin <= 0) return "—";
+  if (totalMin < 60) return `${totalMin} min`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
 }
 
 function formatDayLabel(d: Date) {

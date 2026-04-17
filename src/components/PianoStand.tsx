@@ -16,6 +16,7 @@ import { generateEarRound } from "@/lib/earRounds";
 import type { EarRound } from "@/lib/types";
 import { UnlockCardModal } from "./UnlockCardModal";
 import { Horizons } from "./Horizons";
+import { GhostPicker } from "./GhostPicker";
 
 export function PianoStand() {
   const router = useRouter();
@@ -92,13 +93,18 @@ export function PianoStand() {
     // Redirect to home cleared; the session line + unlock modal show over
   };
 
-  const handlePrint = () => { router.push("/print"); };
+  const handlePrint = () => {
+    const params = new URLSearchParams();
+    if (plan?.chainDrill?.id) params.set("drill", plan.chainDrill.id);
+    if (plan?.ghostKey) params.set("ghost", plan.ghostKey);
+    router.push(`/print?${params.toString()}`);
+  };
 
   // Just-play mode: collapse to free slot only
   if (plan.mode === "just-play") {
     return (
       <div>
-        <Header ghostName={ghost.name} mode="just-play" />
+        <Header ghostName={ghost.name} ghostKey={plan.ghostKey} mode="just-play" />
         <div className="mt-6">
           <FreeSlot journalInitial={journal} onJournalChange={setJournal} urlInitial={state.freeSlotUrl} expanded />
         </div>
@@ -115,7 +121,7 @@ export function PianoStand() {
 
   return (
     <div>
-      <Header ghostName={ghost.name} onEdit={() => router.push("/settings?focus=ghost")} mode={plan.mode} firstBackMessage={plan.firstBackMessage} />
+      <Header ghostName={ghost.name} ghostKey={plan.ghostKey} mode={plan.mode} firstBackMessage={plan.firstBackMessage} />
       <div className="mt-4">
         <WarmupSlot warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} />
         <PieceSlot piece={piece} printAlways={printing} />
@@ -141,15 +147,13 @@ export function PianoStand() {
   );
 }
 
-function Header({ ghostName, onEdit, mode, firstBackMessage }: { ghostName: string; onEdit?: () => void; mode?: string; firstBackMessage?: string | null }) {
+function Header({ ghostName, ghostKey, mode, firstBackMessage }: { ghostName: string; ghostKey: import("@/lib/types").KeyId; mode?: string; firstBackMessage?: string | null }) {
   return (
     <header className="pb-5 border-b border-[color:var(--rule)]">
       <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">tonight's ghost</div>
-      <div className="flex items-baseline gap-3 mt-1">
+      <div className="flex items-baseline gap-3 mt-1 flex-wrap">
         <h1 className="font-serif text-3xl text-[color:var(--ink)]" style={{ fontVariationSettings: "'opsz' 30, 'SOFT' 50" }}>{ghostName}</h1>
-        {onEdit && (
-          <button type="button" onClick={onEdit} className="text-xs text-[color:var(--ink-3)] hover:text-[color:var(--ink)] no-print">edit</button>
-        )}
+        <GhostPicker current={ghostKey} />
       </div>
       {mode === "first-back" && firstBackMessage && (
         <p className="text-sm text-[color:var(--ink-2)] italic mt-2 fade-in">{firstBackMessage}</p>

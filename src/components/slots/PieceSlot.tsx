@@ -43,6 +43,11 @@ export function PieceSlot({ piece, printAlways }: { piece?: Piece; printAlways?:
     <Slot index={2} title="The piece" summary={summary} printAlways={printAlways}>
       {!editing && piece && (
         <div className="space-y-3 text-sm">
+          <div className="text-[color:var(--ink-2)]">
+            <span className="font-serif text-lg text-[color:var(--ink)]">{piece.title}</span>
+            {piece.composer && <span className="text-[color:var(--ink-3)]"> — {piece.composer}</span>}
+            {piece.section && <span className="text-[color:var(--ink-3)]"> · {piece.section}</span>}
+          </div>
           {piece.notes && (
             <p className="text-[color:var(--ink-2)] whitespace-pre-wrap leading-relaxed">{piece.notes}</p>
           )}
@@ -64,6 +69,16 @@ export function PieceSlot({ piece, printAlways }: { piece?: Piece; printAlways?:
             )}
             {piece.referenceUrl && !youtubeIdFrom(piece.referenceUrl) && (
               <a href={piece.referenceUrl} target="_blank" rel="noreferrer" className="text-[color:var(--accent)] hover:underline">reference recording</a>
+            )}
+            {!piece.referenceUrl && !piece.sheetUrl && (
+              <a
+                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(piece.title + " " + (piece.composer ?? "") + " piano")}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[color:var(--accent)] hover:underline"
+              >
+                find a recording →
+              </a>
             )}
             <button type="button" onClick={() => setEditing(true)} className="text-[color:var(--ink-3)] hover:text-[color:var(--ink)]">edit</button>
           </div>

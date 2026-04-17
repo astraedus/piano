@@ -24,7 +24,7 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup: Warmup
   const remaining = Math.max(0, phaseUnlockCount - phaseUnlockEarned);
 
   const totalMin = (state.sessions ?? []).reduce((s, x) => s + x.minutes, 0);
-  const hours = Math.round((totalMin / 60) * 10) / 10;
+  const timeStr = fmtTotalTime(totalMin);
   const piecesYours = (state.pieces ?? []).filter((p) => p.status === "yours").length;
   const pieces = (state.pieces ?? []).length;
   const keysTouched = Object.values(state.keyDepths ?? {}).filter((d) => (d ?? 0) > 0).length;
@@ -72,10 +72,10 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup: Warmup
 
       <Row label="only-grows">
         <div className="flex gap-5 flex-wrap text-sm text-[color:var(--ink-2)]">
-          <Stat k="hours" v={`${hours}h`} />
+          <Stat k="time" v={timeStr} />
           <Stat k="sessions" v={String(state.sessions?.length ?? 0)} />
           <Stat k="pieces" v={pieces === 0 ? "—" : `${pieces}${piecesYours ? ` · ${piecesYours} yours` : ""}`} />
-          <Stat k="keys touched" v={`${keysTouched} / 24`} />
+          <Stat k={keysTouched === 1 ? "key" : "keys"} v={`${keysTouched} / 24`} />
           <Stat k="unlocks" v={String(state.unlocks?.length ?? 0)} />
         </div>
         <p className="text-xs text-[color:var(--ink-3)] italic mt-2">
@@ -102,4 +102,13 @@ function Stat({ k, v }: { k: string; v: string }) {
       <span className="text-[color:var(--ink-3)] text-xs ml-1.5">{k}</span>
     </div>
   );
+}
+
+function fmtTotalTime(totalMin: number): string {
+  if (totalMin <= 0) return "—";
+  if (totalMin < 60) return `${totalMin} min`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
 }

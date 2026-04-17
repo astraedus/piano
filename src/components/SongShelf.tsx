@@ -7,12 +7,12 @@ const STATUSES: PieceStatus[] = ["learning", "shelved", "yours", "known"];
 
 export function SongShelf() {
   const { state, patch } = useAppState();
-  const [filter, setFilter] = useState<"all" | "yours" | "in-progress">("all");
+  const [filter, setFilter] = useState<"all" | "yours" | "learning">("all");
 
   const pieces = useMemo(() => {
     const arr = [...(state.pieces ?? [])].sort((a, b) => a.startedAt.localeCompare(b.startedAt));
     if (filter === "yours") return arr.filter((p) => p.status === "yours");
-    if (filter === "in-progress") return arr.filter((p) => p.status === "learning");
+    if (filter === "learning") return arr.filter((p) => p.status === "learning");
     return arr;
   }, [state.pieces, filter]);
 
@@ -39,7 +39,7 @@ export function SongShelf() {
         </div>
       )}
       <div className="flex gap-2 no-print">
-        {(["all", "yours", "in-progress"] as const).map((f) => (
+        {(["all", "yours", "learning"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
