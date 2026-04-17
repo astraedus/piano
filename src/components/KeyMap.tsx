@@ -129,15 +129,20 @@ function depthFill(depth: KeyDepth) {
 }
 
 function KeyDetailPanel({ keyId, depth }: { keyId: KeyId; depth: KeyDepth }) {
+  const { patch, state } = useAppState();
   const meta = KEY_META[keyId];
   const scaleNotes = scale(meta.tonic, meta.mode, 1);
   const scaleNotes2 = scale(meta.tonic, meta.mode, 2);
   const triadNotes = triad(meta.tonic, meta.mode === "major" ? "maj" : "min");
   const romans = meta.mode === "major" ? ["I","IV","V","I"] : ["i","iv","V","i"];
   const prog = progressionChords(keyId, romans);
-  const { state } = useAppState();
   const piecesInKey = (state.pieces ?? []).filter((p) => p.keyId === keyId);
   const songs = songsForKey(keyId).slice(0, 6);
+
+  const promoteToHome = () => {
+    if (depth >= 5) return;
+    patch({ keyDepths: { ...(state.keyDepths ?? {}), [keyId]: 5 } });
+  };
 
   return (
     <div className="space-y-5 text-sm">
@@ -233,8 +238,17 @@ function KeyDetailPanel({ keyId, depth }: { keyId: KeyId; depth: KeyDepth }) {
         </div>
       )}
 
-      <div className="text-xs text-[color:var(--ink-3)] italic">
-        {depth < 5 && `to reach ${DEPTH_NAMES[(depth + 1) as KeyDepth]}: ` + nextDepthHint(depth as KeyDepth)}
+      <div className="text-xs text-[color:var(--ink-3)] italic space-y-2">
+        {depth < 5 && <p>to reach {DEPTH_NAMES[(depth + 1) as KeyDepth]}: {nextDepthHint(depth as KeyDepth)}</p>}
+        {depth >= 4 && depth < 5 && (
+          <button
+            type="button"
+            onClick={promoteToHome}
+            className="text-xs px-3 py-1 rounded-full border border-[color:var(--accent-soft)] text-[color:var(--accent)] hover:bg-[color:var(--accent)]/10 not-italic no-print"
+          >
+            mark as home
+          </button>
+        )}
       </div>
     </div>
   );
