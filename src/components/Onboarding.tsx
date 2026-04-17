@@ -24,6 +24,12 @@ export function Onboarding() {
     const option = PHASE_OPTIONS[selected ?? 0];
     const now = new Date().toISOString();
 
+    // Seed key depths so the Key Map isn't a blank slate for returning players.
+    const seedDepths: Record<string, number> = {};
+    if (option.phase >= 1) { seedDepths.C = 2; seedDepths.am = 1; }
+    if (option.phase >= 2) { seedDepths.C = 3; seedDepths.am = 2; seedDepths.G = 2; seedDepths.F = 1; }
+    if (option.phase >= 3) { seedDepths.C = 3; seedDepths.am = 3; seedDepths.G = 3; seedDepths.F = 2; seedDepths.D = 2; seedDepths.dm = 1; seedDepths.em = 1; }
+
     // Seed the shelf with Once Upon A Time (Anti's first-ever piece, Nov 2019).
     const seededOnceUponATime = {
       id: "piece-once-upon-a-time",
@@ -59,6 +65,7 @@ export function Onboarding() {
       ghostOverride: { key: option.ghost, weekId: "seed" },
       pieces: state.pieces.length > 0 ? state.pieces : pieces,
       currentPieceId: state.currentPieceId ?? defaultCurrentPiece.id,
+      keyDepths: { ...(state.keyDepths ?? {}), ...seedDepths },
       arc: [
         ...(state.arc ?? []),
         { id: "piano-begins-" + now.slice(0, 10), at: now, kind: "piano-begins", label: "piano begins" },
