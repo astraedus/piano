@@ -2,7 +2,7 @@
 import { AppShell } from "@/components/AppShell";
 import { AppStateProvider } from "@/hooks/useAppState";
 import { useAppState } from "@/hooks/useAppState";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Grade, KeyId, Phase } from "@/lib/types";
 import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META } from "@/lib/music";
@@ -12,7 +12,9 @@ export default function SettingsPage() {
   return (
     <AppStateProvider>
       <AppShell>
-        <Settings />
+        <Suspense fallback={null}>
+          <Settings />
+        </Suspense>
       </AppShell>
     </AppStateProvider>
   );
