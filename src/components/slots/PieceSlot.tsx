@@ -44,11 +44,23 @@ export function PieceSlot({ piece, printAlways }: { piece?: Piece; printAlways?:
           {piece.notes && (
             <p className="text-[color:var(--ink-2)] whitespace-pre-wrap leading-relaxed">{piece.notes}</p>
           )}
+          {youtubeIdFrom(piece.referenceUrl) && (
+            <div className="aspect-video rounded-md overflow-hidden border border-[color:var(--rule)] bg-black/30 no-print">
+              <iframe
+                width="100%" height="100%"
+                src={`https://www.youtube-nocookie.com/embed/${youtubeIdFrom(piece.referenceUrl)}?rel=0`}
+                title={piece.title}
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope"
+                allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
+          )}
           <div className="flex gap-4 flex-wrap no-print">
             {piece.sheetUrl && (
               <a href={piece.sheetUrl} target="_blank" rel="noreferrer" className="text-[color:var(--accent)] hover:underline">sheet</a>
             )}
-            {piece.referenceUrl && (
+            {piece.referenceUrl && !youtubeIdFrom(piece.referenceUrl) && (
               <a href={piece.referenceUrl} target="_blank" rel="noreferrer" className="text-[color:var(--accent)] hover:underline">reference recording</a>
             )}
             <button type="button" onClick={() => setEditing(true)} className="text-[color:var(--ink-3)] hover:text-[color:var(--ink)]">edit</button>
@@ -87,3 +99,17 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 const fieldCls = "w-full bg-[color:var(--surface)] border border-[color:var(--rule)] rounded-md px-3 py-1.5 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)]";
+
+function youtubeIdFrom(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) return u.pathname.replace(/^\//, "");
+    if (u.hostname.includes("youtube.com") || u.hostname.includes("youtube-nocookie.com")) {
+      if (u.pathname === "/watch") return u.searchParams.get("v");
+      if (u.pathname.startsWith("/embed/")) return u.pathname.replace("/embed/", "");
+      if (u.pathname.startsWith("/shorts/")) return u.pathname.replace("/shorts/", "").split("/")[0];
+    }
+  } catch {}
+  return null;
+}

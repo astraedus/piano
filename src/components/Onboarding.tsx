@@ -23,6 +23,31 @@ export function Onboarding() {
   const finish = () => {
     const option = PHASE_OPTIONS[selected ?? 0];
     const now = new Date().toISOString();
+
+    // Seed the shelf with Once Upon A Time (Anti's first-ever piece, Nov 2019).
+    const seededOnceUponATime = {
+      id: "piece-once-upon-a-time",
+      title: "Once Upon A Time",
+      composer: "(your first piece)",
+      keyId: "C" as const,
+      status: "yours" as const,
+      startedAt: "2019-11-01T00:00:00.000Z",
+      minutes: 0,
+    };
+    // Suggest Tickery Tockery as the current working piece (Anti's Trinity Initial piece).
+    const defaultCurrentPiece = {
+      id: "piece-tickery-tockery",
+      title: "Tickery Tockery",
+      composer: "Charlton",
+      grade: "initial" as const,
+      keyId: "C" as const,
+      status: "learning" as const,
+      section: "bars 9–16",
+      startedAt: now,
+      minutes: 0,
+    };
+    const pieces = [seededOnceUponATime, defaultCurrentPiece];
+
     patch({
       firstOpenedAt: state.firstOpenedAt ?? now,
       name: name.trim() || undefined,
@@ -32,9 +57,12 @@ export function Onboarding() {
       grade: option.grade,
       earLevel: option.earLevel,
       ghostOverride: { key: option.ghost, weekId: "seed" },
+      pieces: state.pieces.length > 0 ? state.pieces : pieces,
+      currentPieceId: state.currentPieceId ?? defaultCurrentPiece.id,
       arc: [
         ...(state.arc ?? []),
         { id: "piano-begins-" + now.slice(0, 10), at: now, kind: "piano-begins", label: "piano begins" },
+        { id: "once-upon-a-time-yours", at: "2019-11-01T00:00:00.000Z", kind: "piece-yours", label: "Once Upon A Time — yours" },
       ],
     });
     router.push("/");

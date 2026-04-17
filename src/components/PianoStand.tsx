@@ -15,6 +15,7 @@ import { FreeSlot } from "./slots/FreeSlot";
 import { generateEarRound } from "@/lib/earRounds";
 import type { EarRound } from "@/lib/types";
 import { UnlockCardModal } from "./UnlockCardModal";
+import { Horizons } from "./Horizons";
 
 export function PianoStand() {
   const router = useRouter();
@@ -116,7 +117,7 @@ export function PianoStand() {
     <div>
       <Header ghostName={ghost.name} onEdit={() => router.push("/settings?focus=ghost")} mode={plan.mode} firstBackMessage={plan.firstBackMessage} />
       <div className="mt-4">
-        <WarmupSlot warmup={plan.warmup} ghostName={ghost.name} printAlways={printing} />
+        <WarmupSlot warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} />
         <PieceSlot piece={piece} printAlways={printing} />
         <ChainDrillSlot drill={plan.chainDrill ?? null} printAlways={printing} />
         <EarMomentSlot
@@ -134,6 +135,7 @@ export function PianoStand() {
         miniShelfLine={plan.miniShelfLine ?? null}
         northStarNudge={plan.northStarNudge ?? null}
       />
+      <Horizons ghostKey={plan.ghostKey} warmup={plan.warmup} />
       <UnlockQueue queue={unlocksQueue} onClose={() => setUnlocksQueue((q) => q.slice(1))} unlocks={state.unlocks} />
     </div>
   );

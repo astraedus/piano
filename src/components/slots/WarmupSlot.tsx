@@ -1,9 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Slot } from "../Slot";
-import type { Warmup } from "@/lib/types";
+import type { Warmup, KeyId } from "@/lib/types";
+import { KEY_META, scale } from "@/lib/music";
+import { Keyboard } from "../Keyboard";
+import { ensureAudio, playSequence } from "@/lib/audio";
 
-export function WarmupSlot({ warmup, ghostName, printAlways }: { warmup: Warmup; ghostName: string; printAlways?: boolean }) {
+export function WarmupSlot({ warmup, ghostName, ghostKey, printAlways }: { warmup: Warmup; ghostName: string; ghostKey: KeyId; printAlways?: boolean }) {
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const iv = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -43,6 +46,24 @@ export function WarmupSlot({ warmup, ghostName, printAlways }: { warmup: Warmup;
             </li>
           ))}
         </ul>
+        {(warmup.id === "ghost-scale" || warmup.id === "mirror") && (
+          <div className="pt-2">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-2">
+              {KEY_META[ghostKey].name} scale · 2 octaves
+            </div>
+            <Keyboard notes={scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 2)} rangeStart="C4" octaves={2} />
+            <button
+              type="button"
+              onClick={async () => {
+                await ensureAudio();
+                await playSequence(scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 1), { noteDurationSec: 0.34 });
+              }}
+              className="mt-2 text-xs px-3 py-1 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-[color:var(--accent-soft)] hover:text-[color:var(--accent)] no-print"
+            >
+              hear the scale
+            </button>
+          </div>
+        )}
         <div className="pt-2 flex items-center gap-3 no-print">
           <button
             type="button"
