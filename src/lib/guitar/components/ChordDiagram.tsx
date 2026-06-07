@@ -105,6 +105,10 @@ export function ChordDiagram({ chordShape, cagedShape, title, className }: Chord
             "aria-label",
             title ? `${title} chord diagram` : "guitar chord diagram",
           );
+          // svguitar emits an SVG with a viewBox but no intrinsic width. Inside a
+          // flex/centering slot that collapses it to 0×0, so pin an explicit width
+          // and let height follow the viewBox aspect ratio.
+          svg.style.width = "100%";
           svg.style.maxWidth = "100%";
           svg.style.height = "auto";
         }
@@ -121,5 +125,5 @@ export function ChordDiagram({ chordShape, cagedShape, title, className }: Chord
     };
   }, [chordShape, cagedShape, title]);
 
-  return <div ref={ref} className={className ?? "max-w-[160px]"} data-testid="chord-diagram" />;
+  return <div ref={ref} className={className ?? "w-[150px] max-w-full"} data-testid="chord-diagram" />;
 }
