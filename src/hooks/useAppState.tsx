@@ -9,6 +9,9 @@ import type { AppState, UnlockCard } from "@/lib/types";
 // app init — before any computeTodayPlan / ghostKeyFor read — for every page that
 // renders state through this provider. (P4 adds a guitar import here likewise.)
 import "@/lib/piano/module";
+// Guitar module self-registers likewise — warms the sync cache so guitar content
+// (chain drills, skill nodes, unlocks) resolves the moment a profile is on guitar.
+import "@/lib/guitar/module";
 
 interface Ctx {
   state: AppState;

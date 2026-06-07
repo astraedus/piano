@@ -9,6 +9,9 @@
 // Both write through the AppState hook's `patch`, so the graph re-derives status.
 
 import type { SkillNode, SkillNodeStatus } from "@/lib/types";
+import { ChordDiagram } from "@/lib/guitar/components/ChordDiagram";
+import { Fretboard } from "@/lib/guitar/components/Fretboard";
+import { Tab } from "@/lib/guitar/components/Tab";
 
 const STATUS_LABEL: Record<SkillNodeStatus, string> = {
   locked: "locked",
@@ -103,17 +106,16 @@ export function SkillGraphPanel({
         </Section>
       )}
 
-      {/* P4 EXTENSION POINT — guitar visuals slot, keyed off node.viz.
-          P3 leaves a clean, labeled placeholder; P4 swaps it for the real
-          ChordDiagram / Fretboard / Tab render without touching this layout. */}
+      {/* P4 EXTENSION POINT — guitar visuals, keyed off node.viz. Renders the real
+          ChordDiagram / Fretboard / Tab; keeps the sg-viz-slot testid + data-viz. */}
       {node.viz && (
         <Section label="visual">
           <div
             data-testid="sg-viz-slot"
             data-viz={node.viz}
-            className="flex min-h-[88px] items-center justify-center rounded-lg border border-dashed border-[color:var(--rule)] bg-[color:var(--surface-2)] text-xs text-[color:var(--ink-3)]"
+            className="flex min-h-[88px] items-center justify-center rounded-lg border border-[color:var(--rule)] bg-[color:var(--surface-2)] p-2"
           >
-            {node.viz.replace(/_/g, " ")} · coming with guitar
+            <NodeViz node={node} />
           </div>
         </Section>
       )}
@@ -149,6 +151,35 @@ export function SkillGraphPanel({
       </div>
     </aside>
   );
+}
+
+// Renders the guitar visual for a node, keyed on node.viz:
+//   chord_diagram → ChordDiagram (node.chordShape / node.cagedShape)
+//   fretboard_map → Fretboard (scale/box map; default pentatonic box)
+//   tab           → Tab (default riff)
+//   animation     → graceful text placeholder (motion treatment is a later pass)
+function NodeViz({ node }: { node: SkillNode }) {
+  switch (node.viz) {
+    case "chord_diagram":
+      return (
+        <ChordDiagram
+          chordShape={node.chordShape}
+          cagedShape={node.cagedShape}
+          title={node.title}
+        />
+      );
+    case "fretboard_map":
+      return <Fretboard ariaLabel={`${node.title} fretboard map`} />;
+    case "tab":
+      return <Tab ariaLabel={`${node.title} tab`} />;
+    case "animation":
+    default:
+      return (
+        <span className="text-xs italic text-[color:var(--ink-3)]">
+          watch the motion: {node.title.toLowerCase()}
+        </span>
+      );
+  }
 }
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
