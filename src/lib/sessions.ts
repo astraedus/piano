@@ -1,5 +1,15 @@
-import type { AppState, ArcEvent, KeyDepth, KeyId, SessionLog, UnlockCard } from "./types";
+import type {
+  AppState,
+  ArcEvent,
+  KeyDepth,
+  KeyId,
+  SessionLog,
+  SkillNode,
+  SkillProgress,
+  UnlockCard,
+} from "./types";
 import { getModuleSync } from "./instrumentRegistry";
+import { markNodeProgress, prereqsMet, resolveStatus } from "./skillTree";
 
 export function endSession(
   state: AppState,
@@ -15,11 +25,13 @@ export function endSession(
   // Last session ended marker
   const lastSessionEndedAt = log.endedAt;
 
-  // Depth bump for ghost key
-  const keyDepths = depthBumpForSession(state.keyDepths ?? {}, log);
-
   // Update piece minutes
   const pieces = state.pieces.map((p) => p.id === log.pieceId ? { ...p, minutes: p.minutes + log.minutes } : p);
+
+  // Depth bump for ghost key — resolve the logged piece's key so a piece-in-key
+  // session can promote that key to depth 4 (Lived). See B4.
+  const playedPiece = pieces.find((p) => p.id === log.pieceId);
+  const keyDepths = depthBumpForSession(state.keyDepths ?? {}, log, playedPiece?.keyId);
 
   // Arc events
   const arc: ArcEvent[] = [...(state.arc ?? [])];
@@ -36,18 +48,49 @@ export function endSession(
     .filter((x): x is string => !!x)
     .slice(0, 5);
 
-  // Unlock check — pick any library unlock whose simple heuristic triggers.
-  // The unlock library comes from the active instrument's module (guarded).
+  // ── Skill-DAG node completion → unlocks (B3 / D4 / B2) ──
+  // Replaces the dead `requires` system + the hand-coded `shouldUnlock` switch.
+  // A node becomes `learned` only when (a) the session satisfied its linked
+  // drill/key AND (b) its full prereq chain is already learned — so there is no
+  // session-count phase-jump exploit (B2): a tier-3 unlock literally cannot fire
+  // until the tier-2 chain is learned.
+  const nodes = getModuleSync(state.instrument)?.skillNodes ?? [];
   const unlockLibrary = getModuleSync(state.instrument)?.unlockLibrary ?? [];
-  const earnedIds = new Set((state.unlocks ?? []).map((u) => u.id));
-  const newlyEarned: UnlockCard[] = [];
-  for (const card of unlockLibrary) {
-    if (earnedIds.has(card.id)) continue;
-    if (shouldUnlock(card, state, { ...state, sessions, keyDepths, pieces, arc })) {
-      newlyEarned.push({ ...card, addedAt: log.endedAt });
+  const prevProgress = state.skillProgress ?? {};
+  const prevStatus = resolveStatus(nodes, prevProgress);
+
+  let nextProgress = prevProgress;
+  for (const node of nodes) {
+    if (prevStatus.get(node.id) === "learned") continue;
+    if (!nodeSatisfiedThisSession(node, log, keyDepths)) continue;
+    if (!prereqsMet(node, nextProgress)) {
+      // Record the attempt as progress, but it can't become `learned` until the
+      // prereq chain is complete. resolveStatus will keep it locked/in-progress.
+      nextProgress = markNodeProgress(nextProgress, node.id, { now: log.endedAt });
+      continue;
     }
+    nextProgress = markNodeProgress(nextProgress, node.id, { learned: true, now: log.endedAt });
   }
+
+  const nextStatus = resolveStatus(nodes, nextProgress);
+  const newlyLearned = nodes.filter(
+    (n) => nextStatus.get(n.id) === "learned" && prevStatus.get(n.id) !== "learned",
+  );
+
+  // Each newly-learned node with a linked UnlockCard earns that card (once).
+  const earnedIds = new Set((state.unlocks ?? []).map((u) => u.id));
+  const cardById = new Map(unlockLibrary.map((c) => [c.id, c]));
+  const newlyEarned: UnlockCard[] = [];
+  for (const node of newlyLearned) {
+    if (!node.unlockCardId || earnedIds.has(node.unlockCardId)) continue;
+    const card = cardById.get(node.unlockCardId);
+    if (!card) continue;
+    earnedIds.add(card.id);
+    newlyEarned.push({ ...card, addedAt: log.endedAt });
+  }
+
   const unlocks = [...(state.unlocks ?? []), ...newlyEarned];
+  const pendingUnlocks = [...(state.pendingUnlocks ?? []), ...newlyEarned];
 
   const nextState: AppState = {
     ...state,
@@ -57,14 +100,32 @@ export function endSession(
     pieces,
     arc,
     unlocks,
+    pendingUnlocks,
     recentDrillIds,
+    skillProgress: nextProgress,
   };
   return { state: nextState, newUnlocks: newlyEarned };
 }
 
+/** True iff this session's activity satisfies the node's concrete requirement
+ *  (its linked chain drill was played, or its linked key reached real fluency).
+ *  Nodes with no linkage can only advance via explicit progress elsewhere. */
+function nodeSatisfiedThisSession(
+  node: SkillNode,
+  log: SessionLog,
+  keyDepths: Partial<Record<KeyId, KeyDepth>>,
+): boolean {
+  if (node.chainDrillId && log.chainDrillId === node.chainDrillId) return true;
+  // A per-key node is satisfied once that key has been Walked (depth ≥ 2):
+  // scale + triad + I–IV–V–I learned, i.e. the key is genuinely under hand.
+  if (node.keyId && (keyDepths[node.keyId] ?? 0) >= 2) return true;
+  return false;
+}
+
 export function depthBumpForSession(
   current: Partial<Record<KeyId, KeyDepth>>,
-  log: SessionLog
+  log: SessionLog,
+  pieceKeyId?: KeyId,
 ): Partial<Record<KeyId, KeyDepth>> {
   const next = { ...current };
   const ghost = log.ghostKey;
@@ -80,35 +141,17 @@ export function depthBumpForSession(
   if (didChain && log.mode !== "first-back" && cur < 3) bumpTo = 3; // Played (with chain drill + real practice)
   next[ghost] = bumpTo;
 
-  // Piece in key → Lived
-  if (log.pieceId) {
-    // Note: actual keyId of piece is elsewhere; skip — SongShelf promotion handles that.
+  // Piece in key → Lived (depth 4). B4: previously a TODO, so keys could never
+  // reach depth 4 automatically. Per plan §2.2 B4: when the session logs a piece
+  // whose key === the ghost/working key, that key becomes Lived ("a full piece
+  // lives here"). Real practice only (not first-back) so a quick check-in can't
+  // promote. depthBumpForSession runs on `next`, so the ghost may already have
+  // been bumped to ≤3 above — depth 4 supersedes it.
+  const didPiece = slots.get("piece")?.touched && !!log.pieceId;
+  if (didPiece && pieceKeyId && pieceKeyId === ghost && log.mode !== "first-back") {
+    const pieceCur = (next[pieceKeyId] ?? 0) as KeyDepth;
+    if (pieceCur < 4) next[pieceKeyId] = 4;
   }
+
   return next;
-}
-
-function shouldUnlock(card: UnlockCard, _prev: AppState, state: AppState): boolean {
-  // Minimal heuristics. Better: add explicit requirements to each card.
-  const sessions = state.sessions.length;
-  const keysTouched = Object.values(state.keyDepths).filter((d) => (d ?? 0) > 0).length;
-  const anyChain = state.sessions.some((s) => s.chainDrillId);
-  const anyImprov = anyChain;
-  const pieceCount = state.pieces.length;
-  const yoursCount = state.pieces.filter((p) => p.status === "yours").length;
-
-  switch (card.id) {
-    case "u-p1-keyboard-map":  return sessions >= 3;
-    case "u-p1-c-map":         return (state.keyDepths.C ?? 0) >= 2;
-    case "u-p1-first-improv":  return anyImprov && sessions >= 2;
-    case "u-p1-minor-feeling": return state.sessions.some((s) => (s.earResults?.correctIds?.length ?? 0) >= 2);
-    case "u-p2-chord-under-melody": return state.phase >= 2 && anyChain;
-    case "u-p2-pop-formula":   return state.phase >= 2 && sessions >= 8;
-    case "u-p2-4-bar-improv":  return state.phase >= 2 && sessions >= 10;
-    case "u-p2-first-transcribe": return state.phase >= 2 && keysTouched >= 3;
-    case "u-p3-ii-v-i":        return state.phase >= 3 && sessions >= 3;
-    case "u-p3-pop-pull":      return state.phase >= 3 && sessions >= 6;
-    case "u-p3-three-moods":   return state.phase >= 3 && sessions >= 5 && pieceCount >= 2;
-    case "u-p3-lead-sheet":    return state.phase >= 3 && yoursCount >= 1;
-  }
-  return false;
 }

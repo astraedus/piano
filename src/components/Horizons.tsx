@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useAppState } from "@/hooks/useAppState";
 import { KEY_META } from "@/lib/music";
 import { getModuleSync } from "@/lib/instrumentRegistry";
+import { nextToLearn } from "@/lib/skillTree";
 import type { Warmup, KeyId, Phase } from "@/lib/types";
 
 const PHASE_NAMES: Record<Phase, string> = {
@@ -15,11 +16,19 @@ const PHASE_NAMES: Record<Phase, string> = {
 
 export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmup }) {
   const { state } = useAppState();
-  const unlockLibrary = getModuleSync(state.instrument)?.unlockLibrary ?? [];
-  const earned = new Set((state.unlocks ?? []).map((u) => u.id));
-  const nextUnlock = unlockLibrary
-    .filter((u) => u.phase <= state.phase && !earned.has(u.id))
-    .sort((a, b) => a.phase - b.phase)[0];
+  const module = getModuleSync(state.instrument);
+  const unlockLibrary = module?.unlockLibrary ?? [];
+  const nodes = module?.skillNodes ?? [];
+  // Frontier-based "what to learn next" (replaces the phase-filter sort, which
+  // showed phase-1 nudges to phase-4/5 users). nextToLearn returns the available
+  // nodes nearest the learned core. We surface the first frontier node's unlock
+  // sentence, falling back to its linked UnlockCard's tryLine for the warm copy.
+  const frontier = nextToLearn(nodes, state.skillProgress ?? {}, 1)[0];
+  const cardById = new Map(unlockLibrary.map((c) => [c.id, c]));
+  const frontierCard = frontier?.unlockCardId ? cardById.get(frontier.unlockCardId) : undefined;
+  const nextUnlock = frontier
+    ? { title: frontier.unlock, tryLine: frontierCard?.tryLine ?? frontier.masteryDrill }
+    : undefined;
   const phaseUnlockCount = unlockLibrary.filter((u) => u.phase === state.phase).length;
   const phaseUnlockEarned = (state.unlocks ?? []).filter((u) => u.phase === state.phase).length;
   const remaining = Math.max(0, phaseUnlockCount - phaseUnlockEarned);

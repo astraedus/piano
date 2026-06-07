@@ -7,6 +7,7 @@ import {
   isAcyclic,
 } from "./skillTree";
 import type { SkillNode, SkillProgress } from "./types";
+import { PIANO_NODES } from "./piano/skillNodes";
 
 // A small, deterministic graph:
 //   A (t0) → B (t1) → D (t2)
@@ -169,5 +170,35 @@ describe("isAcyclic (cycle-free guard)", () => {
     const nodes = makeNodes();
     nodes[1] = { ...nodes[1], prereqs: ["A", "does-not-exist"] };
     expect(isAcyclic(nodes)).toBe(true);
+  });
+});
+
+describe("PIANO_NODES shipped graph is a valid, fully-reachable DAG", () => {
+  it("is acyclic", () => {
+    expect(isAcyclic(PIANO_NODES)).toBe(true);
+  });
+
+  it("every prereq id resolves to a real node (no dangling edges)", () => {
+    const ids = new Set(PIANO_NODES.map((n) => n.id));
+    for (const node of PIANO_NODES) {
+      for (const pid of node.prereqs) {
+        expect(ids.has(pid)).toBe(true);
+      }
+    }
+  });
+
+  it("has at least one tier-0 root with no prereqs (graph is enterable)", () => {
+    expect(PIANO_NODES.some((n) => n.prereqs.length === 0)).toBe(true);
+  });
+
+  it("every node becomes learnable when its full prereq chain is learned", () => {
+    // Learn everything → every node resolves to learned (no node is unreachable
+    // due to a prereq that itself can never be satisfied).
+    const all: Record<string, SkillProgress> = {};
+    for (const n of PIANO_NODES) all[n.id] = { status: "learned", reps: 1 };
+    const status = resolveStatus(PIANO_NODES, all);
+    for (const n of PIANO_NODES) {
+      expect(status.get(n.id)).toBe("learned");
+    }
   });
 });

@@ -41,6 +41,7 @@ export interface SkillNode {
   // optional linkage to existing systems
   chainDrillId?: string;              // completing this drill marks node in-progress/learned
   keyId?: KeyId;                      // for per-key nodes, ties to keyDepths
+  unlockCardId?: string;             // UnlockCard.id earned when this node becomes `learned` (explicit, not title-matched)
 }
 
 // ---- Per-skill mastery state (replaces the dead `requires` system) ----

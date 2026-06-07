@@ -55,8 +55,17 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const dismissUnlock = useCallback((_id: string) => {
-    // For now there's no "dismissed" state — unlocks live in state.unlocks.
+  const dismissUnlock = useCallback((id: string) => {
+    // Remove the card from the pending queue once it's been shown/acknowledged.
+    // Earned unlocks still live permanently in state.unlocks; pendingUnlocks is
+    // only the "show this after the next Done" queue.
+    _setState((prev) => {
+      const pendingUnlocks = (prev.pendingUnlocks ?? []).filter((u) => u.id !== id);
+      if (pendingUnlocks.length === (prev.pendingUnlocks ?? []).length) return prev;
+      const next = { ...prev, pendingUnlocks };
+      saveState(next);
+      return next;
+    });
   }, []);
 
   const bumpRep = useCallback((id: string, opts?: { bpm?: number }) => {

@@ -31,6 +31,7 @@ export const PIANO_NODES: SkillNode[] = [
     prereqs: [],
     masteryDrill: "Close your eyes, pick a letter, touch it in under a second.",
     unlock: "Find any note in under a second.",
+    unlockCardId: "u-p1-keyboard-map",
   },
   {
     id: "p-t0-posture",
@@ -65,6 +66,7 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "C major is yours.",
     chainDrillId: "p1-c-major-chain",
     keyId: "C",
+    unlockCardId: "u-p1-c-map",
   },
   {
     id: "p-key-G",
@@ -101,6 +103,7 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "Hear major vs minor reliably.",
     chainDrillId: "p1-a-minor-chain",
     keyId: "am",
+    unlockCardId: "u-p1-minor-feeling",
   },
   {
     id: "p-t1-first-improv",
@@ -112,6 +115,7 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "Loop C–F–G–C with the left hand, noodle C pentatonic with the right.",
     unlock: "Make something up that sounds good.",
     chainDrillId: "p1-c-major-chain",
+    unlockCardId: "u-p1-first-improv",
   },
   {
     id: "p-t1-echo-ear",
@@ -146,6 +150,7 @@ export const PIANO_NODES: SkillNode[] = [
     prereqs: ["p-key-C", "p-key-am"],
     masteryDrill: "Left hand holds a chord while the right hand plays a melody.",
     unlock: "Hold a chord with the left hand while the right plays a melody.",
+    unlockCardId: "u-p2-chord-under-melody",
   },
   {
     id: "p-t2-pop-formula",
@@ -157,6 +162,7 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "Am–F–C–G as block chords, then a melody over the loop.",
     unlock: "You can play half of pop music.",
     chainDrillId: "p2-am-pop-formula",
+    unlockCardId: "u-p2-pop-formula",
   },
   {
     id: "p-t2-4-bar-improv",
@@ -168,6 +174,7 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "Loop i–iv–V in A minor, improvise eight bars without panicking.",
     unlock: "Improvise a 4-bar idea without panicking.",
     chainDrillId: "p2-left-hand-loop",
+    unlockCardId: "u-p2-4-bar-improv",
   },
   {
     id: "p-t2-transcribe",
@@ -179,6 +186,7 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "Play Happy Birthday, then Ode to Joy, by ear in C.",
     unlock: "Put a melody you heard onto the piano.",
     chainDrillId: "p2-song-transcribe",
+    unlockCardId: "u-p2-first-transcribe",
   },
   {
     id: "p-key-D",
@@ -216,6 +224,7 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "LH comps chord symbols while RH finds the melody, in real time.",
     unlock: "Read a lead sheet in real time.",
     chainDrillId: "p2-g-lead-sheet",
+    unlockCardId: "u-p3-lead-sheet",
   },
   {
     id: "p-t3-three-moods",
@@ -227,6 +236,7 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "vi–IV–I–V played tender, angry, resigned — only touch and timing change.",
     unlock: "Play the same progression three ways.",
     chainDrillId: "p2-three-moods",
+    unlockCardId: "u-p3-three-moods",
   },
   {
     id: "p-t3-pop-pull",
@@ -238,6 +248,7 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "Put on a half-known song, find the melody, find a chord under each bar.",
     unlock: "Pick up a pop song from a recording.",
     chainDrillId: "p3-pop-pull",
+    unlockCardId: "u-p3-pop-pull",
   },
   {
     id: "p-t3-ii-v-i",
@@ -249,6 +260,7 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "ii–V–I in F and C with shell voicings, melody landing on chord tones.",
     unlock: "You can read and play a ii–V–I.",
     chainDrillId: "p3-ii-v-i-taste",
+    unlockCardId: "u-p3-ii-v-i",
   },
   {
     id: "p-t3-blues",
