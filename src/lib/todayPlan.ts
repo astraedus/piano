@@ -1,15 +1,34 @@
 import type { AppState, ChainDrill, EarRound, KeyId, Warmup } from "./types";
 import { ghostKeyFor, weeksSinceEpoch } from "./ghostKey";
-import { warmupForWeek } from "./warmups";
 import { pickChainDrill } from "./chainDrillPicker";
 import { miniShelfLineFor } from "./miniShelfLines";
+import { getModuleSync, type InstrumentModule } from "./instrumentRegistry";
+
+// Resolve the active instrument's module from the sync cache, falling back to
+// piano (plan §6 todayPlan). The piano module is imported at app init so the
+// cache is warm before any computeTodayPlan call.
+function resolveModule(state: AppState): InstrumentModule | undefined {
+  return getModuleSync(state.instrument) ?? getModuleSync("piano");
+}
+
+// Weekly warmup rotation, computed from the module's warmups + rotation lists.
+// (Was the standalone warmupForWeek in lib/warmups.ts before the piano move.)
+function warmupForWeek(module: InstrumentModule | undefined, weekNumber: number, phase: number): Warmup | undefined {
+  if (!module) return undefined;
+  const rotation = phase >= 2 ? module.warmupRotation.phase2Plus : module.warmupRotation.phase1;
+  if (rotation.length === 0) return undefined;
+  const idx = ((weekNumber % rotation.length) + rotation.length) % rotation.length;
+  return module.warmups[rotation[idx]];
+}
 
 export type TodayMode = "full" | "short" | "long" | "first-back" | "just-play";
 
 export interface TodayPlan {
   mode: TodayMode;
   ghostKey: KeyId;
-  warmup: Warmup;
+  // Absent only if the instrument module failed to register (the piano module
+  // self-registers at app init, so in practice this is always present).
+  warmup?: Warmup;
   pieceId?: string;
   chainDrill?: ChainDrill | null;
   earRound?: EarRound | null;
@@ -20,8 +39,9 @@ export interface TodayPlan {
 }
 
 export function computeTodayPlan(state: AppState, date: Date, overrideMode?: TodayMode): TodayPlan {
+  const module = resolveModule(state);
   const ghostKey = ghostKeyFor(state, date);
-  const warmup = warmupForWeek(weeksSinceEpoch(date), state.phase);
+  const warmup = warmupForWeek(module, weeksSinceEpoch(date), state.phase);
 
   // Gap detection from lastSessionEndedAt
   const gapDays = gapDaysSince(state.lastSessionEndedAt, date);

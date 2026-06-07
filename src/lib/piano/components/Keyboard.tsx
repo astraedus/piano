@@ -13,6 +13,7 @@ export interface KeyboardProps {
   fingerings?: Record<string, number>; // SPN -> finger number (1..5)
   height?: number;
   accent?: string;            // highlight color override
+  className?: string;         // optional override; defaults to the historical svg classes
 }
 
 const WHITE_SEQ = ["C", "D", "E", "F", "G", "A", "B"];
@@ -27,6 +28,7 @@ export function Keyboard({
   fingerings,
   height = 120,
   accent,
+  className,
 }: KeyboardProps) {
   const highlighted = useMemo(() => {
     const set = new Set<number>();
@@ -60,7 +62,7 @@ export function Keyboard({
   const highlightFill = accent ?? "var(--accent)";
 
   return (
-    <svg viewBox={`0 0 ${width} ${whiteH + 12}`} className="w-full max-w-[560px] block select-none" role="img" aria-label={`piano keyboard highlighting ${notes.join(", ")}`}>
+    <svg viewBox={`0 0 ${width} ${whiteH + 12}`} className={className ?? "w-full max-w-[560px] block select-none"} role="img" aria-label={`piano keyboard highlighting ${notes.join(", ")}`}>
       {/* White keys */}
       {whiteLetters.map((n, i) => {
         const midi = pitchMidi(n);

@@ -1,5 +1,5 @@
 import type { AppState, ArcEvent, KeyDepth, KeyId, SessionLog, UnlockCard } from "./types";
-import { UNLOCK_LIBRARY } from "./unlocks";
+import { getModuleSync } from "./instrumentRegistry";
 
 export function endSession(
   state: AppState,
@@ -37,9 +37,11 @@ export function endSession(
     .slice(0, 5);
 
   // Unlock check — pick any library unlock whose simple heuristic triggers.
+  // The unlock library comes from the active instrument's module (guarded).
+  const unlockLibrary = getModuleSync(state.instrument)?.unlockLibrary ?? [];
   const earnedIds = new Set((state.unlocks ?? []).map((u) => u.id));
   const newlyEarned: UnlockCard[] = [];
-  for (const card of UNLOCK_LIBRARY) {
+  for (const card of unlockLibrary) {
     if (earnedIds.has(card.id)) continue;
     if (shouldUnlock(card, state, { ...state, sessions, keyDepths, pieces, arc })) {
       newlyEarned.push({ ...card, addedAt: log.endedAt });

@@ -1,12 +1,14 @@
 import type { AppState, ChainDrill } from "./types";
-import { CHAIN_DRILLS } from "./chainDrills";
 import { ghostKeyFor } from "./ghostKey";
+import { getModuleSync } from "./instrumentRegistry";
 
 // Deterministic pick per (phase, ghost, dayOfYear) so the same day yields the same drill.
+// Drills come from the active instrument's module (guarded — empty if unregistered).
 export function pickChainDrill(state: AppState, date: Date): ChainDrill | null {
   const phase = state.phase;
   const ghost = ghostKeyFor(state, date);
-  const pool = CHAIN_DRILLS.filter((d) => d.phase === phase);
+  const drills = getModuleSync(state.instrument)?.chainDrills ?? [];
+  const pool = drills.filter((d) => d.phase === phase);
   if (pool.length === 0) return null;
 
   // Soft-prefer drills matching ghost key; exclude last 5.

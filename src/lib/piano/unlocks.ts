@@ -1,4 +1,4 @@
-import type { UnlockCard } from "./types";
+import type { UnlockCard } from "../types";
 
 // Capabilities the user gains, not task-completion badges.
 // Each tryLine points at real, playable music — "here's a song that uses this".

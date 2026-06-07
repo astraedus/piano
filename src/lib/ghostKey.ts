@@ -1,5 +1,14 @@
-import type { AppState, KeyId } from "./types";
-import { GHOST_ROTATION_PER_PHASE } from "./trinity";
+import type { AppState, KeyId, Phase } from "./types";
+import { getModuleSync } from "./instrumentRegistry";
+
+// Resolve the active instrument's ghost-key rotation from the registry. The
+// rotation moved into the per-instrument module (piano's lives in lib/piano/
+// trinity.ts); the shared spine reads it through the module seam so it never
+// deep-imports an instrument plugin. Empty fallback keeps this pure/safe if the
+// module hasn't registered yet (callers already guard the empty-rotation case).
+function ghostRotationFor(state: AppState): Record<Phase, KeyId[]> {
+  return getModuleSync(state.instrument)?.ghostRotation ?? ({} as Record<Phase, KeyId[]>);
+}
 
 // UTC Monday-start week id (ISO-ish)
 export function weekIdOf(date: Date): string {
@@ -26,7 +35,9 @@ export function ghostKeyFor(state: AppState, date: Date): KeyId {
   if (state.ghostOverride && state.ghostOverride.weekId === thisWeek) {
     return state.ghostOverride.key;
   }
-  const rotation = GHOST_ROTATION_PER_PHASE[state.phase] ?? GHOST_ROTATION_PER_PHASE[1];
+  const rotations = ghostRotationFor(state);
+  const rotation = rotations[state.phase] ?? rotations[1] ?? [];
+  if (rotation.length === 0) return "C"; // module not registered yet — safe default
   const idx = ((weeksSinceEpoch(date) % rotation.length) + rotation.length) % rotation.length;
   return rotation[idx];
 }

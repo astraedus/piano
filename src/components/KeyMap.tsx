@@ -5,8 +5,8 @@ import { DEPTH_MEANINGS, DEPTH_NAMES } from "@/lib/types";
 import type { KeyId, KeyDepth } from "@/lib/types";
 import { useAppState } from "@/hooks/useAppState";
 import { ensureAudio, playChord, playSequence, playProgression } from "@/lib/audio";
-import { Keyboard } from "./Keyboard";
-import { Staff } from "./Staff";
+import { Keyboard } from "@/lib/piano/components/Keyboard";
+import { Staff } from "@/lib/piano/components/Staff";
 import { songsForKey } from "@/lib/songs";
 
 // Circle of fifths — majors on outer ring, minors on inner.

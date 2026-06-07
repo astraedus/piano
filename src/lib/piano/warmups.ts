@@ -1,8 +1,9 @@
-import type { Phase, Warmup, WarmupType } from "./types";
+import type { Phase, Warmup, WarmupType } from "../types";
 
 export const WARMUPS: Record<WarmupType, Warmup> = {
   "ghost-scale": {
     id: "ghost-scale",
+    instrument: "piano",
     label: "ghost scale",
     lines: [
       "today's ghost, hands separate. 2 octaves. slow on the return.",
@@ -12,6 +13,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
   },
   "weight-transfer": {
     id: "weight-transfer",
+    instrument: "piano",
     label: "weight transfer",
     lines: [
       "five-finger pattern — C D E F G F E D C.",
@@ -22,6 +24,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
   },
   "triad-tour": {
     id: "triad-tour",
+    instrument: "piano",
     label: "triad tour",
     lines: [
       "walk I–IV–V–vi in today's ghost. both hands.",
@@ -31,6 +34,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
   },
   "mirror": {
     id: "mirror",
+    instrument: "piano",
     label: "mirror",
     lines: [
       "left hand plays the scale backwards while the right plays forwards.",
@@ -40,6 +44,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
   },
   "free": {
     id: "free",
+    instrument: "piano",
     label: "free warmup",
     lines: [
       "no structure tonight.",
@@ -49,6 +54,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
   },
   "parallel-sets": {
     id: "parallel-sets",
+    instrument: "piano",
     label: "parallel sets",
     lines: [
       "pick a 4-note burst in today's key. play it at target tempo, pause, again.",
@@ -58,6 +64,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
   },
   "tone-drill": {
     id: "tone-drill",
+    instrument: "piano",
     label: "tone drill",
     lines: [
       "one note, ten ways — whisper · clear · bright · dark · ringing · singing · punchy · distant · warm · cold.",

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAppState } from "@/hooks/useAppState";
 import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META } from "@/lib/music";
 import { setGhostOverride } from "@/lib/ghostKey";
-import { GHOST_ROTATION_PER_PHASE } from "@/lib/trinity";
+import { getModuleSync } from "@/lib/instrumentRegistry";
 import type { KeyId } from "@/lib/types";
 
 export function GhostPicker({ current, onDoneAction }: { current: KeyId; onDoneAction?: () => void }) {
@@ -23,7 +23,7 @@ export function GhostPicker({ current, onDoneAction }: { current: KeyId; onDoneA
     };
   }, [open]);
 
-  const phaseKeys = GHOST_ROTATION_PER_PHASE[state.phase] ?? [];
+  const phaseKeys = getModuleSync(state.instrument)?.ghostRotation[state.phase] ?? [];
   const allKeys: KeyId[] = [...CIRCLE_MAJORS, ...CIRCLE_MINORS];
 
   return (

@@ -1,7 +1,7 @@
 // Trinity 2021–2023 Piano Syllabus — the backbone. Source: Piano Syllabus 2021-2023 Trinity.pdf
 // Distilled for the app — progression map only, not certification.
 
-import type { Grade, KeyId, Phase } from "./types";
+import type { Grade, KeyId, Phase } from "../types";
 
 export const TQT_HOURS: Record<Grade, { guided: number; independent: number; total: number }> = {
   initial: { guided: 8,  independent: 32,  total: 40 },

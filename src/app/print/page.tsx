@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { AppStateProvider, useAppState } from "@/hooks/useAppState";
 import { computeTodayPlan } from "@/lib/todayPlan";
 import { KEY_META } from "@/lib/music";
-import { findDrill } from "@/lib/chainDrills";
+import { getModuleSync } from "@/lib/instrumentRegistry";
 import type { KeyId, ChainDrill } from "@/lib/types";
 
 export default function PrintPage() {
@@ -33,7 +33,9 @@ function PrintSheet() {
   if (!ready || !plan) return <div className="p-8 text-[color:var(--ink-3)]">preparing…</div>;
 
   // Allow overrides from query params so print matches the stand exactly.
-  const effectiveDrill: ChainDrill | null = (drillOverrideId && findDrill(drillOverrideId)) || plan.chainDrill || null;
+  const moduleDrills = getModuleSync(state.instrument)?.chainDrills ?? [];
+  const overriddenDrill = drillOverrideId ? moduleDrills.find((d) => d.id === drillOverrideId) : undefined;
+  const effectiveDrill: ChainDrill | null = overriddenDrill ?? plan.chainDrill ?? null;
   const effectiveGhost = ghostOverride ?? plan.ghostKey;
   const ghost = KEY_META[effectiveGhost];
   const piece = state.pieces.find((p) => p.id === state.currentPieceId);
@@ -58,9 +60,9 @@ function PrintSheet() {
 
         <ol className="divide-y divide-black/30">
           <Item index={1} title="warmup" duration="90 seconds">
-            <p className="italic text-black/70 mb-1">{plan.warmup.postureLine}</p>
+            <p className="italic text-black/70 mb-1">{plan.warmup?.postureLine}</p>
             <ul className="list-none space-y-1">
-              {plan.warmup.lines.map((l, i) => <li key={i}>→ {l}</li>)}
+              {(plan.warmup?.lines ?? []).map((l, i) => <li key={i}>→ {l}</li>)}
             </ul>
           </Item>
 

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useAppState } from "@/hooks/useAppState";
 import { KEY_META } from "@/lib/music";
-import { UNLOCK_LIBRARY } from "@/lib/unlocks";
+import { getModuleSync } from "@/lib/instrumentRegistry";
 import type { Warmup, KeyId, Phase } from "@/lib/types";
 
 const PHASE_NAMES: Record<Phase, string> = {
@@ -13,13 +13,14 @@ const PHASE_NAMES: Record<Phase, string> = {
   5: "free",
 };
 
-export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup: Warmup }) {
+export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmup }) {
   const { state } = useAppState();
+  const unlockLibrary = getModuleSync(state.instrument)?.unlockLibrary ?? [];
   const earned = new Set((state.unlocks ?? []).map((u) => u.id));
-  const nextUnlock = UNLOCK_LIBRARY
+  const nextUnlock = unlockLibrary
     .filter((u) => u.phase <= state.phase && !earned.has(u.id))
     .sort((a, b) => a.phase - b.phase)[0];
-  const phaseUnlockCount = UNLOCK_LIBRARY.filter((u) => u.phase === state.phase).length;
+  const phaseUnlockCount = unlockLibrary.filter((u) => u.phase === state.phase).length;
   const phaseUnlockEarned = (state.unlocks ?? []).filter((u) => u.phase === state.phase).length;
   const remaining = Math.max(0, phaseUnlockCount - phaseUnlockEarned);
 
@@ -38,7 +39,7 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup: Warmup
           <p>
             <span className="text-[color:var(--ink)]">ghost · {KEY_META[ghostKey].name}</span>
             <span className="text-[color:var(--ink-3)]">   ·   </span>
-            <span className="text-[color:var(--ink-2)]">warmup · {warmup.label}</span>
+            <span className="text-[color:var(--ink-2)]">warmup · {warmup?.label ?? "—"}</span>
           </p>
           <p className="text-xs text-[color:var(--ink-3)] italic">
             one key, seven days. the week picks it. you don't have to.

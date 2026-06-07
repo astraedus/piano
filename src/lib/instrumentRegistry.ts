@@ -38,12 +38,21 @@ export interface InstrumentVisualProps {
   notes?: string[];
   shape?: number[];
   className?: string;
+  // Optional render hints. Piano's Keyboard interprets these directly; a guitar
+  // Fretboard may interpret or ignore them. Kept on the agnostic contract so a
+  // slot can request a specific window (e.g. the chain-drill progression needs a
+  // lower C3 start) without reaching past the module seam.
+  rangeStart?: string;
+  octaves?: number;
 }
 
 export interface NotationVisualProps {
   notes?: string[];
   tab?: TabData;
   className?: string;
+  clef?: "treble" | "bass";
+  keySignature?: string;
+  ariaLabel?: string;
 }
 
 export interface InstrumentModule {

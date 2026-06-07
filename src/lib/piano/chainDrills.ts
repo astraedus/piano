@@ -1,4 +1,4 @@
-import type { ChainDrill } from "./types";
+import type { ChainDrill } from "../types";
 
 // Every drill ends with a song reference — the instant-musicality rule.
 // "You cannot play this wrong. Try twice. Move on." or a variant — on every one.
@@ -7,6 +7,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   // ───── PHASE 1 ─────
   {
     id: "p1-c-major-chain",
+    instrument: "piano",
     phase: 1,
     name: "C major chain",
     minutes: 4,
@@ -23,6 +24,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p1-c-tone-chain",
+    instrument: "piano",
     phase: 1,
     name: "C tone chain",
     minutes: 4,
@@ -39,6 +41,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p1-g-major-chain",
+    instrument: "piano",
     phase: 1,
     name: "G major chain",
     minutes: 4,
@@ -55,6 +58,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p1-f-major-chain",
+    instrument: "piano",
     phase: 1,
     name: "F major chain",
     minutes: 4,
@@ -71,6 +75,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p1-a-minor-chain",
+    instrument: "piano",
     phase: 1,
     name: "A minor longing",
     minutes: 4,
@@ -87,6 +92,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p1-d-minor-chain",
+    instrument: "piano",
     phase: 1,
     name: "D minor dusk",
     minutes: 4,
@@ -103,6 +109,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p1-echo-ear",
+    instrument: "piano",
     phase: 1,
     name: "the echo",
     minutes: 3,
@@ -119,6 +126,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p1-three-moods-lite",
+    instrument: "piano",
     phase: 1,
     name: "three moods, gently",
     minutes: 4,
@@ -135,6 +143,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p1-canon-chain",
+    instrument: "piano",
     phase: 1,
     name: "canon chain",
     minutes: 4,
@@ -151,6 +160,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p1-lullaby-chain",
+    instrument: "piano",
     phase: 1,
     name: "lullaby chain",
     minutes: 4,
@@ -169,6 +179,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   // ───── PHASE 2 ─────
   {
     id: "p2-am-pop-formula",
+    instrument: "piano",
     phase: 2,
     name: "the pop formula",
     minutes: 5,
@@ -185,6 +196,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p2-left-hand-loop",
+    instrument: "piano",
     phase: 2,
     name: "left-hand loop",
     minutes: 5,
@@ -201,6 +213,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p2-song-transcribe",
+    instrument: "piano",
     phase: 2,
     name: "song transcribe",
     minutes: 5,
@@ -217,6 +230,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p2-dm-arpeggio",
+    instrument: "piano",
     phase: 2,
     name: "D minor arpeggio chain",
     minutes: 5,
@@ -233,6 +247,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p2-e-minor-mood",
+    instrument: "piano",
     phase: 2,
     name: "E minor mood",
     minutes: 5,
@@ -249,6 +264,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p2-g-lead-sheet",
+    instrument: "piano",
     phase: 2,
     name: "lead sheet start",
     minutes: 5,
@@ -265,6 +281,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p2-bb-dreamscape",
+    instrument: "piano",
     phase: 2,
     name: "Bb dreamscape",
     minutes: 5,
@@ -281,6 +298,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p2-d-major-daylight",
+    instrument: "piano",
     phase: 2,
     name: "D major daylight",
     minutes: 5,
@@ -297,6 +315,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p2-three-moods",
+    instrument: "piano",
     phase: 2,
     name: "three moods",
     minutes: 5,
@@ -315,6 +334,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   // ───── PHASE 3 ─────
   {
     id: "p3-pop-pull",
+    instrument: "piano",
     phase: 3,
     name: "pop pull",
     minutes: 6,
@@ -331,6 +351,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p3-ii-v-i-taste",
+    instrument: "piano",
     phase: 3,
     name: "ii–V–I, first taste",
     minutes: 6,
@@ -347,6 +368,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p3-substitution-blues",
+    instrument: "piano",
     phase: 3,
     name: "substitution blues",
     minutes: 6,
@@ -363,6 +385,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p3-eb-ballad",
+    instrument: "piano",
     phase: 3,
     name: "Eb ballad",
     minutes: 6,
@@ -379,6 +402,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p3-a-jazz",
+    instrument: "piano",
     phase: 3,
     name: "A minor 7th colour",
     minutes: 6,
@@ -395,6 +419,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p3-blues-starter",
+    instrument: "piano",
     phase: 3,
     name: "12-bar blues starter",
     minutes: 6,
@@ -411,6 +436,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p3-modulation-test",
+    instrument: "piano",
     phase: 3,
     name: "modulation walk",
     minutes: 6,
@@ -427,6 +453,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p3-voice-leading",
+    instrument: "piano",
     phase: 3,
     name: "voice leading",
     minutes: 6,
@@ -443,6 +470,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p3-pentatonic-fluent",
+    instrument: "piano",
     phase: 3,
     name: "pentatonic, fluent",
     minutes: 6,
@@ -459,6 +487,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
   },
   {
     id: "p3-sight-read-light",
+    instrument: "piano",
     phase: 3,
     name: "sight read, light",
     minutes: 5,
