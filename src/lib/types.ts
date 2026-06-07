@@ -169,6 +169,11 @@ export interface SessionSlotLog {
   detail?: Record<string, unknown>;
 }
 
+// Daily-loop shape. Shared so the progression engine (XP scaling) and todayPlan
+// reference one source of truth. todayPlan re-exports this as `TodayMode`.
+export type SessionMode = "full" | "short" | "long" | "just-play" | "first-back";
+export type TodayMode = SessionMode;
+
 export interface SessionLog {
   id: string;                   // date + nanotime
   instrument?: Instrument;      // §7 hedge — tag sessions so per-instrument filtering is possible without a v3 migration
@@ -181,14 +186,15 @@ export interface SessionLog {
   chainDrillId?: string;
   earResults?: { correctIds: string[]; wrongIds: string[] };
   journal?: string;             // free slot one-liner
-  mode: "full" | "short" | "long" | "just-play" | "first-back";
+  mode: SessionMode;
   slotsTouched: SessionSlotLog[];
 }
 
 // ------------ Arc events ------------
 
 export type ArcEventKind =
-  | "instrument-begins" | "phase-begins" | "unlock" | "piece-yours" | "first-improv" | "piece-started";
+  | "instrument-begins" | "phase-begins" | "unlock" | "piece-yours" | "first-improv" | "piece-started"
+  | "level-up"; // gamification: surfaced on the Arc when XP crosses a level threshold
 
 export interface ArcEvent {
   id: string;
@@ -201,8 +207,16 @@ export interface ArcEvent {
 
 // ------------ App State (localStorage) ------------
 
+// Forgiving gamification streak. `lastPracticeDate` is a LOCAL "YYYY-MM-DD" key
+// (not an ISO timestamp) so calendar-day comparison is timezone-stable.
+export interface StreakState {
+  current: number;
+  longest: number;
+  lastPracticeDate?: string; // "YYYY-MM-DD"
+}
+
 export interface AppState {
-  version: 2;                   // bumped — v1→v2 migration in storage.ts
+  version: 3;                   // v1→v2→v3 migrations in storage.ts
   instrument: Instrument;       // NEW — active instrument for this profile
   firstOpenedAt?: string;       // ISO
   name?: string;                // optional display name
@@ -231,6 +245,11 @@ export interface AppState {
   skillReps?: Record<string, { count: number; maxBpm?: number; lastAt?: string }>;
   // NEW — DAG skill-node mastery, keyed by SkillNode.id
   skillProgress?: Record<string, SkillProgress>;
+  // ── V2 gamification (storage v3) — layered ON TOP of the progression model ──
+  xp: number;                   // lifetime XP total
+  level: number;                // derived from xp via progression.levelForXp (cached)
+  streak: StreakState;          // forgiving daily-practice streak
+  pendingLevelUps?: number[];   // level numbers reached but not yet shown (B2 reward moment)
 }
 
 // Skill rep id helpers.
