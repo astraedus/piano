@@ -36,7 +36,9 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways }:
     <Slot
       index={1}
       title="Warmup"
+      pillar="technique"
       duration="90s"
+      status={reps ? "done" : null}
       summary={
         <>
           {warmup.label} · {ghostName}
@@ -72,14 +74,14 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways }:
                   await ensureAudio();
                   await playSequence(scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 1), { noteDurationSec: 0.34 });
                 }}
-                className="text-xs px-3 py-1 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-[color:var(--accent-soft)] hover:text-[color:var(--accent)]"
+                className="chip text-xs px-3 py-1"
               >
                 hear the scale
               </button>
               <button
                 type="button"
                 onClick={() => bumpRep(repId, { bpm })}
-                className="text-xs px-3 py-1 rounded-full border border-[color:var(--accent-soft)] text-[color:var(--accent)] hover:bg-[color:var(--accent)]/10"
+                className="chip chip-accent text-xs px-3 py-1"
               >
                 I played it
               </button>
@@ -97,7 +99,7 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways }:
           <button
             type="button"
             onClick={() => setRunning((r) => !r)}
-            className="text-xs px-3 py-1 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-2)] hover:border-[color:var(--accent-soft)] hover:text-[color:var(--accent)] transition-colors"
+            className="chip text-xs px-3 py-1"
           >
             {running ? "pause" : "start"} the minute
           </button>

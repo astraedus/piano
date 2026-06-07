@@ -23,13 +23,13 @@ export function EarMomentSlot({
 
   if (muted) {
     return (
-      <Slot index={4} title="Ear moment" summary={<span className="text-[color:var(--ink-3)]">muted for this session.</span>} muted mutedLine="muted tonight. back next session." printAlways={printAlways} />
+      <Slot index={4} title="Ear moment" pillar="ear" summary={<span className="text-[color:var(--ink-3)]">muted for this session.</span>} muted mutedLine="muted tonight. back next session." printAlways={printAlways} />
     );
   }
 
   if (!round) {
     return (
-      <Slot index={4} title="Ear moment" duration="60s" summary={<>that's enough listening for now.</>} printAlways={printAlways}>
+      <Slot index={4} title="Ear moment" pillar="ear" duration="60s" status="done" summary={<>that's enough listening for now.</>} printAlways={printAlways}>
         <p className="text-sm text-[color:var(--ink-2)]">three rounds done. ears open.</p>
       </Slot>
     );
@@ -61,10 +61,10 @@ export function EarMomentSlot({
   };
 
   return (
-    <Slot index={4} title="Ear moment" duration={`round ${i + 1} of ${rounds.length}`} summary={<>{round.prompt}</>} printAlways={printAlways}>
+    <Slot index={4} title="Ear moment" pillar="ear" duration={`round ${i + 1} of ${rounds.length}`} summary={<>{round.prompt}</>} printAlways={printAlways}>
       <div className="space-y-3 text-sm">
         <div className="flex items-center gap-3 no-print">
-          <button type="button" onClick={play} className="text-xs px-3 py-1 rounded-full border border-[color:var(--accent-soft)] text-[color:var(--accent)] hover:bg-[color:var(--accent)]/10">play</button>
+          <button type="button" onClick={play} className="chip chip-accent text-xs px-3 py-1">play</button>
           <span className="text-xs text-[color:var(--ink-3)]">you'll hear it twice.</span>
         </div>
         <div className="grid grid-cols-2 gap-2 no-print">

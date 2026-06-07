@@ -3,6 +3,11 @@ import { useState } from "react";
 import { Slot } from "../Slot";
 import { useAppState } from "@/hooks/useAppState";
 
+// onJournalChange / onUrlChange are plain function callbacks. FreeSlot is a
+// 'use client' component rendered only by PracticeStand (also 'use client'), so
+// these props never cross a server->client boundary. Next 16's serializable-prop
+// warning is a false positive here; the *Action naming convention is for props a
+// Server Component passes down, which never happens for this component.
 export function FreeSlot({
   urlInitial, journalInitial, onJournalChange, onUrlChange, printAlways, expanded,
 }: {
@@ -21,7 +26,8 @@ export function FreeSlot({
     <Slot
       index={5}
       title="Free slot"
-      summary={<>play anything. you're home.</>}
+      pillar="expression"
+      summary={<>play anything. you&apos;re home.</>}
       defaultOpen={expanded}
       printAlways={printAlways}
     >
@@ -35,7 +41,7 @@ export function FreeSlot({
           <label className="block">
             <span className="block text-xs text-[color:var(--ink-3)] mb-1 lowercase tracking-wide">a url you keep coming back to</span>
             <input
-              className="w-full bg-[color:var(--surface)] border border-[color:var(--rule)] rounded-md px-3 py-1.5 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)]"
+              className="w-full bg-[color:var(--bg-surface-2)] border border-[color:var(--rule)] rounded-sm px-3 py-1.5 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)]"
               value={url}
               onChange={(e) => { setUrl(e.target.value); onUrlChange?.(e.target.value); patch({ freeSlotUrl: e.target.value }); }}
               placeholder="musescore / youtube / anything"
@@ -44,7 +50,7 @@ export function FreeSlot({
           <label className="block">
             <span className="block text-xs text-[color:var(--ink-3)] mb-1 lowercase tracking-wide">what happened tonight?</span>
             <input
-              className="w-full bg-[color:var(--surface)] border border-[color:var(--rule)] rounded-md px-3 py-1.5 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)]"
+              className="w-full bg-[color:var(--bg-surface-2)] border border-[color:var(--rule)] rounded-sm px-3 py-1.5 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)]"
               value={journal}
               onChange={(e) => { setJournal(e.target.value); onJournalChange?.(e.target.value); }}
               placeholder="optional. your voice."

@@ -89,6 +89,14 @@
   --text-sm:     0.8125rem;
   --text-xs:     0.6875rem;
 
+  /* === PILLAR COLORS (slot left-edge strips, one per practice pillar) === */
+  --color-pillar-technique:  #D4900A;
+  --color-pillar-ear:        #4A8858;
+  --color-pillar-expression: #C06020;
+  --color-pillar-leadsheet:  #3870B0;
+  --color-pillar-improv:     #7858B0;
+  --color-pillar-repertoire: #C05868;
+
   /* === FONTS === */
   --font-serif:  var(--font-fraunces), Georgia, "Times New Roman", serif;
   --font-sans:   var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -130,6 +138,17 @@
   --accent:       var(--instrument-accent);
   --accent-soft:  var(--instrument-accent-soft);
   --accent-deep:  var(--instrument-accent-deep);
+
+  /* === MISC === */
+  --radius-full:  9999px;
+  --phase-tint:   rgba(212, 144, 10, 0.05);  /* default phase-1; data-phase overrides */
+
+  /* === WARM TWO-SHADOW ELEVATION STACKS (light) === */
+  --shadow-card:  0 1px 2px rgba(35, 26, 14, 0.08), 0 4px 16px rgba(35, 26, 14, 0.06);
+  --shadow-hover: 0 2px 4px rgba(35, 26, 14, 0.10), 0 8px 28px rgba(35, 26, 14, 0.09);
+  --shadow-stage: 0 2px 4px rgba(35, 26, 14, 0.08), 0 12px 40px rgba(35, 26, 14, 0.10);
+  --shadow-cta:   0 2px 4px rgba(35, 26, 14, 0.12), 0 6px 20px var(--instrument-accent-glow);
+  --lit-edge:     inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
 /* Instrument switching — set data-instrument="guitar" on :root.
@@ -180,6 +199,11 @@
     --ink-secondary: #C5B79A;
     --ink-tertiary:  #8A7E68;
     --ink-muted:     #5C5244;
+    /* Deeper night-mode elevation stacks */
+    --shadow-card:  0 1px 2px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(0, 0, 0, 0.35);
+    --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.55), 0 8px 28px rgba(0, 0, 0, 0.45);
+    --shadow-stage: 0 2px 4px rgba(0, 0, 0, 0.45), 0 12px 40px rgba(0, 0, 0, 0.5);
+    --lit-edge:     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 }
 
@@ -195,6 +219,10 @@
   --ink-secondary: #C5B79A;
   --ink-tertiary:  #8A7E68;
   --ink-muted:     #5C5244;
+  --shadow-card:  0 1px 2px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.55), 0 8px 28px rgba(0, 0, 0, 0.45);
+  --shadow-stage: 0 2px 4px rgba(0, 0, 0, 0.45), 0 12px 40px rgba(0, 0, 0, 0.5);
+  --lit-edge:     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* Explicit light toggle — pin light even if OS prefers dark. */
@@ -219,9 +247,113 @@ html, body {
   border-radius: 2px;
 }
 
+/* Atmospheric phase tint — a barely-there warm wash over the whole page.
+   ~5% opacity, fixed, behind everything. Felt, not seen. data-phase drives it. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, var(--phase-tint) 0%, transparent 45%),
+    var(--phase-tint);
+}
+body > * { position: relative; z-index: 1; }
+
+/* =====================================================================
+   COMPONENT LANGUAGE — reusable warm-studio classes (mapped to the
+   canonical token names already defined above).
+   ===================================================================== */
+
+/* The main stage container (Practice Stand). */
+.stage-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-stage), var(--lit-edge);
+}
+
+/* A resting card (Song Shelf piece, key detail plate). */
+.warm-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card), var(--lit-edge);
+  transition: box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease;
+}
+.warm-card:hover {
+  box-shadow: var(--shadow-hover), var(--lit-edge);
+  transform: translateY(-2px);
+}
+
+/* Slot card with a pillar left-edge strip. Each slot sets --pillar. */
+.slot-card {
+  position: relative;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card), var(--lit-edge);
+  border-left: 3px solid var(--pillar, var(--instrument-accent));
+  transition: box-shadow 220ms ease, background 220ms ease;
+}
+.slot-card[data-open="true"] {
+  box-shadow: var(--shadow-hover), var(--lit-edge);
+  /* the pillar color bleeds a faint warmth into the card when open */
+  background:
+    linear-gradient(90deg,
+      color-mix(in oklab, var(--pillar, var(--instrument-accent)) 6%, transparent) 0%,
+      transparent 24%),
+    var(--bg-surface);
+}
+
+/* Primary CTA pill — instrument accent fill, accent glow. */
+.cta-pill {
+  background: var(--instrument-accent);
+  color: #fff;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-cta);
+  transition: background 150ms ease, transform 100ms ease-in, box-shadow 150ms ease;
+}
+.cta-pill:hover { background: var(--instrument-accent-soft); }
+.cta-pill:active { transform: scale(0.97); background: var(--instrument-accent-deep); }
+
+/* Secondary "done"-style soft button — equal visual weight, lit edge. */
+.soft-pill {
+  background: var(--bg-surface-2);
+  color: var(--instrument-accent-deep);
+  border: 1px solid var(--bg-rule);
+  border-radius: var(--radius-full);
+  box-shadow: var(--lit-edge);
+  transition: background 150ms ease, transform 100ms ease-in, border-color 150ms ease;
+}
+.soft-pill:hover { background: var(--bg-surface-3); border-color: var(--accent-soft); }
+.soft-pill:active { transform: scale(0.97); }
+
+/* Quiet chip button (hear it / tried it / metronome). */
+.chip {
+  border: 1px solid var(--bg-rule);
+  border-radius: var(--radius-full);
+  color: var(--ink-tertiary);
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+}
+.chip:hover { border-color: var(--accent-soft); color: var(--accent-deep); }
+.chip-accent {
+  border-color: var(--accent-soft);
+  color: var(--accent-deep);
+}
+.chip-accent:hover { background: color-mix(in oklab, var(--accent) 10%, transparent); }
+
+/* Status pill (done / active). */
+.status-done { background: var(--success-bg); color: var(--success); }
+
+/* A number rendered as a living word (only-grows counters). */
+.living-number {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--instrument-accent-deep);
+}
+
 /* Slot expand transitions. Slow, warm. */
 .slot-body {
-  transition: grid-template-rows 280ms ease, opacity 240ms ease;
+  transition: grid-template-rows 280ms cubic-bezier(0.2, 0, 0, 1), opacity 220ms ease;
 }
 
 /* "fade" entrance for mini-shelf line, north star */
@@ -256,6 +388,46 @@ html, body {
 @keyframes sgFade { from { opacity: 0; } to { opacity: 1; } }
 .sg-canvas { animation: sgFade 250ms ease both; }
 
+/* Key-map first-open territory reveal — staggered swell on mount. */
+@keyframes territoryReveal {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.territory-reveal { animation: territoryReveal 560ms cubic-bezier(0.2, 0, 0, 1) both; }
+
+/* Key-map wedge: staggered reveal on mount + a depth swell on hover. */
+.key-wedge {
+  animation: territoryReveal 520ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+.key-wedge path {
+  transition: transform 150ms ease, filter 150ms ease;
+}
+.key-wedge:hover path {
+  transform: scale(1.04);
+  filter: brightness(1.08);
+}
+
+/* "next to learn" pulse ring (warm frontier emphasis on the stand). */
+@keyframes nextPulse {
+  0%, 100% { box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 22%, transparent); }
+  50%      { box-shadow: 0 0 0 8px color-mix(in oklab, var(--accent) 10%, transparent); }
+}
+.next-pulse { animation: nextPulse 2.5s ease-in-out infinite; }
+
+/* Phase-rite full-screen warm fade. */
+@keyframes phaseRite { from { opacity: 0; } to { opacity: 1; } }
+.phase-rite-overlay { animation: phaseRite 600ms ease both; }
+
+/* "Home" ring shimmer (Key Map depth-5). */
+@keyframes homeShimmer {
+  0%, 100% { stroke: var(--instrument-accent); }
+  50%      { stroke: var(--instrument-accent-soft); }
+}
+.home-ring { animation: homeShimmer 3.2s ease-in-out infinite; }
+
+/* Arc stagger entrance — one-time on mount, delay set inline. */
+.arc-entry { opacity: 0; transform: translateY(8px); animation: cardRise 380ms cubic-bezier(0.2, 0, 0, 1) both; }
+
 /* Print styles — A4 piano-stand daily sheet. */
 @media print {
   :root {
@@ -264,19 +436,31 @@ html, body {
     --ink: #000; --ink-2: #222; --ink-3: #444;
     --bg-rule: #bbb; --rule: #bbb;
     --instrument-accent: #5a4a20; --accent: #5a4a20;
-    --bg-surface: #fff; --bg-surface-2: #fff; --surface: #fff; --surface-2: #fff;
+    --bg-surface: #fff; --bg-surface-2: #fff; --bg-surface-3: #fff; --surface: #fff; --surface-2: #fff;
+    --shadow-card: none; --shadow-hover: none; --shadow-stage: none;
+    --shadow-cta: none; --lit-edge: none; --phase-tint: transparent;
   }
   @page { size: A4; margin: 15mm; }
   body { background: #fff !important; color: #000 !important; }
+  body::before { display: none !important; }
   .no-print { display: none !important; }
   .print-only { display: block !important; }
   .slot-body { opacity: 1 !important; grid-template-rows: 1fr !important; }
+  .stage-card, .warm-card, .slot-card { box-shadow: none !important; border-left: none !important; }
   a[href]::after { content: ""; }
   header, footer, nav { display: none !important; }
 }
 .print-only { display: none; }
 
-/* Reduced motion */
+/* Reduced motion — cut everything to opacity-only, fast. */
 @media (prefers-reduced-motion: reduce) {
-  .fade-in, .swell, .slot-body, .card-rise, .sg-pulse, .sg-canvas { animation: none !important; transition: none !important; }
+  .fade-in, .swell, .slot-body, .card-rise, .sg-pulse, .sg-canvas,
+  .next-pulse, .territory-reveal, .home-ring, .arc-entry,
+  .warm-card, .slot-card, .cta-pill, .soft-pill, .chip, .stage-card,
+  .key-wedge, .key-wedge path {
+    animation: none !important;
+    transition: opacity 150ms ease !important;
+  }
+  .warm-card:hover, .cta-pill:active, .soft-pill:active,
+  .key-wedge:hover path { transform: none !important; }
 }

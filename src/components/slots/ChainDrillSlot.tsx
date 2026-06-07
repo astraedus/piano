@@ -17,7 +17,7 @@ export function ChainDrillSlot({ module, drill, printAlways }: { module?: Instru
 
   if (!drill) {
     return (
-      <Slot index={3} title="Chain drill" summary={summary} printAlways={printAlways} />
+      <Slot index={3} title="Chain drill" pillar="improv" summary={summary} printAlways={printAlways} />
     );
   }
 
@@ -31,7 +31,7 @@ export function ChainDrillSlot({ module, drill, printAlways }: { module?: Instru
   const rep = state.skillReps?.[drillRepId(drill.id)];
 
   return (
-    <Slot index={3} title="Chain drill" duration={`${drill.minutes} min`} summary={summary} printAlways={printAlways}>
+    <Slot index={3} title="Chain drill" pillar="improv" duration={`${drill.minutes} min`} status={rep ? "done" : null} summary={summary} printAlways={printAlways}>
       <div className="space-y-3 text-sm">
         <ol className="space-y-1.5">
           {drill.steps.map((s, i) => (
@@ -55,14 +55,14 @@ export function ChainDrillSlot({ module, drill, printAlways }: { module?: Instru
               <button
                 type="button"
                 onClick={async () => { await ensureAudio(); await playProgression(prog); }}
-                className="text-xs px-3 py-1 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-[color:var(--accent-soft)] hover:text-[color:var(--accent)]"
+                className="chip text-xs px-3 py-1"
               >
                 hear the loop
               </button>
               <button
                 type="button"
                 onClick={async () => { await ensureAudio(); await playSequence(pentatonicNotes); }}
-                className="text-xs px-3 py-1 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-[color:var(--accent-soft)] hover:text-[color:var(--accent)]"
+                className="chip text-xs px-3 py-1"
               >
                 hear pentatonic
               </button>
@@ -74,7 +74,7 @@ export function ChainDrillSlot({ module, drill, printAlways }: { module?: Instru
           <button
             type="button"
             onClick={() => bumpRep(drillRepId(drill.id))}
-            className="text-xs px-3 py-1 rounded-full border border-[color:var(--accent-soft)] text-[color:var(--accent)] hover:bg-[color:var(--accent)]/10"
+            className="chip chip-accent text-xs px-3 py-1"
           >
             tried it
           </button>

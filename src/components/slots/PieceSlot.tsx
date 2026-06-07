@@ -44,7 +44,7 @@ export function PieceSlot({ module: _module, piece, printAlways }: { module?: In
   );
 
   return (
-    <Slot index={2} title="The piece" summary={summary} printAlways={printAlways}>
+    <Slot index={2} title="The piece" pillar="repertoire" status={piece ? "active" : null} summary={summary} printAlways={printAlways}>
       {!editing && piece && (
         <div className="space-y-3 text-sm">
           <div className="text-[color:var(--ink-2)]">
@@ -56,7 +56,7 @@ export function PieceSlot({ module: _module, piece, printAlways }: { module?: In
             <p className="text-[color:var(--ink-2)] whitespace-pre-wrap leading-relaxed">{piece.notes}</p>
           )}
           {youtubeIdFrom(piece.referenceUrl) && (
-            <div className="aspect-video rounded-md overflow-hidden border border-[color:var(--rule)] bg-black/30 no-print">
+            <div className="aspect-video rounded-md overflow-hidden border border-[color:var(--rule)] bg-[color:var(--bg-surface-3)] no-print">
               <iframe
                 width="100%" height="100%"
                 src={`https://www.youtube-nocookie.com/embed/${youtubeIdFrom(piece.referenceUrl)}?rel=0`}
@@ -111,7 +111,7 @@ export function PieceSlot({ module: _module, piece, printAlways }: { module?: In
           <Field label="reference"><input className={fieldCls} value={referenceUrl} onChange={(e) => setReferenceUrl(e.target.value)} placeholder="youtube / soundcloud url" /></Field>
           <Field label="notes"><textarea className={fieldCls + " min-h-[90px]"} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="fingerings, rough spots, the bit you always lose focus in…" /></Field>
           <div className="flex gap-3 pt-1 no-print">
-            <button type="submit" className="text-xs px-3 py-1 rounded-full bg-[color:var(--accent-deep)] text-[color:var(--ink)] hover:bg-[color:var(--accent-soft)] transition-colors">keep</button>
+            <button type="submit" className="cta-pill text-xs px-4 py-1.5 font-semibold">keep</button>
             {piece && (
               <button type="button" onClick={() => setEditing(false)} className="text-xs text-[color:var(--ink-3)]">cancel</button>
             )}
@@ -130,7 +130,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
-const fieldCls = "w-full bg-[color:var(--surface)] border border-[color:var(--rule)] rounded-md px-3 py-1.5 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)]";
+const fieldCls = "w-full bg-[color:var(--bg-surface-2)] border border-[color:var(--rule)] rounded-sm px-3 py-1.5 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)]";
 
 function youtubeIdFrom(url: string | undefined): string | null {
   if (!url) return null;
