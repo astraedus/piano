@@ -5,9 +5,10 @@ import { AppStateProvider } from "@/hooks/useAppState";
 import { KeyMap } from "@/components/KeyMap";
 import { SongShelf } from "@/components/SongShelf";
 import { YourArc } from "@/components/YourArc";
+import { SkillGraphView } from "@/components/SkillGraphView";
 import { useAppState } from "@/hooks/useAppState";
 
-type Tab = "map" | "shelf" | "arc";
+type Tab = "map" | "graph" | "shelf" | "arc";
 
 export default function TreePage() {
   return (
@@ -34,12 +35,14 @@ function TreeShell() {
         <p className="text-sm text-[color:var(--ink-3)] italic">{timeStr} · {sessions} session{sessions === 1 ? "" : "s"} · {pieces} piece{pieces === 1 ? "" : "s"} on the shelf.</p>
       </header>
       <div className="flex gap-2 border-b border-[color:var(--rule)]">
-        <TabButton active={tab === "map"}  onClickAction={() => setTab("map")}>the key map</TabButton>
+        <TabButton active={tab === "map"}   onClickAction={() => setTab("map")}>the key map</TabButton>
+        <TabButton active={tab === "graph"} onClickAction={() => setTab("graph")}>skill graph</TabButton>
         <TabButton active={tab === "shelf"} onClickAction={() => setTab("shelf")}>the song shelf</TabButton>
-        <TabButton active={tab === "arc"}  onClickAction={() => setTab("arc")}>your arc</TabButton>
+        <TabButton active={tab === "arc"}   onClickAction={() => setTab("arc")}>your arc</TabButton>
       </div>
       <div className="pt-2">
         {tab === "map" && <KeyMap />}
+        {tab === "graph" && <SkillGraphView />}
         {tab === "shelf" && <SongShelf />}
         {tab === "arc" && <YourArc />}
       </div>
