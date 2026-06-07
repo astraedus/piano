@@ -43,6 +43,7 @@ export function YourArc() {
 
 function labelPrefix(kind: string) {
   switch (kind) {
+    case "instrument-begins":
     case "piano-begins": return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--ink-3)] mr-3">begins</span>;
     case "phase-begins": return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--accent)] mr-3">phase</span>;
     case "unlock":       return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--accent)] mr-3">unlock</span>;

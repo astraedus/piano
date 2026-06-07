@@ -13,7 +13,44 @@ export type Grade =
   | "g7"
   | "g8";
 
-export type Pillar = "technique" | "repertoire" | "ear" | "expression" | "lead-sheet";
+export type Pillar = "technique" | "repertoire" | "ear" | "expression" | "lead-sheet" | "improv";
+
+// ---- Instrument identity ----
+export type Instrument = "piano" | "guitar";
+
+// ---- Skill DAG (serves BOTH instruments) ----
+export type SkillCategory =
+  | "setup" | "technique" | "chords" | "scales"
+  | "rhythm" | "notation" | "repertoire" | "expression" | "ear";
+
+export type SkillNodeStatus = "locked" | "available" | "in-progress" | "learned";
+
+export interface SkillNode {
+  id: string;                         // "g-t1-power", "p-key-C-scale"
+  instrument: Instrument | "shared";  // "shared" = music theory / ear (shows in both graphs)
+  title: string;
+  tier: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  category: SkillCategory;
+  prereqs: string[];                  // node ids — the DAG edges (REAL, checked)
+  masteryDrill: string;               // the concrete drill text
+  unlock: string;                     // the capability sentence ("Can solo over rock/blues")
+  // optional render hints (guitar)
+  viz?: "chord_diagram" | "fretboard_map" | "tab" | "animation";
+  chordShape?: number[];              // e.g. [-1,0,2,2,1,0] for Am (-1 = muted)
+  cagedShape?: "E" | "A" | "G" | "C" | "D";
+  // optional linkage to existing systems
+  chainDrillId?: string;              // completing this drill marks node in-progress/learned
+  keyId?: KeyId;                      // for per-key nodes, ties to keyDepths
+}
+
+// ---- Per-skill mastery state (replaces the dead `requires` system) ----
+export interface SkillProgress {
+  status: SkillNodeStatus;            // computed, but persisted snapshot allowed
+  reps: number;
+  maxBpm?: number;
+  firstReachedAt?: string;
+  learnedAt?: string;
+}
 
 export type KeyMode = "major" | "minor";
 
@@ -35,6 +72,7 @@ export interface ChainStep {
 
 export interface ChainDrill {
   id: string;
+  instrument?: Instrument; // optional in P0; populated per-module in P1/P4. Defaults to "piano" semantically.
   phase: Phase;
   name: string;
   minutes: number;
@@ -50,6 +88,7 @@ export type WarmupType =
 
 export interface Warmup {
   id: WarmupType;
+  instrument?: Instrument; // optional in P0; populated per-module in P1/P4. Defaults to "piano" semantically.
   label: string;
   lines: string[]; // instructions. Kept short, scannable.
   postureLine: string;
@@ -131,6 +170,7 @@ export interface SessionSlotLog {
 
 export interface SessionLog {
   id: string;                   // date + nanotime
+  instrument?: Instrument;      // §7 hedge — tag sessions so per-instrument filtering is possible without a v3 migration
   startedAt: string;            // ISO
   endedAt: string;              // ISO
   minutes: number;
@@ -147,12 +187,13 @@ export interface SessionLog {
 // ------------ Arc events ------------
 
 export type ArcEventKind =
-  | "piano-begins" | "phase-begins" | "unlock" | "piece-yours" | "first-improv" | "piece-started";
+  | "instrument-begins" | "phase-begins" | "unlock" | "piece-yours" | "first-improv" | "piece-started";
 
 export interface ArcEvent {
   id: string;
   at: string; // ISO
   kind: ArcEventKind;
+  instrument?: Instrument;      // §7 hedge — tag arc events per instrument for future per-instrument timelines
   label: string;
   detail?: Record<string, unknown>;
 }
@@ -160,7 +201,8 @@ export interface ArcEvent {
 // ------------ App State (localStorage) ------------
 
 export interface AppState {
-  version: 1;
+  version: 2;                   // bumped — v1→v2 migration in storage.ts
+  instrument: Instrument;       // NEW — active instrument for this profile
   firstOpenedAt?: string;       // ISO
   name?: string;                // optional display name
   northStar?: string;           // onboarding answer
@@ -186,6 +228,8 @@ export interface AppState {
   recentDrillIds: string[];
   // Per-skill reps — "I did this" counters keyed by slug e.g. "scale:C:hs", "progression:am:i-iv-V"
   skillReps?: Record<string, { count: number; maxBpm?: number; lastAt?: string }>;
+  // NEW — DAG skill-node mastery, keyed by SkillNode.id
+  skillProgress?: Record<string, SkillProgress>;
 }
 
 // Skill rep id helpers.

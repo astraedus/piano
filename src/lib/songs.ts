@@ -1,7 +1,8 @@
-import type { KeyId, Phase } from "./types";
+import type { Instrument, KeyId, Phase } from "./types";
 
 export interface SongHook {
   id: string;
+  instrument?: Instrument; // optional in P0; populated per-module in P1/P4. Defaults to "piano" semantically.
   title: string;
   composer?: string;
   keyIds: KeyId[];

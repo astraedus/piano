@@ -399,7 +399,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
     name: "12-bar blues starter",
     minutes: 6,
     ghostKey: "C",
-    pillar: "improv" as const as ChainDrill["pillar"],
+    pillar: "improv",
     steps: [
       { type: "progression", durationSec: 60, instruction: "12-bar blues in C: C7 (4 bars) F7 (2) C7 (2) G7 (1) F7 (1) C7 (2)." },
       { type: "progression", durationSec: 60, instruction: "LH: roots only. Feel the 12-bar frame." },
@@ -447,7 +447,7 @@ export const CHAIN_DRILLS: ChainDrill[] = [
     name: "pentatonic, fluent",
     minutes: 6,
     ghostKey: "em",
-    pillar: "improv" as ChainDrill["pillar"],
+    pillar: "improv",
     steps: [
       { type: "scale",       durationSec: 30, instruction: "E minor pentatonic, hands separate, 2 octaves." },
       { type: "progression", durationSec: 45, instruction: "i–III–VII–VI in Em (Em–G–D–C). LH only." },

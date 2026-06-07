@@ -69,7 +69,7 @@ export function Onboarding() {
       keyDepths: { ...(state.keyDepths ?? {}), ...seedDepths },
       arc: [
         ...(state.arc ?? []),
-        { id: "piano-begins-" + now.slice(0, 10), at: now, kind: "piano-begins", label: "piano begins" },
+        { id: "instrument-begins-" + now.slice(0, 10), at: now, kind: "instrument-begins", label: "piano begins" },
         { id: "once-upon-a-time-yours", at: "2019-11-01T00:00:00.000Z", kind: "piece-yours", label: "Once Upon A Time — yours" },
       ],
     });
