@@ -17,7 +17,11 @@ export function pickChainDrill(state: AppState, date: Date): ChainDrill | null {
   const fallback = pool.filter((d) => !recent.has(d.id));
   const choices = preferred.length > 0 ? preferred : (fallback.length > 0 ? fallback : pool);
 
-  const seed = dayOfYear(date);
+  // Phase-stable seed (B6): folding `phase` into the seed shifts the index space
+  // per phase, so advancing phase mid-year doesn't land on a recently-played
+  // drill purely because dayOfYear % poolSize collides. Still deterministic
+  // within a (phase, day) pair.
+  const seed = dayOfYear(date) + phase * 31;
   const idx = seed % choices.length;
   return choices[idx];
 }
