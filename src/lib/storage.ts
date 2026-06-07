@@ -1,10 +1,11 @@
 import type { AppState, ArcEvent } from "./types";
+import { emptyStreak } from "./progression";
 
-// v2 key. The old v1 blob lived at "piano.state"; we migrate it to "practice.state"
+// v3 key. The old v1 blob lived at "piano.state"; we migrate it to "practice.state"
 // and leave the old key in place as a backup (the owner's real practice history).
 export const STORAGE_KEY = "practice.state";
 export const LEGACY_STORAGE_KEY = "piano.state";
-const VERSION = 2 as const;
+const VERSION = 3 as const;
 
 export function defaultState(): AppState {
   return {
@@ -25,6 +26,11 @@ export function defaultState(): AppState {
     notifyAfter5Days: false,
     recentDrillIds: [],
     skillProgress: {},
+    // V2 gamification defaults (storage v3).
+    xp: 0,
+    level: 1,
+    streak: emptyStreak(),
+    pendingLevelUps: [],
   };
 }
 
@@ -46,16 +52,17 @@ export function loadState(): AppState {
 
     const version = (parsed as { version?: unknown }).version;
     if (version === VERSION) {
-      // Already v2. Merge over defaults to backfill any new optional fields.
+      // Already current. Merge over defaults to backfill any new optional fields.
       return { ...defaultState(), ...(parsed as Partial<AppState>) } as AppState;
     }
 
-    // Anything older (v1, or missing version) → run the real v1→v2 migration.
+    // Anything older (v1, v2, or missing version) → run the migration ladder to
+    // the current version, injecting any new fields with safe defaults.
     // `fromLegacy` distinguishes a copy from the old "piano.state" key vs an
     // in-place upgrade of a partially-written "practice.state" blob; either way
     // we persist the migrated result under the new key and keep the legacy backup.
     void fromLegacy;
-    const migrated = migrateV1toV2(parsed as Record<string, unknown>);
+    const migrated = migrateToCurrent(parsed as Record<string, unknown>);
     try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated)); } catch {}
     return migrated;
   } catch {
@@ -64,9 +71,22 @@ export function loadState(): AppState {
 }
 
 /**
+ * Run the full migration ladder (v1→v2→v3) for any pre-current blob. v2 blobs
+ * skip the v1→v2 step (no piano-begins/instrument injection needed) but still
+ * get the v2→v3 gamification defaults. Idempotent on already-current blobs.
+ */
+export function migrateToCurrent(old: Record<string, unknown>): AppState {
+  const version = Number((old as { version?: unknown }).version ?? 1);
+  // v1 (or missing/0) blobs need the v1→v2 pass first; v2 blobs are already v2.
+  const v2 = version >= 2 ? (old as unknown as AppState) : migrateV1toV2(old);
+  return migrateV2toV3(v2 as unknown as Record<string, unknown>);
+}
+
+/**
  * Real v1 → v2 migration. Injects instrument identity + skill-DAG progress,
  * rewrites the renamed arc-event kind, and is non-destructive: it never deletes
  * the legacy "piano.state" key (kept as a safety backup of real practice history).
+ * Returns a v2-shaped blob; the v2→v3 step layers gamification on top.
  */
 export function migrateV1toV2(old: Record<string, unknown>): AppState {
   const base = defaultState();
@@ -86,11 +106,30 @@ export function migrateV1toV2(old: Record<string, unknown>): AppState {
   return {
     ...base,
     ...(old as Partial<AppState>),
-    version: VERSION,
+    version: 2 as AppState["version"],
     instrument: ((old as { instrument?: AppState["instrument"] }).instrument) ?? "piano",
     skillProgress: ((old as { skillProgress?: AppState["skillProgress"] }).skillProgress) ?? {},
     arc,
   };
+}
+
+/**
+ * Real v2 → v3 migration. Injects the gamification spine (xp / level / streak /
+ * pendingLevelUps) with safe defaults, preserving any values already present
+ * (so re-running is non-destructive). All prior fields pass through untouched —
+ * no practice history is dropped. Idempotent on a partial v3 blob.
+ */
+export function migrateV2toV3(old: Record<string, unknown>): AppState {
+  const o = old as Partial<AppState>;
+  return {
+    ...defaultState(),
+    ...o,
+    version: VERSION,
+    xp: typeof o.xp === "number" ? o.xp : 0,
+    level: typeof o.level === "number" ? o.level : 1,
+    streak: o.streak ?? emptyStreak(),
+    pendingLevelUps: o.pendingLevelUps ?? [],
+  } as AppState;
 }
 
 export function saveState(state: AppState): void {
@@ -116,11 +155,12 @@ export function importStateJson(json: string): boolean {
   try {
     const parsed = JSON.parse(json);
     if (!parsed || typeof parsed !== "object") return false;
-    // Route imports through the migration so older exported blobs upgrade cleanly.
+    // Route imports through the migration ladder so older exported blobs upgrade
+    // cleanly all the way to the current version.
     const version = (parsed as { version?: unknown }).version;
     const merged: AppState = version === VERSION
       ? { ...defaultState(), ...(parsed as Partial<AppState>), version: VERSION }
-      : migrateV1toV2(parsed as Record<string, unknown>);
+      : migrateToCurrent(parsed as Record<string, unknown>);
     saveState(merged);
     return true;
   } catch {

@@ -5,6 +5,8 @@ import {
   loadState,
   saveState,
   migrateV1toV2,
+  migrateV2toV3,
+  migrateToCurrent,
   defaultState,
   importStateJson,
 } from "./storage";
@@ -77,18 +79,96 @@ describe("migrateV1toV2 (pure)", () => {
   });
 });
 
-describe("loadState v1→v2 round-trip via localStorage", () => {
-  it("reads a legacy piano.state blob, migrates it, and persists under practice.state", () => {
+// A representative v2 blob: instrument present, skillProgress present, real
+// practice history, but NO gamification fields yet.
+function v2Blob(): Record<string, unknown> {
+  return {
+    version: 2,
+    instrument: "guitar",
+    firstOpenedAt: "2025-01-01T00:00:00.000Z",
+    name: "Anti",
+    phase: 4,
+    grade: "g5",
+    earLevel: 5,
+    pieces: [{ id: "p1", title: "Smoke", status: "yours", startedAt: "2025-01-01", minutes: 300 }],
+    keyDepths: { C: 5, am: 4 },
+    sessions: [{ id: "s1", startedAt: "2025-01-01", endedAt: "2025-01-01", minutes: 30, ghostKey: "C", phase: 4, mode: "full", slotsTouched: [] }],
+    arc: [{ id: "a1", at: "2025-01-01", kind: "instrument-begins", label: "guitar begins" }],
+    unlocks: [{ id: "u1", phase: 1, title: "t", tryLine: "y", addedAt: "2025-01-01" }],
+    pendingUnlocks: [],
+    recentDrillIds: ["d1"],
+    skillProgress: { "g-t0-anatomy": { status: "learned", reps: 2 } },
+  };
+}
+
+describe("migrateV2toV3 (pure)", () => {
+  it("injects gamification defaults (xp/level/streak/pendingLevelUps)", () => {
+    const m = migrateV2toV3(v2Blob());
+    expect(m.version).toBe(3);
+    expect(m.xp).toBe(0);
+    expect(m.level).toBe(1);
+    expect(m.streak).toEqual({ current: 0, longest: 0, lastPracticeDate: undefined });
+    expect(m.pendingLevelUps).toEqual([]);
+  });
+
+  it("preserves ALL existing v2 practice data (no loss)", () => {
+    const m = migrateV2toV3(v2Blob());
+    expect(m.instrument).toBe("guitar");
+    expect(m.name).toBe("Anti");
+    expect(m.phase).toBe(4);
+    expect(m.grade).toBe("g5");
+    expect(m.keyDepths).toEqual({ C: 5, am: 4 });
+    expect(m.pieces).toHaveLength(1);
+    expect(m.sessions).toHaveLength(1);
+    expect(m.unlocks).toHaveLength(1);
+    expect(m.recentDrillIds).toEqual(["d1"]);
+    expect(m.skillProgress?.["g-t0-anatomy"]?.status).toBe("learned");
+  });
+
+  it("respects already-present gamification values (idempotent)", () => {
+    const blob = { ...v2Blob(), version: 3, xp: 555, level: 4, streak: { current: 7, longest: 9, lastPracticeDate: "2026-06-01" }, pendingLevelUps: [4] };
+    const m = migrateV2toV3(blob);
+    expect(m.xp).toBe(555);
+    expect(m.level).toBe(4);
+    expect(m.streak).toEqual({ current: 7, longest: 9, lastPracticeDate: "2026-06-01" });
+    expect(m.pendingLevelUps).toEqual([4]);
+  });
+});
+
+describe("migrateToCurrent ladder", () => {
+  it("runs a v1 blob all the way to v3 (instrument + gamification)", () => {
+    const m = migrateToCurrent(v1Blob());
+    expect(m.version).toBe(3);
+    expect(m.instrument).toBe("piano");
+    expect(m.xp).toBe(0);
+    // v1→v2 arc rewrite still happened en route
+    expect(m.arc.find((e) => e.id.startsWith("piano-begins"))?.kind).toBe("instrument-begins");
+  });
+
+  it("runs a v2 blob to v3 without re-running the v1→v2 instrument injection", () => {
+    const m = migrateToCurrent(v2Blob());
+    expect(m.version).toBe(3);
+    expect(m.instrument).toBe("guitar"); // preserved, not forced to piano
+    expect(m.xp).toBe(0);
+  });
+});
+
+describe("loadState v1→v3 round-trip via localStorage", () => {
+  it("reads a legacy piano.state blob, migrates it to current, and persists under practice.state", () => {
     window.localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(v1Blob()));
     const loaded = loadState();
-    expect(loaded.version).toBe(2);
+    expect(loaded.version).toBe(3);
     expect(loaded.instrument).toBe("piano");
     expect(loaded.name).toBe("Anti");
+    // gamification defaults injected by the v2→v3 step
+    expect(loaded.xp).toBe(0);
+    expect(loaded.level).toBe(1);
+    expect(loaded.streak).toEqual({ current: 0, longest: 0, lastPracticeDate: undefined });
 
-    // migrated blob is now written to the v2 key
+    // migrated blob is now written to the current key at current version
     const newRaw = window.localStorage.getItem(STORAGE_KEY);
     expect(newRaw).toBeTruthy();
-    expect(JSON.parse(newRaw!).version).toBe(2);
+    expect(JSON.parse(newRaw!).version).toBe(3);
   });
 
   it("leaves the legacy piano.state key in place as a backup", () => {
@@ -113,23 +193,24 @@ describe("loadState v1→v2 round-trip via localStorage", () => {
     expect(loaded).toEqual(defaultState());
   });
 
-  it("round-trips a saved v2 state losslessly", () => {
+  it("round-trips a saved current state losslessly", () => {
     const s: AppState = { ...defaultState(), name: "Round", phase: 4, instrument: "piano" };
     saveState(s);
     const loaded = loadState();
     expect(loaded.name).toBe("Round");
     expect(loaded.phase).toBe(4);
-    expect(loaded.version).toBe(2);
+    expect(loaded.version).toBe(3);
   });
 });
 
 describe("importStateJson", () => {
-  it("migrates an imported v1 blob to v2", () => {
+  it("migrates an imported v1 blob to the current version", () => {
     const ok = importStateJson(JSON.stringify(v1Blob()));
     expect(ok).toBe(true);
     const loaded = loadState();
-    expect(loaded.version).toBe(2);
+    expect(loaded.version).toBe(3);
     expect(loaded.instrument).toBe("piano");
+    expect(loaded.xp).toBe(0);
   });
 
   it("rejects invalid json", () => {
