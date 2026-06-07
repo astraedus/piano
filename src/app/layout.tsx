@@ -29,13 +29,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-phase="1" className={`${fraunces.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html lang="en" data-phase="1" data-instrument="piano" className={`${fraunces.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="min-h-screen antialiased">
-        {/* Inline script to read localStorage phase + theme before paint — prevents flash */}
+        {/* Inline script: read localStorage before paint to set phase/instrument/theme.
+            Self-contained (runs before any module) — mirrors lib/domAttrs.setRootAttrs.
+            Reads the v2 key first, falls back to the legacy v1 key pre-migration. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{var s=JSON.parse(localStorage.getItem('piano.state')||'null');var p=s&&s.phase?String(s.phase):'1';var t=(s&&s.theme)||'dark';document.documentElement.setAttribute('data-phase',p);if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}",
+              "try{var r=localStorage.getItem('practice.state')||localStorage.getItem('piano.state');var s=JSON.parse(r||'null');var d=document.documentElement;var p=s&&s.phase?String(s.phase):'1';var i=(s&&s.instrument)||'piano';var t=(s&&s.theme)||'dark';d.setAttribute('data-phase',p);d.setAttribute('data-instrument',i);if(t==='light')d.setAttribute('data-theme','light');else d.removeAttribute('data-theme');}catch(e){}",
           }}
         />
         {children}

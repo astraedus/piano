@@ -1,7 +1,8 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { defaultState, loadState, saveState } from "@/lib/storage";
+import { STORAGE_KEY, defaultState, loadState, saveState } from "@/lib/storage";
+import { setRootAttrs } from "@/lib/domAttrs";
 import type { AppState, UnlockCard } from "@/lib/types";
 
 interface Ctx {
@@ -24,13 +25,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const s = loadState();
     _setState(s);
     setReady(true);
-    try {
-      if (s.phase) document.documentElement.setAttribute("data-phase", String(s.phase));
-      if (s.theme === "light") document.documentElement.setAttribute("data-theme", "light");
-      else document.documentElement.removeAttribute("data-theme");
-    } catch {}
+    setRootAttrs({ phase: s.phase, instrument: s.instrument, theme: s.theme ?? "dark" });
     const onStorage = (e: StorageEvent) => {
-      if (e.key === "piano.state" && e.newValue) {
+      if (e.key === STORAGE_KEY && e.newValue) {
         try { _setState(JSON.parse(e.newValue)); } catch {}
       }
     };
@@ -41,18 +38,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const setState = useCallback((next: AppState) => {
     _setState(next);
     saveState(next);
-    try {
-      if (next.phase) document.documentElement.setAttribute("data-phase", String(next.phase));
-    } catch {}
+    setRootAttrs({ phase: next.phase, instrument: next.instrument });
   }, []);
 
   const patch = useCallback((partial: Partial<AppState>) => {
     _setState((prev) => {
       const next = { ...prev, ...partial };
       saveState(next);
-      try {
-        if (next.phase) document.documentElement.setAttribute("data-phase", String(next.phase));
-      } catch {}
+      setRootAttrs({ phase: next.phase, instrument: next.instrument });
       return next;
     });
   }, []);

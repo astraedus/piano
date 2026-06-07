@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { Grade, KeyId, Phase } from "@/lib/types";
 import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META } from "@/lib/music";
 import { exportStateJson, importStateJson, clearState } from "@/lib/storage";
+import { setRootAttrs } from "@/lib/domAttrs";
 
 export default function SettingsPage() {
   return (
@@ -60,7 +61,7 @@ function Settings() {
       ] : state.arc,
     });
     // set data-phase attribute live
-    document.documentElement.setAttribute("data-phase", String(target.phase));
+    setRootAttrs({ phase: target.phase });
   };
 
   const setGhostNow = (k: KeyId) => {
@@ -183,8 +184,7 @@ function Settings() {
               type="button"
               onClick={() => {
                 patch({ theme: t });
-                if (t === "light") document.documentElement.setAttribute("data-theme", "light");
-                else document.documentElement.removeAttribute("data-theme");
+                setRootAttrs({ theme: t });
               }}
               className={
                 "text-sm px-4 py-1.5 rounded-full border transition-colors " +

@@ -1,0 +1,36 @@
+// Centralized writer for the root <html> data-* attributes that drive the
+// theme/phase/instrument CSS token swaps in globals.css.
+//
+// These writes were previously duplicated across the layout boot script,
+// useAppState (hydrate / setState / patch) and settings/page.tsx. This module
+// is the single source of truth for the React-side writes. The pre-paint boot
+// script in layout.tsx mirrors the same logic inline (it must be self-contained
+// JS that runs before any module loads), so keep the two in sync.
+
+import type { Instrument, Phase } from "./types";
+
+export interface RootAttrs {
+  phase?: Phase;
+  instrument?: Instrument;
+  theme?: "dark" | "light";
+}
+
+/**
+ * Write data-phase / data-instrument / data-theme onto the document root.
+ * Each field is optional — only provided fields are written. Passing `theme`
+ * explicitly toggles the data-theme attribute (light sets it, dark removes it).
+ */
+export function setRootAttrs(attrs: RootAttrs): void {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  try {
+    if (attrs.phase != null) root.setAttribute("data-phase", String(attrs.phase));
+    if (attrs.instrument != null) root.setAttribute("data-instrument", attrs.instrument);
+    if (attrs.theme != null) {
+      if (attrs.theme === "light") root.setAttribute("data-theme", "light");
+      else root.removeAttribute("data-theme");
+    }
+  } catch {
+    // SSR / detached document — ignore.
+  }
+}
