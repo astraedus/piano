@@ -41,7 +41,7 @@ export function LevelUpModal({ level, onCloseAction }: { level: number; onCloseA
           style={{ background: "linear-gradient(90deg, var(--color-piano-400, #e8a820), var(--color-piano-200, #fae0a0))" }}
           aria-hidden
         />
-        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)] mb-5">you leveled up</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)] mb-5">Level Up</p>
         <span
           className="xp-badge xp-badge-lg mx-auto mb-5 inline-flex items-center justify-center rounded-full font-semibold tabular-nums"
           aria-hidden
@@ -52,10 +52,10 @@ export function LevelUpModal({ level, onCloseAction }: { level: number; onCloseA
           className="font-serif text-[length:var(--text-3xl)] text-[color:var(--ink)] leading-[1.1] tracking-[-0.025em] mb-3"
           style={{ fontWeight: 900, fontVariationSettings: "'opsz' 40, 'SOFT' 60" }}
         >
-          Level {level} — {title}
+          Level {level}. {title}.
         </h2>
         <p className="font-serif italic text-[length:var(--text-base)] text-[color:var(--instrument-accent-deep)] leading-relaxed">
-          the practice is adding up. keep going.
+          The practice is adding up. Keep going.
         </p>
         <div className="mt-8">
           <button
@@ -63,7 +63,7 @@ export function LevelUpModal({ level, onCloseAction }: { level: number; onCloseA
             onClick={onCloseAction}
             className="cta-pill w-full text-sm font-semibold tracking-[0.04em] py-2.5"
           >
-            nice
+            Nice
           </button>
         </div>
       </motion.div>

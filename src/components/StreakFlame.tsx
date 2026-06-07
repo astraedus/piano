@@ -3,9 +3,10 @@ import type { StreakState } from "@/lib/types";
 
 /**
  * Streak flame — a small warm ember with the current day count beside it.
- * GENTLE by design: the underlying streak is forgiving (a single missed day is
- * grace, not a reset), so the copy reassures rather than threatens. The longest
- * streak surfaces as a secondary line (default) or a title tooltip (compact).
+ * MOTIVATING by design: the copy leads with the streak ("12-day streak"), not an
+ * apology. The underlying mechanic stays forgiving (a single missed day is grace,
+ * not a reset) — that's surfaced as a tiny optional hint, never the headline. The
+ * longest streak surfaces as a secondary line (default) or a tooltip (compact).
  *
  * Pure presentation — reads StreakState only.
  */
@@ -46,8 +47,8 @@ export function StreakFlame({ streak, compact = false, className = "" }: { strea
       <div className={"flex items-center gap-2 " + className}>
         <Ember lit={false} />
         <div>
-          <div className="text-[length:var(--text-sm)] text-[color:var(--ink-2)]">no streak yet</div>
-          <div className="text-[length:var(--text-xs)] text-[color:var(--ink-3)]">tonight starts one</div>
+          <div className="text-[length:var(--text-sm)] text-[color:var(--ink-2)]">No streak yet</div>
+          <div className="text-[length:var(--text-xs)] text-[color:var(--ink-3)]">Practice tonight to start one.</div>
         </div>
       </div>
     );
@@ -59,10 +60,10 @@ export function StreakFlame({ streak, compact = false, className = "" }: { strea
       <div>
         <div className="text-[length:var(--text-sm)] text-[color:var(--ink)]">
           <span className="font-semibold tabular-nums">{current}</span>
-          <span className="text-[color:var(--ink-2)]"> {current === 1 ? "day" : "days"} in a row</span>
+          <span className="text-[color:var(--ink-2)]">{current === 1 ? "-day streak" : "-day streak"}</span>
         </div>
         <div className="text-[length:var(--text-xs)] text-[color:var(--ink-3)]">
-          {longest > current ? `longest ${longest} · a missed day is forgiven` : "a missed day is forgiven"}
+          {longest > current ? `Best: ${longest}` : "One missed day is forgiven."}
         </div>
       </div>
     </div>

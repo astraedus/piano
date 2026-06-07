@@ -35,12 +35,13 @@ export function XPBar({ xp, compact = false, className = "" }: { xp: number; com
       <div className="flex items-center gap-2.5 mb-1.5">
         <LevelBadge level={info.level} />
         <span className="font-serif text-[length:var(--text-base)] text-[color:var(--ink)] tracking-[-0.01em]" style={{ fontVariationSettings: "'opsz' 24, 'SOFT' 40" }}>
-          {info.title}
+          Level {info.level}
+          <span className="text-[color:var(--instrument-accent-deep)]"> · {info.title}</span>
         </span>
       </div>
       <Track pct={pct} />
       <p className="mt-1.5 text-[length:var(--text-xs)] text-[color:var(--ink-3)] tabular-nums">
-        {info.xpToNextLevel} XP {atTitleCeiling ? "to level " + (info.level + 1) : "to " + nextTitle}
+        {info.xpToNextLevel} XP {atTitleCeiling ? "to Level " + (info.level + 1) : "to " + nextTitle}
       </p>
     </div>
   );

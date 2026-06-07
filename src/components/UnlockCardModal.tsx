@@ -38,7 +38,7 @@ export function UnlockCardModal({ unlock, onCloseAction }: { unlock: { id: strin
           style={{ background: "linear-gradient(90deg, var(--color-piano-400, #e8a820), var(--color-piano-200, #fae0a0))" }}
           aria-hidden
         />
-        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)] mb-6">you can now do this</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)] mb-6">New Skill Unlocked</p>
         <h2
           className="font-serif text-[length:var(--text-3xl)] text-[color:var(--ink)] leading-[1.1] tracking-[-0.025em] mb-6"
           style={{ fontWeight: 900, fontVariationSettings: "'opsz' 40, 'SOFT' 60" }}
@@ -54,7 +54,7 @@ export function UnlockCardModal({ unlock, onCloseAction }: { unlock: { id: strin
             onClick={onCloseAction}
             className="cta-pill w-full text-sm font-semibold tracking-[0.04em] py-2.5"
           >
-            nice
+            Nice
           </button>
         </div>
       </motion.div>
