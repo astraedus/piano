@@ -3,11 +3,11 @@ import { Slot } from "../Slot";
 import type { ChainDrill } from "@/lib/types";
 import { drillRepId } from "@/lib/types";
 import { KEY_META, midiToSpn, pitchMidi, progressionChords } from "@/lib/music";
-import { Keyboard } from "../Keyboard";
+import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { ensureAudio, playProgression, playSequence } from "@/lib/audio";
 import { useAppState } from "@/hooks/useAppState";
 
-export function ChainDrillSlot({ drill, printAlways }: { drill?: ChainDrill | null; printAlways?: boolean }) {
+export function ChainDrillSlot({ module, drill, printAlways }: { module?: InstrumentModule; drill?: ChainDrill | null; printAlways?: boolean }) {
   const { state, bumpRep } = useAppState();
   const summary = drill ? (
     <>{drill.name} · {drill.minutes} min</>
@@ -48,7 +48,9 @@ export function ChainDrillSlot({ drill, printAlways }: { drill?: ChainDrill | nu
             <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-1.5">
               progression · {romans.join(" — ")}
             </p>
-            <Keyboard notes={prog.flat()} rangeStart="C3" octaves={2} />
+            {module?.InstrumentVisual && (
+              <module.InstrumentVisual notes={prog.flat()} rangeStart="C3" octaves={2} />
+            )}
             <div className="mt-2 flex gap-2 no-print">
               <button
                 type="button"

@@ -3,9 +3,13 @@ import { useState } from "react";
 import { Slot } from "../Slot";
 import type { Piece, KeyId } from "@/lib/types";
 import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META } from "@/lib/music";
+import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { useAppState } from "@/hooks/useAppState";
 
-export function PieceSlot({ piece, printAlways }: { piece?: Piece; printAlways?: boolean }) {
+// `module` is threaded for parity with the other slots (P4-ready). The piece slot
+// renders no instrument visual today — it's a form/recording surface — so it does
+// not consume module.InstrumentVisual; passing it keeps the slot API uniform.
+export function PieceSlot({ module: _module, piece, printAlways }: { module?: InstrumentModule; piece?: Piece; printAlways?: boolean }) {
   const { patch, state } = useAppState();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(piece?.title ?? "");

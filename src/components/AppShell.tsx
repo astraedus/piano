@@ -3,16 +3,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { JustPlayButton } from "./JustPlayButton";
+import { useAppState } from "@/hooks/useAppState";
+import { getModuleSync } from "@/lib/instrumentRegistry";
 
 export function AppShell({ children, hideNav = false }: { children: ReactNode; hideNav?: boolean }) {
   const path = usePathname();
+  const { state } = useAppState();
+  // Logo reads the active instrument's display name (lower-cased to match the
+  // existing lowercase wordmark styling). Falls back to "piano" if unresolved.
+  const logo = (getModuleSync(state.instrument)?.displayName ?? "piano").toLowerCase();
   return (
     <div className="min-h-screen flex flex-col">
       {!hideNav && (
         <header className="no-print sticky top-0 z-20 bg-[color:var(--background)]/90 backdrop-blur border-b border-[color:var(--rule)]">
           <nav className="max-w-3xl mx-auto px-5 h-14 flex items-center gap-6">
             <Link href="/" className="font-serif text-[color:var(--ink)] text-lg tracking-tight">
-              piano
+              {logo}
             </Link>
             <div className="flex items-center gap-5 text-sm text-[color:var(--ink-3)]">
               <NavLink href="/tree" active={path?.startsWith("/tree")}>the tree</NavLink>

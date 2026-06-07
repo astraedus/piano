@@ -4,12 +4,12 @@ import { Slot } from "../Slot";
 import type { Warmup, KeyId } from "@/lib/types";
 import { scaleRepId } from "@/lib/types";
 import { KEY_META, scale } from "@/lib/music";
-import { Keyboard } from "../Keyboard";
+import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { Metronome } from "../Metronome";
 import { ensureAudio, playSequence } from "@/lib/audio";
 import { useAppState } from "@/hooks/useAppState";
 
-export function WarmupSlot({ warmup, ghostName, ghostKey, printAlways }: { warmup: Warmup; ghostName: string; ghostKey: KeyId; printAlways?: boolean }) {
+export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways }: { module?: InstrumentModule; warmup?: Warmup; ghostName: string; ghostKey: KeyId; printAlways?: boolean }) {
   const { state, bumpRep } = useAppState();
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -27,6 +27,10 @@ export function WarmupSlot({ warmup, ghostName, ghostKey, printAlways }: { warmu
     }
     return () => { if (iv.current) clearInterval(iv.current); };
   }, [running]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Module/warmup always present in practice (piano registers at init); guard for types.
+  if (!warmup) return null;
+  const InstrumentVisual = module?.InstrumentVisual;
 
   return (
     <Slot
@@ -58,7 +62,9 @@ export function WarmupSlot({ warmup, ghostName, ghostKey, printAlways }: { warmu
             <div className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-2">
               {KEY_META[ghostKey].name} scale · 2 octaves
             </div>
-            <Keyboard notes={scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 2)} rangeStart="C4" octaves={2} />
+            {InstrumentVisual && (
+              <InstrumentVisual notes={scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 2)} rangeStart="C4" octaves={2} />
+            )}
             <div className="mt-2 flex flex-wrap gap-3 items-center no-print">
               <button
                 type="button"

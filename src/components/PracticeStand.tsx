@@ -7,6 +7,7 @@ import { computeTodayPlan } from "@/lib/todayPlan";
 import { endSession } from "@/lib/sessions";
 import { doneLineFor } from "@/lib/doneLines";
 import { KEY_META } from "@/lib/music";
+import { getModuleSync } from "@/lib/instrumentRegistry";
 import { WarmupSlot } from "./slots/WarmupSlot";
 import { PieceSlot } from "./slots/PieceSlot";
 import { ChainDrillSlot } from "./slots/ChainDrillSlot";
@@ -18,11 +19,13 @@ import { UnlockCardModal } from "./UnlockCardModal";
 import { Horizons } from "./Horizons";
 import { GhostPicker } from "./GhostPicker";
 
-export function PianoStand() {
+export function PracticeStand() {
   const router = useRouter();
   const search = useSearchParams();
   const justPlayParam = search?.get("mode") === "just-play";
   const { state, setState, ready } = useAppState();
+  // Resolve the active instrument module (sync cache is warm at app init).
+  const module = getModuleSync(state.instrument) ?? getModuleSync("piano");
 
   // Session start
   const startedAt = useMemo(() => new Date().toISOString(), []);
@@ -123,9 +126,9 @@ export function PianoStand() {
     <div>
       <Header ghostName={ghost.name} ghostKey={plan.ghostKey} mode={plan.mode} firstBackMessage={plan.firstBackMessage} />
       <div className="mt-4">
-        <WarmupSlot warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} />
-        <PieceSlot piece={piece} printAlways={printing} />
-        <ChainDrillSlot drill={plan.chainDrill ?? null} printAlways={printing} />
+        <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} />
+        <PieceSlot module={module} piece={piece} printAlways={printing} />
+        <ChainDrillSlot module={module} drill={plan.chainDrill ?? null} printAlways={printing} />
         <EarMomentSlot
           rounds={earRounds}
           muted={plan.mode === "first-back"}

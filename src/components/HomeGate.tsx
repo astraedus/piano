@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/hooks/useAppState";
-import { PianoStand } from "./PianoStand";
+import { PracticeStand } from "./PracticeStand";
 
 export function HomeGate() {
   const router = useRouter();
@@ -18,5 +18,5 @@ export function HomeGate() {
     return <div className="text-[color:var(--ink-3)] font-serif italic">opening the file…</div>;
   }
   if (!state.firstOpenedAt) return null;
-  return <PianoStand />;
+  return <PracticeStand />;
 }

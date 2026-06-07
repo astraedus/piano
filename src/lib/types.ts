@@ -72,7 +72,7 @@ export interface ChainStep {
 
 export interface ChainDrill {
   id: string;
-  instrument?: Instrument; // optional in P0; populated per-module in P1/P4. Defaults to "piano" semantically.
+  instrument: Instrument; // required from P1 — every drill literal is instrument-tagged.
   phase: Phase;
   name: string;
   minutes: number;
@@ -88,7 +88,7 @@ export type WarmupType =
 
 export interface Warmup {
   id: WarmupType;
-  instrument?: Instrument; // optional in P0; populated per-module in P1/P4. Defaults to "piano" semantically.
+  instrument: Instrument; // required from P1 — every warmup literal is instrument-tagged.
   label: string;
   lines: string[]; // instructions. Kept short, scannable.
   postureLine: string;
