@@ -19,6 +19,7 @@ interface Ctx {
   setState: (next: AppState) => void;
   patch: (partial: Partial<AppState>) => void;
   dismissUnlock: (id: string) => void;
+  dismissLevelUp: (level: number) => void;
   bumpRep: (id: string, opts?: { bpm?: number }) => void;
 }
 
@@ -71,6 +72,22 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const dismissLevelUp = useCallback((level: number) => {
+    // Shift the acknowledged level out of the pendingLevelUps queue. Mirrors
+    // dismissUnlock: the level is permanently reflected in state.level/state.xp
+    // already; pendingLevelUps is only the "show this reward moment next" queue.
+    // Removes the FIRST matching entry so a multi-level jump shows each in turn.
+    _setState((prev) => {
+      const pending = prev.pendingLevelUps ?? [];
+      const idx = pending.indexOf(level);
+      if (idx === -1) return prev;
+      const pendingLevelUps = [...pending.slice(0, idx), ...pending.slice(idx + 1)];
+      const next = { ...prev, pendingLevelUps };
+      saveState(next);
+      return next;
+    });
+  }, []);
+
   const bumpRep = useCallback((id: string, opts?: { bpm?: number }) => {
     _setState((prev) => {
       const reps = { ...(prev.skillReps ?? {}) };
@@ -87,7 +104,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AppStateContext.Provider value={{ state, ready, setState, patch, dismissUnlock, bumpRep }}>
+    <AppStateContext.Provider value={{ state, ready, setState, patch, dismissUnlock, dismissLevelUp, bumpRep }}>
       {children}
     </AppStateContext.Provider>
   );

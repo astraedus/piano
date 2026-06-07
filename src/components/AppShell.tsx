@@ -5,6 +5,9 @@ import { ReactNode } from "react";
 import { JustPlayButton } from "./JustPlayButton";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
+import { XPBar } from "./XPBar";
+import { StreakFlame } from "./StreakFlame";
+import { emptyStreak } from "@/lib/progression";
 
 export function AppShell({ children, hideNav = false }: { children: ReactNode; hideNav?: boolean }) {
   const path = usePathname();
@@ -26,7 +29,14 @@ export function AppShell({ children, hideNav = false }: { children: ReactNode; h
               <NavLink href="/timeline" active={path?.startsWith("/timeline")}>timeline</NavLink>
               <NavLink href="/settings" active={path?.startsWith("/settings")}>settings</NavLink>
             </div>
-            <div className="ml-auto">
+            {/* Persistent gamification indicator — level + progress + streak.
+                Compact so it sits quietly in the header; hidden on the narrowest
+                widths so the nav never crowds. */}
+            <div className="ml-auto flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-3">
+                <XPBar xp={state.xp ?? 0} compact />
+                <StreakFlame streak={state.streak ?? emptyStreak()} compact />
+              </div>
               <JustPlayButton />
             </div>
           </nav>
