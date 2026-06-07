@@ -10,11 +10,12 @@ import type {
 } from "./types";
 import { getModuleSync } from "./instrumentRegistry";
 import { markNodeProgress, prereqsMet, resolveStatus } from "./skillTree";
+import { levelForXp, localDateKey, updateStreak, xpForSession } from "./progression";
 
 export function endSession(
   state: AppState,
   logBase: Omit<SessionLog, "id">,
-  _date: Date
+  date: Date
 ): { state: AppState; newUnlocks: UnlockCard[] } {
   const id = `${logBase.startedAt}-${Math.random().toString(36).slice(2, 7)}`;
   const log: SessionLog = { id, ...logBase };
@@ -92,6 +93,45 @@ export function endSession(
   const unlocks = [...(state.unlocks ?? []), ...newlyEarned];
   const pendingUnlocks = [...(state.pendingUnlocks ?? []), ...newlyEarned];
 
+  // ── Gamification (V2 Phase A): XP / level / streak, layered on top ──
+  // Count keys/areas that gained depth this session (compare before → after).
+  const prevDepths = state.keyDepths ?? {};
+  let depthUps = 0;
+  for (const k of Object.keys(keyDepths) as KeyId[]) {
+    if ((keyDepths[k] ?? 0) > (prevDepths[k] ?? 0)) depthUps++;
+  }
+  const earCorrect = log.earResults?.correctIds.length ?? 0;
+
+  const earnedXp = xpForSession(log, {
+    nodesLearned: newlyLearned.length,
+    depthUps,
+    earCorrect,
+  });
+  const xp = (state.xp ?? 0) + earnedXp;
+
+  const prevLevel = state.level ?? 1;
+  const nextLevel = levelForXp(xp).level;
+
+  // A level-up queues a reward moment (mirrors how skill-node unlocks queue a
+  // pending card) and drops a level-up marker on the Arc — one per crossed level.
+  const pendingLevelUps = [...(state.pendingLevelUps ?? [])];
+  if (nextLevel > prevLevel) {
+    for (let lvl = prevLevel + 1; lvl <= nextLevel; lvl++) {
+      pendingLevelUps.push(lvl);
+      arc.push({
+        id: `level-up-${lvl}-${id}`,
+        at: log.endedAt,
+        kind: "level-up",
+        instrument: state.instrument,
+        label: `reached level ${lvl}`,
+        detail: { level: lvl },
+      });
+    }
+  }
+
+  // Forgiving streak: a single missed day is auto-graced (see progression.ts).
+  const streak = updateStreak(state.streak ?? { current: 0, longest: 0 }, localDateKey(date));
+
   const nextState: AppState = {
     ...state,
     sessions,
@@ -103,6 +143,10 @@ export function endSession(
     pendingUnlocks,
     recentDrillIds,
     skillProgress: nextProgress,
+    xp,
+    level: nextLevel,
+    streak,
+    pendingLevelUps,
   };
   return { state: nextState, newUnlocks: newlyEarned };
 }

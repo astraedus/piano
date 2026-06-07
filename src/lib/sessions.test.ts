@@ -4,6 +4,7 @@ import { defaultState } from "./storage";
 import type { AppState, KeyId, SessionLog, SessionSlotLog, SkillProgress } from "./types";
 import { PIANO_NODES } from "./piano/skillNodes";
 import { UNLOCK_LIBRARY } from "./piano/unlocks";
+import { XP_AWARDS, levelForXp } from "./progression";
 import "./piano/module"; // self-registers piano so getModuleSync resolves
 
 function stateWith(partial: Partial<AppState> = {}): AppState {
@@ -157,6 +158,115 @@ describe("endSession — bookkeeping", () => {
     const { state: next } = endSession(s, logBase(), new Date());
     expect(next.sessions).toHaveLength(1);
     expect(next.lastSessionEndedAt).toBe("2026-06-07T10:30:00.000Z");
+  });
+});
+
+// ───────────────── Gamification (V2 Phase A) — XP / level / streak ─────────────────
+describe("endSession — gamification accrual", () => {
+  // A key already at max depth so warmup/chain bumps don't add depth-up XP noise.
+  function baseState(partial: Partial<AppState> = {}): AppState {
+    return stateWith({ keyDepths: { C: 5 }, ...partial });
+  }
+
+  it("XP accrues from the session (base + engaged slots, no side effects)", () => {
+    const s = baseState({ xp: 0, level: 1 });
+    const { state: next } = endSession(
+      s,
+      // warmup + chain engaged, key C already maxed → no depth-up, no node, no ear
+      logBase({ ghostKey: "C" }),
+      new Date("2026-06-07T10:30:00.000Z"),
+    );
+    // full base (50) + 2 engaged slots * 10 = 70
+    expect(next.xp).toBe(XP_AWARDS.sessionBase.full + 20);
+    expect(next.level).toBe(levelForXp(next.xp).level);
+  });
+
+  it("ear-correct count contributes XP", () => {
+    const s = baseState({ xp: 0 });
+    const { state: next } = endSession(
+      s,
+      logBase({ ghostKey: "C", earResults: { correctIds: ["a", "b", "c"], wrongIds: ["d"] } }),
+      new Date("2026-06-07T10:30:00.000Z"),
+    );
+    expect(next.xp).toBe(XP_AWARDS.sessionBase.full + 20 + 3 * XP_AWARDS.perEarCorrect);
+  });
+
+  it("crossing a level threshold emits a level-up arc event AND a pending level-up", () => {
+    // Start just below level 2 (threshold 100). xpForLevel(2) = 100.
+    const s = baseState({ xp: 95, level: 1 });
+    const { state: next } = endSession(
+      s,
+      logBase({ ghostKey: "C" }), // +70 → 165 → level 2
+      new Date("2026-06-07T10:30:00.000Z"),
+    );
+    expect(next.level).toBe(2);
+    expect(next.pendingLevelUps).toContain(2);
+    const levelUpEvent = next.arc.find((e) => e.kind === "level-up");
+    expect(levelUpEvent).toBeTruthy();
+    expect(levelUpEvent?.detail?.level).toBe(2);
+  });
+
+  it("a big XP jump queues every crossed level (one pending + one arc event each)", () => {
+    // 0 → enough to cross several levels at once via node-learned XP.
+    // Pre-learn p-key-C's roots so it learns this session (+100 node XP) and
+    // also engage many slots; but to force a multi-level jump deterministically
+    // we start with high prior xp near a threshold.
+    const s = baseState({ xp: 240, level: 2 }); // just below L3 (250)
+    const { state: next } = endSession(
+      s,
+      // base 50 + 4 engaged slots (40) = 90 → 330 → crosses L3 (250) and L4 (450)? 330 < 450 → only L3
+      logBase({
+        ghostKey: "C",
+        slotsTouched: [
+          { slot: "warmup", touched: true },
+          { slot: "chain", touched: true },
+          { slot: "piece", touched: true },
+          { slot: "ear", touched: true },
+        ],
+      }),
+      new Date("2026-06-07T10:30:00.000Z"),
+    );
+    expect(next.level).toBe(3);
+    expect(next.pendingLevelUps).toEqual([3]);
+  });
+
+  it("no level-up → no level-up arc event, pendingLevelUps unchanged", () => {
+    const s = baseState({ xp: 0, level: 1 });
+    const { state: next } = endSession(s, logBase({ ghostKey: "C" }), new Date("2026-06-07T10:30:00.000Z"));
+    expect(next.level).toBe(1);
+    expect(next.pendingLevelUps).toEqual([]);
+    expect(next.arc.some((e) => e.kind === "level-up")).toBe(false);
+  });
+
+  it("updates the streak to 1 on first practice", () => {
+    const s = baseState();
+    const { state: next } = endSession(s, logBase(), new Date("2026-06-07T10:30:00.000Z"));
+    expect(next.streak.current).toBe(1);
+    expect(next.streak.longest).toBe(1);
+    expect(next.streak.lastPracticeDate).toBe("2026-06-07");
+  });
+
+  it("streak: consecutive-day session increments", () => {
+    const s = baseState({ streak: { current: 1, longest: 1, lastPracticeDate: "2026-06-06" } });
+    const { state: next } = endSession(s, logBase(), new Date("2026-06-07T10:30:00.000Z"));
+    expect(next.streak.current).toBe(2);
+  });
+
+  it("streak: one missed day is graced (continues), two missed days reset", () => {
+    const graced = endSession(
+      baseState({ streak: { current: 3, longest: 3, lastPracticeDate: "2026-06-05" } }),
+      logBase(),
+      new Date("2026-06-07T10:30:00.000Z"), // gap of 1 missed day (06-06)
+    );
+    expect(graced.state.streak.current).toBe(4); // graced
+
+    const reset = endSession(
+      baseState({ streak: { current: 3, longest: 3, lastPracticeDate: "2026-06-04" } }),
+      logBase(),
+      new Date("2026-06-07T10:30:00.000Z"), // gap of 2 missed days
+    );
+    expect(reset.state.streak.current).toBe(1); // reset
+    expect(reset.state.streak.longest).toBe(3); // longest preserved
   });
 });
 
