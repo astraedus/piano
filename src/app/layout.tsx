@@ -21,7 +21,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f0d0b",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FBF6EE" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F0D0B" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -37,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{var r=localStorage.getItem('practice.state')||localStorage.getItem('piano.state');var s=JSON.parse(r||'null');var d=document.documentElement;var p=s&&s.phase?String(s.phase):'1';var i=(s&&s.instrument)||'piano';var t=(s&&s.theme)||'dark';d.setAttribute('data-phase',p);d.setAttribute('data-instrument',i);if(t==='light')d.setAttribute('data-theme','light');else d.removeAttribute('data-theme');}catch(e){}",
+              "try{var r=localStorage.getItem('practice.state')||localStorage.getItem('piano.state');var s=JSON.parse(r||'null');var d=document.documentElement;var p=s&&s.phase?String(s.phase):'1';var i=(s&&s.instrument)||'piano';var t=s&&s.theme;d.setAttribute('data-phase',p);d.setAttribute('data-instrument',i);if(t==='light'||t==='dark')d.setAttribute('data-theme',t);else d.removeAttribute('data-theme');}catch(e){}",
           }}
         />
         {children}

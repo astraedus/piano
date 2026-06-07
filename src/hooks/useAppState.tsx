@@ -25,7 +25,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const s = loadState();
     _setState(s);
     setReady(true);
-    setRootAttrs({ phase: s.phase, instrument: s.instrument, theme: s.theme ?? "dark" });
+    setRootAttrs({ phase: s.phase, instrument: s.instrument, theme: s.theme });
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY && e.newValue) {
         try { _setState(JSON.parse(e.newValue)); } catch {}

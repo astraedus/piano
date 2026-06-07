@@ -18,7 +18,8 @@ export interface RootAttrs {
 /**
  * Write data-phase / data-instrument / data-theme onto the document root.
  * Each field is optional — only provided fields are written. Passing `theme`
- * explicitly toggles the data-theme attribute (light sets it, dark removes it).
+ * sets data-theme explicitly ("light" or "dark"), which pins the theme even
+ * when it disagrees with the OS preference (light is the default when unset).
  */
 export function setRootAttrs(attrs: RootAttrs): void {
   if (typeof document === "undefined") return;
@@ -26,10 +27,7 @@ export function setRootAttrs(attrs: RootAttrs): void {
   try {
     if (attrs.phase != null) root.setAttribute("data-phase", String(attrs.phase));
     if (attrs.instrument != null) root.setAttribute("data-instrument", attrs.instrument);
-    if (attrs.theme != null) {
-      if (attrs.theme === "light") root.setAttribute("data-theme", "light");
-      else root.removeAttribute("data-theme");
-    }
+    if (attrs.theme != null) root.setAttribute("data-theme", attrs.theme);
   } catch {
     // SSR / detached document — ignore.
   }

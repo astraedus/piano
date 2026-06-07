@@ -1,80 +1,208 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-ink: var(--ink);
-  --color-ink-2: var(--ink-2);
-  --color-ink-3: var(--ink-3);
-  --color-rule: var(--rule);
-  --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
-  --color-accent-deep: var(--accent-deep);
+/* =========================================================================
+   THE WARM STUDIO — light-first, instrument-aware token system (plan §4).
+   Two layers:
+     1. New canonical tokens (--bg-*, --ink-*, --instrument-accent*, --tier-*,
+        semantic) from design.md §7.
+     2. Legacy aliases (--background, --surface, --ink, --accent, ...) kept
+        pointing at the new values so the existing piano UI keeps rendering
+        unchanged (it reads var(--ink), var(--accent), etc. directly).
+   Default is LIGHT; dark tokens live under prefers-color-scheme + data-theme.
+   ========================================================================= */
 
-  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "Menlo", monospace;
+@theme inline {
+  /* === SURFACES === */
+  --color-bg-base:      var(--bg-base);
+  --color-bg-surface:   var(--bg-surface);
+  --color-bg-surface-2: var(--bg-surface-2);
+  --color-bg-surface-3: var(--bg-surface-3);
+  --color-bg-rule:      var(--bg-rule);
+
+  /* === INK === */
+  --color-ink:          var(--ink-primary);
+  --color-ink-2:        var(--ink-secondary);
+  --color-ink-3:        var(--ink-tertiary);
+  --color-ink-muted:    var(--ink-muted);
+
+  /* === INSTRUMENT ACCENTS (semantic aliases) === */
+  --color-accent:       var(--instrument-accent);
+  --color-accent-soft:  var(--instrument-accent-soft);
+  --color-accent-deep:  var(--instrument-accent-deep);
+  --color-accent-bg:    var(--instrument-accent-bg);
+  --color-accent-glow:  var(--instrument-accent-glow);
+
+  /* Legacy color-class aliases (kept for any utility classes still in use) */
+  --color-background:   var(--bg-base);
+  --color-surface:      var(--bg-surface);
+  --color-surface-2:    var(--bg-surface-2);
+  --color-rule:         var(--bg-rule);
+
+  /* === PIANO ACCENT === */
+  --color-piano-500:    #D4900A;
+  --color-piano-400:    #E8A820;
+  --color-piano-300:    #F0C060;
+  --color-piano-200:    #FAE0A0;
+  --color-piano-100:    #FEF4D8;
+  --color-piano-deep:   #9C6800;
+
+  /* === GUITAR ACCENT === (warm crimson/terracotta, softened off alarm-red) */
+  --color-guitar-500:   #C0432E;
+  --color-guitar-400:   #D45A40;
+  --color-guitar-300:   #E2826C;
+  --color-guitar-200:   #F2BBAE;
+  --color-guitar-100:   #FBEAE4;
+  --color-guitar-deep:  #8F2E1F;
+
+  /* === SKILL TIERS (sunrise ramp, shared across instruments) === */
+  --color-tier-0:       #C8BAA0;
+  --color-tier-1:       #D4900A;
+  --color-tier-2:       #C06020;
+  --color-tier-3:       #A0803E;
+  --color-tier-4:       #587840;
+  --color-tier-5:       #3868A0;
+  --color-tier-6:       #6840A0;
+
+  /* === SEMANTIC === */
+  --color-success:      #3A8040;
+  --color-success-bg:   #E8F5EA;
+  --color-warning:      #C07000;
+  --color-warning-bg:   #FFF3D6;
+  --color-error:        #B83030;
+  --color-error-bg:     #FDEAEA;
+  --color-info:         #2870A0;
+  --color-info-bg:      #E6F0FA;
+
+  /* === RADIUS (nested-radius rule: never equal nested) === */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
+
+  /* === TYPE SCALE (modular, ratio 1.25) === */
+  --text-4xl:    2.25rem;
+  --text-3xl:    1.75rem;
+  --text-2xl:    1.375rem;
+  --text-xl:     1.125rem;
+  --text-base:   0.9375rem;
+  --text-sm:     0.8125rem;
+  --text-xs:     0.6875rem;
+
+  /* === FONTS === */
+  --font-serif:  var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans:   var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:   ui-monospace, "SF Mono", "Menlo", monospace;
 }
 
 :root {
-  color-scheme: dark light;
+  color-scheme: light;
 
-  /* Dark first. Warm, bookish, low light. */
-  --background: #0f0d0b;
-  --surface: #14110e;
-  --surface-2: #1b1713;
-  --ink: #f5ead6;
-  --ink-2: #c5b79a;
-  --ink-3: #8a7e68;
-  --rule: #2a241d;
+  /* === SURFACES (warm cream, not pure white) === */
+  --bg-base:        #FBF6EE;
+  --bg-surface:     #F5EDD9;
+  --bg-surface-2:   #EDE2C8;
+  --bg-surface-3:   #E4D6B8;
+  --bg-rule:        #D4C5A0;
 
-  /* Phase 1 — warm amber. Changes per-phase. */
-  --accent: #e6b667;
-  --accent-soft: #c49a52;
-  --accent-deep: #8c6a33;
+  /* === INK (WCAG AA verified on --bg-base) === */
+  --ink-primary:    #231A0E;   /* ~17:1 */
+  --ink-secondary:  #4A3A22;   /* ~9.5:1 */
+  --ink-tertiary:   #7A6448;   /* ~5.2:1 */
+  --ink-muted:      #A08860;   /* decorative only, never info-bearing */
+
+  /* === INSTRUMENT ACCENT — defaults to piano === */
+  --instrument-accent:       #D4900A;
+  --instrument-accent-soft:  #E8A820;
+  --instrument-accent-deep:  #9C6800;
+  --instrument-accent-bg:    #FEF4D8;
+  --instrument-accent-glow:  rgba(212, 144, 10, 0.20);
+
+  /* === LEGACY ALIASES — existing components read these via var() directly ===
+     Keep them pointing at the new tokens so nothing visual breaks. */
+  --background:   var(--bg-base);
+  --surface:      var(--bg-surface);
+  --surface-2:    var(--bg-surface-2);
+  --ink:          var(--ink-primary);
+  --ink-2:        var(--ink-secondary);
+  --ink-3:        var(--ink-tertiary);
+  --rule:         var(--bg-rule);
+  --accent:       var(--instrument-accent);
+  --accent-soft:  var(--instrument-accent-soft);
+  --accent-deep:  var(--instrument-accent-deep);
 }
 
+/* Instrument switching — set data-instrument="guitar" on :root.
+   Guitar accent is warm crimson/terracotta (not alarm-red). */
+:root[data-instrument="guitar"] {
+  --instrument-accent:       #C0432E;
+  --instrument-accent-soft:  #D45A40;
+  --instrument-accent-deep:  #8F2E1F;
+  --instrument-accent-bg:    #FBEAE4;
+  --instrument-accent-glow:  rgba(192, 67, 46, 0.18);
+}
+
+/* Phase accent shifts — data-phase="N".
+   These override --accent (legacy) so the existing per-phase warmth survives the
+   light-mode flip. data-instrument sets the base; data-phase tints it. */
 :root[data-phase="1"] {
-  --accent: #e6b667;
-  --accent-soft: #c49a52;
-  --accent-deep: #8c6a33;
+  --accent: #D4900A; --accent-soft: #E8A820; --accent-deep: #9C6800;
+  --phase-tint: rgba(212, 144, 10, 0.05);
 }
 :root[data-phase="2"] {
-  --accent: #e69c9c;
-  --accent-soft: #c57e7e;
-  --accent-deep: #8c5353;
+  --accent: #C05868; --accent-soft: #D4737F; --accent-deep: #8C3D49;
+  --phase-tint: rgba(192, 88, 104, 0.05);
 }
 :root[data-phase="3"] {
-  --accent: #c89fe6;
-  --accent-soft: #a87fc5;
-  --accent-deep: #6d4e8c;
+  --accent: #7858B0; --accent-soft: #9377C5; --accent-deep: #543A85;
+  --phase-tint: rgba(120, 88, 176, 0.05);
 }
 :root[data-phase="4"] {
-  --accent: #9fbce6;
-  --accent-soft: #7e9dc5;
-  --accent-deep: #4e6b8c;
+  --accent: #3870B0; --accent-soft: #5A8DC5; --accent-deep: #275084;
+  --phase-tint: rgba(56, 112, 176, 0.05);
 }
 :root[data-phase="5"] {
-  --accent: #e6d89f;
-  --accent-soft: #c5b87e;
-  --accent-deep: #8c7f4e;
+  --accent: #B08820; --accent-soft: #C5A23E; --accent-deep: #846017;
+  --phase-tint: rgba(176, 136, 32, 0.05);
 }
 
-:root[data-theme="light"] {
-  color-scheme: light;
-  --background: #faf5eb;
-  --surface: #f3ecdb;
-  --surface-2: #ebe2cc;
-  --ink: #2b241a;
-  --ink-2: #564a36;
-  --ink-3: #7b6e56;
-  --rule: #d8cdb3;
+/* Dark mode — retained as opt-in. Applies via OS preference (unless the user has
+   explicitly chosen light) or via data-theme="dark". */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg-base:       #0F0D0B;
+    --bg-surface:    #14110E;
+    --bg-surface-2:  #1B1713;
+    --bg-surface-3:  #22201A;
+    --bg-rule:       #2A241D;
+    --ink-primary:   #F5EAD6;
+    --ink-secondary: #C5B79A;
+    --ink-tertiary:  #8A7E68;
+    --ink-muted:     #5C5244;
+  }
 }
+
+/* Explicit dark toggle — set data-theme="dark" on :root. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-base:       #0F0D0B;
+  --bg-surface:    #14110E;
+  --bg-surface-2:  #1B1713;
+  --bg-surface-3:  #22201A;
+  --bg-rule:       #2A241D;
+  --ink-primary:   #F5EAD6;
+  --ink-secondary: #C5B79A;
+  --ink-tertiary:  #8A7E68;
+  --ink-muted:     #5C5244;
+}
+
+/* Explicit light toggle — pin light even if OS prefers dark. */
+:root[data-theme="light"] { color-scheme: light; }
 
 html, body {
-  background: var(--background);
-  color: var(--ink);
+  background: var(--bg-base);
+  color: var(--ink-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -82,11 +210,11 @@ html, body {
 
 * { box-sizing: border-box; }
 
-::selection { background: var(--accent-deep); color: var(--ink); }
+::selection { background: var(--instrument-accent-bg); color: var(--ink-primary); }
 
 /* Focus ring — quiet, warm. */
 :focus-visible {
-  outline: 2px solid var(--accent-soft);
+  outline: 2px solid var(--instrument-accent-soft);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -111,9 +239,23 @@ html, body {
 }
 .swell { animation: swell 600ms ease; }
 
+/* Unlock card rise — warm reward entrance (plan §4 motivation surfaces). */
+@keyframes cardRise {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.card-rise { animation: cardRise 400ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
 /* Print styles — A4 piano-stand daily sheet. */
 @media print {
-  :root { --background: #fff; --ink: #000; --ink-2: #222; --ink-3: #444; --rule: #bbb; --accent: #5a4a20; --surface: #fff; --surface-2: #fff; }
+  :root {
+    --bg-base: #fff; --background: #fff;
+    --ink-primary: #000; --ink-secondary: #222; --ink-tertiary: #444;
+    --ink: #000; --ink-2: #222; --ink-3: #444;
+    --bg-rule: #bbb; --rule: #bbb;
+    --instrument-accent: #5a4a20; --accent: #5a4a20;
+    --bg-surface: #fff; --bg-surface-2: #fff; --surface: #fff; --surface-2: #fff;
+  }
   @page { size: A4; margin: 15mm; }
   body { background: #fff !important; color: #000 !important; }
   .no-print { display: none !important; }
@@ -126,5 +268,5 @@ html, body {
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .fade-in, .swell, .slot-body { animation: none !important; transition: none !important; }
+  .fade-in, .swell, .slot-body, .card-rise { animation: none !important; transition: none !important; }
 }

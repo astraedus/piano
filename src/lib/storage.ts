@@ -21,7 +21,7 @@ export function defaultState(): AppState {
     unlocks: [],
     pendingUnlocks: [],
     ghostOverride: null,
-    theme: "dark",
+    theme: undefined, // light-first: unset lets CSS + OS preference decide (dark is opt-in)
     notifyAfter5Days: false,
     recentDrillIds: [],
     skillProgress: {},
