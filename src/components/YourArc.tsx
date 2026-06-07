@@ -21,22 +21,32 @@ export function YourArc() {
     );
   }
 
+  // Stagger newest→oldest from the top so the arc writes itself in.
+  const last = combined.length - 1;
   return (
     <ol className="space-y-5">
-      {combined.map((ev, i) => (
-        <li key={i} className="flex gap-4">
-          <div className="w-24 shrink-0 text-right">
-            <div className="text-[color:var(--ink-2)] text-xs tabular-nums">{fmtDate(ev.at)}</div>
-          </div>
-          <div className="w-px bg-[color:var(--rule)] relative">
-            <span className={`absolute -left-1.5 top-1.5 block w-3 h-3 rounded-full border border-[color:var(--rule)] ${dotClass(ev.kind)}`} />
-          </div>
-          <div className="flex-1">
-            <div className="font-serif text-[color:var(--ink)]">{labelPrefix(ev.kind)}<span>{ev.label}</span></div>
-            {ev.detail && <p className="text-sm text-[color:var(--ink-3)] italic mt-0.5">{ev.detail}</p>}
-          </div>
-        </li>
-      ))}
+      {combined.map((ev, i) => {
+        const highlight = ev.kind === "phase-begins" || ev.kind === "unlock";
+        return (
+          <li
+            key={i}
+            className="flex gap-4 arc-entry"
+            style={{ animationDelay: `${Math.min(i, 18) * 30}ms` }}
+          >
+            <div className="w-24 shrink-0 text-right">
+              <div className="text-[color:var(--ink-3)] text-xs tabular-nums">{fmtDate(ev.at)}</div>
+            </div>
+            <div className="w-px bg-[color:var(--bg-rule)] relative">
+              <span className={`absolute -left-1.5 top-1.5 block w-3 h-3 rounded-full border border-[color:var(--bg-rule)] ${dotClass(ev.kind)}`} />
+            </div>
+            <div className={"flex-1 " + (highlight ? "warm-card px-4 py-3 -mt-1" : "")}>
+              <div className="font-serif text-[color:var(--ink)] tracking-[-0.01em]">{labelPrefix(ev.kind)}<span>{ev.label}</span></div>
+              {ev.detail && <p className="text-sm text-[color:var(--ink-3)] italic mt-0.5">{ev.detail}</p>}
+            </div>
+          </li>
+        );
+      })}
+      {last >= 0 && <li className="text-xs text-[color:var(--ink-muted)] italic pl-28">the arc only grows from here.</li>}
     </ol>
   );
 }
@@ -45,8 +55,8 @@ function labelPrefix(kind: string) {
   switch (kind) {
     case "instrument-begins":
     case "piano-begins": return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--ink-3)] mr-3">begins</span>;
-    case "phase-begins": return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--accent)] mr-3">phase</span>;
-    case "unlock":       return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--accent)] mr-3">unlock</span>;
+    case "phase-begins": return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--accent-deep)] font-medium mr-3">phase</span>;
+    case "unlock":       return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--accent-deep)] font-medium mr-3">unlock</span>;
     case "piece-yours":  return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--ink-3)] mr-3">yours</span>;
     case "first-improv": return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--ink-3)] mr-3">first</span>;
     case "piece-started":return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--ink-3)] mr-3">piece</span>;

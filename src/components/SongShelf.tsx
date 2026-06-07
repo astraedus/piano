@@ -28,10 +28,16 @@ export function SongShelf() {
 
   return (
     <div className="space-y-6">
-      <div className="text-sm text-[color:var(--ink-3)] italic">
-        {pieceCount === 0
-          ? "nothing on the shelf yet. add your first piece from the stand."
-          : `${pieceCount} piece${pieceCount === 1 ? "" : "s"} on the shelf. ${yoursCount} yours. ${livedCount} lived in.`}
+      <div className="text-sm text-[color:var(--ink-tertiary)]">
+        {pieceCount === 0 ? (
+          <span className="italic text-[color:var(--ink-muted)]">nothing on the shelf yet. add your first piece from the stand.</span>
+        ) : (
+          <>
+            <span className="living-number">{pieceCount}</span> piece{pieceCount === 1 ? "" : "s"} on the shelf.{" "}
+            <span className="living-number">{yoursCount}</span> yours.{" "}
+            <span className="living-number">{livedCount}</span> lived in.
+          </>
+        )}
       </div>
       {firstPiece && (
         <div className="text-xs text-[color:var(--ink-3)]">
@@ -46,7 +52,7 @@ export function SongShelf() {
             className={
               "text-xs px-3 py-1 rounded-full border transition-colors " +
               (filter === f
-                ? "border-[color:var(--accent)] text-[color:var(--accent)]"
+                ? "border-[color:var(--accent)] text-[color:var(--accent-deep)] bg-[color:var(--accent)]/10"
                 : "border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-[color:var(--accent-soft)]")
             }
           >
@@ -67,12 +73,19 @@ export function SongShelf() {
   );
 }
 
+const STATUS_STRIP: Record<PieceStatus, string> = {
+  learning: "#f0c060", // piano-300 honey
+  shelved: "var(--bg-rule)",
+  yours: "#3a8040", // success
+  known: "#2870a0", // info
+};
+
 function PieceCard({ piece, onPromoteAction }: { piece: Piece; onPromoteAction: (s: PieceStatus) => void }) {
   return (
-    <li className="border border-[color:var(--rule)] rounded-lg p-4 bg-[color:var(--surface)] hover:border-[color:var(--accent-soft)] transition-colors">
+    <li className="warm-card p-4 pb-5 relative overflow-hidden">
       <div className="flex items-baseline justify-between gap-2">
-        <h4 className="font-serif text-lg text-[color:var(--ink)]">{piece.title}</h4>
-        <span className="text-[10px] uppercase tracking-wider text-[color:var(--accent)]">{piece.status}</span>
+        <h4 className="font-serif text-lg text-[color:var(--ink)] tracking-[-0.01em]">{piece.title}</h4>
+        <span className="text-[10px] uppercase tracking-wider text-[color:var(--instrument-accent-deep)] font-medium">{piece.status}</span>
       </div>
       <p className="text-xs text-[color:var(--ink-3)] mt-0.5">
         {piece.composer ?? "—"}{piece.grade ? " · " + piece.grade : ""}
@@ -86,12 +99,18 @@ function PieceCard({ piece, onPromoteAction }: { piece: Piece; onPromoteAction: 
           <button
             key={s}
             onClick={() => onPromoteAction(s)}
-            className="text-[10px] px-2 py-0.5 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-[color:var(--accent-soft)] hover:text-[color:var(--accent)]"
+            className="chip text-[10px] px-2 py-0.5"
           >
             → {s}
           </button>
         ))}
       </div>
+      {/* status color strip along the bottom edge */}
+      <span
+        className="absolute bottom-0 left-0 right-0 h-1"
+        style={{ background: STATUS_STRIP[piece.status] }}
+        aria-hidden
+      />
     </li>
   );
 }

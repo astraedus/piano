@@ -66,10 +66,16 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
       </Row>
 
       {nextUnlock && (
-        <Row label="next capability">
-          <div className="space-y-1">
-            <p className="font-serif text-[color:var(--ink)]">{nextUnlock.title}</p>
-            <p className="text-sm text-[color:var(--ink-3)] italic">{nextUnlock.tryLine}</p>
+        <Row label="next to learn">
+          <div
+            className="rounded-md border-l-[3px] pl-4 pr-4 py-3"
+            style={{
+              borderLeftColor: "var(--instrument-accent)",
+              background: "color-mix(in oklab, var(--instrument-accent) 7%, transparent)",
+            }}
+          >
+            <p className="font-serif text-[color:var(--ink)] tracking-[-0.01em]">{nextUnlock.title}</p>
+            <p className="text-sm text-[color:var(--ink-2)] italic mt-0.5">{nextUnlock.tryLine}</p>
           </div>
         </Row>
       )}
@@ -108,7 +114,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 function Stat({ k, v }: { k: string; v: string }) {
   return (
     <div>
-      <span className="font-serif text-[color:var(--ink)]">{v}</span>
+      <span className="living-number text-base">{v}</span>
       <span className="text-[color:var(--ink-3)] text-xs ml-1.5">{k}</span>
     </div>
   );

@@ -103,20 +103,24 @@ export function PracticeStand() {
     router.push(`/print?${params.toString()}`);
   };
 
+  const instrumentLabel = module?.displayName ?? "Piano";
+
   // Just-play mode: collapse to free slot only
   if (plan.mode === "just-play") {
     return (
       <div>
-        <Header ghostName={ghost.name} ghostKey={plan.ghostKey} mode="just-play" />
-        <div className="mt-6">
-          <FreeSlot journalInitial={journal} onJournalChange={setJournal} urlInitial={state.freeSlotUrl} expanded />
+        <div className="stage-card px-5 py-6 sm:px-7 sm:py-7">
+          <Header ghostName={ghost.name} ghostKey={plan.ghostKey} instrumentLabel={instrumentLabel} mode="just-play" />
+          <div className="mt-6">
+            <FreeSlot journalInitial={journal} onJournalChange={setJournal} urlInitial={state.freeSlotUrl} expanded />
+          </div>
+          <Footer
+            onDone={handleDone}
+            onPrint={handlePrint}
+            sessionLine={sessionLine}
+            miniShelfLine={plan.miniShelfLine ?? null}
+          />
         </div>
-        <Footer
-          onDone={handleDone}
-          onPrint={handlePrint}
-          sessionLine={sessionLine}
-          miniShelfLine={plan.miniShelfLine ?? null}
-        />
         <UnlockQueue queue={unlocksQueue} onClose={() => setUnlocksQueue((q) => q.slice(1))} unlocks={state.unlocks} />
       </div>
     );
@@ -124,38 +128,45 @@ export function PracticeStand() {
 
   return (
     <div>
-      <Header ghostName={ghost.name} ghostKey={plan.ghostKey} mode={plan.mode} firstBackMessage={plan.firstBackMessage} />
-      <div className="mt-4">
-        <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} />
-        <PieceSlot module={module} piece={piece} printAlways={printing} />
-        <ChainDrillSlot module={module} drill={plan.chainDrill ?? null} printAlways={printing} />
-        <EarMomentSlot
-          rounds={earRounds}
-          muted={plan.mode === "first-back"}
-          printAlways={printing}
-          onResultAction={(correct: string[], wrong: string[]) => { setEarCorrect(correct); setEarWrong(wrong); }}
+      <div className="stage-card px-5 py-6 sm:px-7 sm:py-7">
+        <Header ghostName={ghost.name} ghostKey={plan.ghostKey} instrumentLabel={instrumentLabel} mode={plan.mode} firstBackMessage={plan.firstBackMessage} />
+        <div className="mt-5">
+          <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} />
+          <PieceSlot module={module} piece={piece} printAlways={printing} />
+          <ChainDrillSlot module={module} drill={plan.chainDrill ?? null} printAlways={printing} />
+          <EarMomentSlot
+            rounds={earRounds}
+            muted={plan.mode === "first-back"}
+            printAlways={printing}
+            onResultAction={(correct: string[], wrong: string[]) => { setEarCorrect(correct); setEarWrong(wrong); }}
+          />
+          <FreeSlot urlInitial={state.freeSlotUrl} journalInitial={journal} onJournalChange={setJournal} printAlways={printing} />
+        </div>
+        <Footer
+          onDone={handleDone}
+          onPrint={handlePrint}
+          sessionLine={sessionLine}
+          miniShelfLine={plan.miniShelfLine ?? null}
+          northStarNudge={plan.northStarNudge ?? null}
         />
-        <FreeSlot urlInitial={state.freeSlotUrl} journalInitial={journal} onJournalChange={setJournal} printAlways={printing} />
       </div>
-      <Footer
-        onDone={handleDone}
-        onPrint={handlePrint}
-        sessionLine={sessionLine}
-        miniShelfLine={plan.miniShelfLine ?? null}
-        northStarNudge={plan.northStarNudge ?? null}
-      />
       <Horizons ghostKey={plan.ghostKey} warmup={plan.warmup} />
       <UnlockQueue queue={unlocksQueue} onClose={() => setUnlocksQueue((q) => q.slice(1))} unlocks={state.unlocks} />
     </div>
   );
 }
 
-function Header({ ghostName, ghostKey, mode, firstBackMessage }: { ghostName: string; ghostKey: import("@/lib/types").KeyId; mode?: string; firstBackMessage?: string | null }) {
+function Header({ ghostName, ghostKey, instrumentLabel, mode, firstBackMessage }: { ghostName: string; ghostKey: import("@/lib/types").KeyId; instrumentLabel: string; mode?: string; firstBackMessage?: string | null }) {
   return (
-    <header className="pb-5 border-b border-[color:var(--rule)]">
-      <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">tonight's ghost</div>
-      <div className="flex items-baseline gap-3 mt-1 flex-wrap">
-        <h1 className="font-serif text-3xl text-[color:var(--ink)]" style={{ fontVariationSettings: "'opsz' 30, 'SOFT' 50" }}>{ghostName}</h1>
+    <header className="pb-5 border-b border-[color:var(--bg-rule)]">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">tonight&apos;s ghost</div>
+        <span className="font-serif italic text-sm px-2.5 py-0.5 rounded-full bg-[color:var(--instrument-accent-bg)] text-[color:var(--instrument-accent-deep)]">
+          {instrumentLabel}
+        </span>
+      </div>
+      <div className="flex items-baseline gap-3 mt-1.5 flex-wrap">
+        <h1 className="font-serif text-[length:var(--text-3xl)] text-[color:var(--ink)] tracking-[-0.025em]" style={{ fontVariationSettings: "'opsz' 36, 'SOFT' 50" }}>{ghostName}</h1>
         <GhostPicker current={ghostKey} />
       </div>
       {mode === "first-back" && firstBackMessage && (
@@ -176,15 +187,15 @@ function Footer({ onDone, onPrint, sessionLine, miniShelfLine, northStarNudge }:
   northStarNudge?: string | null;
 }) {
   return (
-    <footer className="mt-10 pb-10 space-y-6">
+    <footer className="mt-8 pt-5 border-t border-[color:var(--bg-rule)] space-y-6">
       {northStarNudge && (
         <div className="fade-in text-sm text-[color:var(--ink-2)] italic border-l-2 border-[color:var(--accent-soft)] pl-3">
           {northStarNudge}
         </div>
       )}
       {sessionLine ? (
-        <div className="fade-in space-y-3">
-          <p className="font-serif text-xl text-[color:var(--ink)]">{sessionLine}</p>
+        <div className="card-rise space-y-3">
+          <p className="font-serif text-[length:var(--text-2xl)] text-[color:var(--ink)] tracking-[-0.025em]" style={{ fontVariationSettings: "'opsz' 30, 'SOFT' 40" }}>{sessionLine}</p>
           <p className="text-sm text-[color:var(--ink-3)]">
             <Link href="/" className="hover:text-[color:var(--ink-2)]">back to the stand</Link>
             <span className="mx-2">·</span>
@@ -192,24 +203,26 @@ function Footer({ onDone, onPrint, sessionLine, miniShelfLine, northStarNudge }:
           </p>
         </div>
       ) : (
-        <div className="flex items-center gap-4 no-print">
+        <div className="flex items-center gap-3 no-print">
           <button
             type="button"
             onClick={onDone}
-            className="px-5 py-2 rounded-full bg-[color:var(--accent-deep)] text-[color:var(--ink)] hover:bg-[color:var(--accent-soft)] transition-colors text-sm"
+            className="cta-pill text-sm font-semibold tracking-[0.04em] px-6 py-2.5"
           >
-            done
+            done for tonight
           </button>
           <button
             type="button"
             onClick={onPrint}
-            className="px-4 py-2 text-sm text-[color:var(--ink-3)] hover:text-[color:var(--ink)] transition-colors"
+            className="text-sm text-[color:var(--ink-3)] hover:text-[color:var(--ink)] transition-colors"
           >
             print
           </button>
-          <div className="ml-auto text-xs text-[color:var(--ink-3)] italic">
-            {miniShelfLine}
-          </div>
+          {miniShelfLine && (
+            <div className="ml-auto text-xs text-[color:var(--ink-muted)] italic max-w-[50%] text-right">
+              {miniShelfLine}
+            </div>
+          )}
         </div>
       )}
     </footer>

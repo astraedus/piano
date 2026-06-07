@@ -15,10 +15,11 @@ export function AppShell({ children, hideNav = false }: { children: ReactNode; h
   return (
     <div className="min-h-screen flex flex-col">
       {!hideNav && (
-        <header className="no-print sticky top-0 z-20 bg-[color:var(--background)]/90 backdrop-blur border-b border-[color:var(--rule)]">
+        <header className="no-print sticky top-0 z-20 bg-[color:var(--bg-base)]/85 backdrop-blur border-b border-[color:var(--bg-rule)]">
           <nav className="max-w-3xl mx-auto px-5 h-14 flex items-center gap-6">
-            <Link href="/" className="font-serif text-[color:var(--ink)] text-lg tracking-tight">
-              {logo}
+            <Link href="/" className="flex items-center gap-2 group" aria-label={`${logo} — home`}>
+              <PianoMark />
+              <span className="font-serif text-[color:var(--ink)] text-lg tracking-[-0.02em]">{logo}</span>
             </Link>
             <div className="flex items-center gap-5 text-sm text-[color:var(--ink-3)]">
               <NavLink href="/tree" active={path?.startsWith("/tree")}>the tree</NavLink>
@@ -43,11 +44,31 @@ function NavLink({ href, active, children }: { href: string; active?: boolean; c
       className={
         "transition-colors " +
         (active
-          ? "text-[color:var(--ink)]"
+          ? "text-[color:var(--ink)] font-medium"
           : "hover:text-[color:var(--ink-2)]")
       }
     >
       {children}
     </Link>
+  );
+}
+
+/** A real SVG piano-key silhouette — three white keys with two black keys.
+ *  Anti-AI-look: an actual instrument mark, never an emoji. The accent keys
+ *  read from --instrument-accent so the mark recolors per instrument. */
+function PianoMark() {
+  return (
+    <svg
+      width="22" height="22" viewBox="0 0 22 22" aria-hidden
+      className="shrink-0 transition-transform group-hover:-translate-y-0.5"
+    >
+      <rect x="1.5" y="2" width="19" height="18" rx="3" fill="var(--bg-surface-2)" stroke="var(--bg-rule)" />
+      {/* white keys */}
+      <line x1="8" y1="3" x2="8" y2="19" stroke="var(--bg-rule)" strokeWidth="1" />
+      <line x1="14" y1="3" x2="14" y2="19" stroke="var(--bg-rule)" strokeWidth="1" />
+      {/* black keys */}
+      <rect x="6" y="3" width="4" height="9" rx="1" fill="var(--instrument-accent-deep)" />
+      <rect x="12" y="3" width="4" height="9" rx="1" fill="var(--instrument-accent)" />
+    </svg>
   );
 }

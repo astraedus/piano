@@ -37,7 +37,7 @@ export function GhostPicker({ current, onDoneAction }: { current: KeyId; onDoneA
         change
       </button>
       {open && (
-        <div className="absolute left-0 mt-1 z-20 bg-[color:var(--surface-2)] border border-[color:var(--rule)] rounded-lg shadow-xl p-4 w-[min(360px,90vw)]">
+        <div className="absolute left-0 mt-1 z-20 warm-card p-4 w-[min(360px,90vw)]">
           <p className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--ink-3)] mb-2">this week's keys</p>
           <div className="flex flex-wrap gap-1.5 mb-3">
             {phaseKeys.map((k) => (
