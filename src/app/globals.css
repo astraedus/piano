@@ -344,6 +344,45 @@ body > * { position: relative; z-index: 1; }
 /* Status pill (done / active). */
 .status-done { background: var(--success-bg); color: var(--success); }
 
+/* =====================================================================
+   GAMIFICATION SURFACES (V2 Phase B2) — XP bar, level badge, streak ember.
+   All read the instrument accent so they recolor piano↔guitar for free.
+   ===================================================================== */
+
+/* XP progress track — a recessed warm groove. */
+.xp-track {
+  background: var(--bg-surface-2);
+  border-radius: var(--radius-full);
+  box-shadow: inset 0 1px 2px rgba(35, 26, 14, 0.10);
+}
+/* The fill — a warm two-stop gradient toward the next level. */
+.xp-fill {
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--instrument-accent-deep), var(--instrument-accent-soft));
+  box-shadow: 0 0 8px var(--instrument-accent-glow);
+  transition: width 520ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Level medallion — accent fill, white numeral, lit edge. */
+.xp-badge {
+  background: var(--instrument-accent);
+  color: #fff;
+  box-shadow: var(--lit-edge), 0 1px 3px var(--instrument-accent-glow);
+}
+.xp-badge-lg {
+  width: 56px;
+  height: 56px;
+  font-size: var(--text-2xl);
+  font-family: var(--font-serif);
+}
+
+/* Streak ember — a slow, gentle breathe (it is forgiving, not urgent). */
+@keyframes emberBreathe {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50%      { transform: scale(1.08); filter: brightness(1.12); }
+}
+.streak-ember { animation: emberBreathe 3s ease-in-out infinite; transform-origin: center bottom; }
+
 /* A number rendered as a living word (only-grows counters). */
 .living-number {
   font-family: var(--font-serif);
@@ -457,7 +496,7 @@ body > * { position: relative; z-index: 1; }
   .fade-in, .swell, .slot-body, .card-rise, .sg-pulse, .sg-canvas,
   .next-pulse, .territory-reveal, .home-ring, .arc-entry,
   .warm-card, .slot-card, .cta-pill, .soft-pill, .chip, .stage-card,
-  .key-wedge, .key-wedge path {
+  .key-wedge, .key-wedge path, .xp-fill, .streak-ember {
     animation: none !important;
     transition: opacity 150ms ease !important;
   }
