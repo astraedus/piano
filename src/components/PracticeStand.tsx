@@ -16,14 +16,19 @@ import { FreeSlot } from "./slots/FreeSlot";
 import { generateEarRound } from "@/lib/earRounds";
 import type { EarRound } from "@/lib/types";
 import { UnlockCardModal } from "./UnlockCardModal";
+import { LevelUpModal } from "./LevelUpModal";
+import { XPBar } from "./XPBar";
+import { StreakFlame } from "./StreakFlame";
 import { Horizons } from "./Horizons";
 import { GhostPicker } from "./GhostPicker";
+import type { InstrumentModule } from "@/lib/instrumentRegistry";
+import { emptyStreak } from "@/lib/progression";
 
 export function PracticeStand() {
   const router = useRouter();
   const search = useSearchParams();
   const justPlayParam = search?.get("mode") === "just-play";
-  const { state, setState, ready } = useAppState();
+  const { state, setState, ready, dismissLevelUp } = useAppState();
   // Resolve the active instrument module (sync cache is warm at app init).
   const module = getModuleSync(state.instrument) ?? getModuleSync("piano");
 
@@ -110,7 +115,7 @@ export function PracticeStand() {
     return (
       <div>
         <div className="stage-card px-5 py-6 sm:px-7 sm:py-7">
-          <Header ghostName={ghost.name} ghostKey={plan.ghostKey} instrumentLabel={instrumentLabel} mode="just-play" />
+          <Header ghostName={ghost.name} ghostKey={plan.ghostKey} instrumentLabel={instrumentLabel} mode="just-play" module={module} />
           <div className="mt-6">
             <FreeSlot journalInitial={journal} onJournalChange={setJournal} urlInitial={state.freeSlotUrl} expanded />
           </div>
@@ -122,6 +127,7 @@ export function PracticeStand() {
           />
         </div>
         <UnlockQueue queue={unlocksQueue} onClose={() => setUnlocksQueue((q) => q.slice(1))} unlocks={state.unlocks} />
+        <LevelUpQueue pending={state.pendingLevelUps} onClose={dismissLevelUp} />
       </div>
     );
   }
@@ -129,7 +135,8 @@ export function PracticeStand() {
   return (
     <div>
       <div className="stage-card px-5 py-6 sm:px-7 sm:py-7">
-        <Header ghostName={ghost.name} ghostKey={plan.ghostKey} instrumentLabel={instrumentLabel} mode={plan.mode} firstBackMessage={plan.firstBackMessage} />
+        <Header ghostName={ghost.name} ghostKey={plan.ghostKey} instrumentLabel={instrumentLabel} mode={plan.mode} firstBackMessage={plan.firstBackMessage} module={module} />
+        <StatsStrip xp={state.xp ?? 0} streak={state.streak ?? emptyStreak()} />
         <div className="mt-5">
           <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} />
           <PieceSlot module={module} piece={piece} printAlways={printing} />
@@ -152,21 +159,29 @@ export function PracticeStand() {
       </div>
       <Horizons ghostKey={plan.ghostKey} warmup={plan.warmup} />
       <UnlockQueue queue={unlocksQueue} onClose={() => setUnlocksQueue((q) => q.slice(1))} unlocks={state.unlocks} />
+      <LevelUpQueue pending={state.pendingLevelUps} onClose={dismissLevelUp} />
     </div>
   );
 }
 
-function Header({ ghostName, ghostKey, instrumentLabel, mode, firstBackMessage }: { ghostName: string; ghostKey: import("@/lib/types").KeyId; instrumentLabel: string; mode?: string; firstBackMessage?: string | null }) {
+function Header({ ghostName, ghostKey, instrumentLabel, mode, firstBackMessage, module }: { ghostName: string; ghostKey: import("@/lib/types").KeyId; instrumentLabel: string; mode?: string; firstBackMessage?: string | null; module?: InstrumentModule }) {
+  // Instrument-aware focus eyebrow. Piano (focusKind "key") keeps the historical
+  // "tonight's ghost" wording untouched; guitar (focusKind "chord") reads as
+  // "chord of the week". The headline uses the module's own focusLabel so the
+  // current focus reads in the instrument's terms (a key name vs a chord/riff
+  // label). Falls back to the piano wording + the plan's ghost name if no module.
+  const focusEyebrow = module?.focusKind === "chord" ? "chord of the week" : "tonight's ghost";
+  const focusName = module ? module.focusLabel(ghostKey) : ghostName;
   return (
     <header className="pb-5 border-b border-[color:var(--bg-rule)]">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">tonight&apos;s ghost</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">{focusEyebrow}</div>
         <span className="font-serif italic text-sm px-2.5 py-0.5 rounded-full bg-[color:var(--instrument-accent-bg)] text-[color:var(--instrument-accent-deep)]">
           {instrumentLabel}
         </span>
       </div>
       <div className="flex items-baseline gap-3 mt-1.5 flex-wrap">
-        <h1 className="font-serif text-[length:var(--text-3xl)] text-[color:var(--ink)] tracking-[-0.025em]" style={{ fontVariationSettings: "'opsz' 36, 'SOFT' 50" }}>{ghostName}</h1>
+        <h1 className="font-serif text-[length:var(--text-3xl)] text-[color:var(--ink)] tracking-[-0.025em]" style={{ fontVariationSettings: "'opsz' 36, 'SOFT' 50" }}>{focusName}</h1>
         <GhostPicker current={ghostKey} />
       </div>
       {mode === "first-back" && firstBackMessage && (
@@ -227,6 +242,26 @@ function Footer({ onDone, onPrint, sessionLine, miniShelfLine, northStarNudge }:
       )}
     </footer>
   );
+}
+
+/** A quiet stats strip under the header: XP progress + level title on the left,
+ *  the streak ember on the right. Layered on top of the territory model — purely
+ *  motivational, never gating. */
+function StatsStrip({ xp, streak }: { xp: number; streak: import("@/lib/types").StreakState }) {
+  return (
+    <div className="mt-4 flex items-center justify-between gap-4 flex-wrap">
+      <XPBar xp={xp} className="flex-1 min-w-[200px]" />
+      <StreakFlame streak={streak} />
+    </div>
+  );
+}
+
+/** Shows the next pending level-up as a reward moment. Clears via dismissLevelUp;
+ *  if multiple levels were crossed at once, they surface one after another. */
+function LevelUpQueue({ pending, onClose }: { pending?: number[]; onClose: (level: number) => void }) {
+  const level = pending?.[0];
+  if (level == null) return null;
+  return <LevelUpModal level={level} onCloseAction={() => onClose(level)} />;
 }
 
 function UnlockQueue({ queue, onClose, unlocks }: { queue: string[]; onClose: () => void; unlocks: { id: string; title: string; tryLine: string }[] }) {
