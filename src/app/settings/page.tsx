@@ -181,7 +181,7 @@ function Settings() {
 
       <Section title="theme">
         <div className="flex gap-2">
-          {(["dark", "light"] as const).map((t) => (
+          {(["light", "dark"] as const).map((t) => (
             <button
               key={t}
               type="button"
@@ -191,8 +191,8 @@ function Settings() {
               }}
               className={
                 "text-sm px-4 py-1.5 rounded-full border transition-colors " +
-                ((state.theme ?? "dark") === t
-                  ? "border-[color:var(--accent)] text-[color:var(--accent)]"
+                ((state.theme ?? "light") === t
+                  ? "border-[color:var(--accent)] text-[color:var(--accent)] bg-[color:var(--accent)]/10"
                   : "border-[color:var(--rule)] text-[color:var(--ink-2)] hover:border-[color:var(--accent-soft)]")
               }
             >
@@ -200,6 +200,7 @@ function Settings() {
             </button>
           ))}
         </div>
+        <p className="text-xs text-[color:var(--ink-3)] italic mt-1">the studio is warm and light by default. dark is here for late nights.</p>
       </Section>
 
       <Section title="your data">
