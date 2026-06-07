@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { Grade, KeyId, Phase } from "@/lib/types";
 import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META } from "@/lib/music";
 import { exportStateJson, importStateJson, clearState } from "@/lib/storage";
+import { weekIdOf } from "@/lib/ghostKey";
 import { setRootAttrs } from "@/lib/domAttrs";
 
 export default function SettingsPage() {
@@ -65,8 +66,10 @@ function Settings() {
   };
 
   const setGhostNow = (k: KeyId) => {
-    const now = new Date();
-    const weekId = `${now.getUTCFullYear()}-W${Math.ceil(now.getUTCDate() / 7)}`;
+    // Must use the same ISO-week id that ghostKeyFor compares against (B5).
+    // The old `Math.ceil(date/7)` week-of-month calc never matched weekIdOf,
+    // so the override was silently ignored.
+    const weekId = weekIdOf(new Date());
     patch({ ghostOverride: { key: k, weekId } });
   };
 

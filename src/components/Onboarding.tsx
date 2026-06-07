@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/hooks/useAppState";
+import { weekIdOf } from "@/lib/ghostKey";
 import type { Phase, Grade, KeyId } from "@/lib/types";
 
 const PHASE_OPTIONS: { label: string; phase: Phase; grade: Grade; ghost: KeyId; earLevel: 1 | 2 | 3 | 4 | 5 | 6 | 7 }[] = [
@@ -63,7 +64,9 @@ export function Onboarding() {
       phase: option.phase,
       grade: option.grade,
       earLevel: option.earLevel,
-      ghostOverride: { key: option.ghost, weekId: "seed" },
+      // weekId must be a real ISO-week id (matches ghostKeyFor) so the seeded
+      // ghost actually applies this first week, then naturally expires (B5).
+      ghostOverride: { key: option.ghost, weekId: weekIdOf(new Date()) },
       pieces: state.pieces.length > 0 ? state.pieces : pieces,
       currentPieceId: state.currentPieceId ?? defaultCurrentPiece.id,
       keyDepths: { ...(state.keyDepths ?? {}), ...seedDepths },
