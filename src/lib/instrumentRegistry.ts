@@ -23,6 +23,7 @@ import type {
   Instrument,
   Phase,
   KeyId,
+  EarRound,
 } from "./types";
 
 // Minimal tab payload shape; the guitar module (P4) defines the concrete data
@@ -65,6 +66,28 @@ export interface InstrumentModule {
   unlockLibrary: UnlockCard[];
   skillNodes: SkillNode[];
   ghostRotation: Record<Phase, KeyId[]>;
+
+  // ── Instrument-aware presentation hooks (V2 Phase A) ──
+  // These let B2 render an instrument-appropriate "focus of the week" header and
+  // progress map WITHOUT changing the underlying ghost-key / skill-tree plumbing.
+  // The generalization is purely presentation-layer: the existing ghostRotation
+  // still drives chain-drill selection; `focusKind`/`focusLabel` just describe
+  // how to PRESENT the current focus for this instrument.
+
+  /** What a weekly "focus" is for this instrument. piano = "key", guitar = "chord". */
+  focusKind: "key" | "chord";
+  /** Map a focus id (a KeyId for piano, a chord/riff id for guitar) → display label. */
+  focusLabel: (focusId: string) => string;
+  /** Which progress-map visual the /tree page should render for this instrument. */
+  progressMapKind: "keymap" | "fretboard";
+  /**
+   * Optional per-instrument ear-training rounds. When present, todayPlan pulls
+   * ear rounds from here; when absent it falls back to the shared earRounds.ts
+   * generator. A function form lets the module generate fresh rounds per call.
+   * (Piano leaves this undefined → keeps using the shared generator unchanged.)
+   */
+  earRounds?: EarRound[] | ((level: EarRound["level"], focusId: string) => EarRound);
+
   // injected visuals — the ONLY instrument-coupled components
   InstrumentVisual: ComponentType<InstrumentVisualProps>;
   NotationVisual: ComponentType<NotationVisualProps>;

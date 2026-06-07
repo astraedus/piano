@@ -26,6 +26,14 @@ import { GHOST_ROTATION_PER_PHASE } from "./trinity";
 import { PIANO_NODES } from "./skillNodes";
 import { Keyboard } from "./components/Keyboard";
 import { Staff } from "./components/Staff";
+import { KEY_META } from "../music";
+import type { KeyId } from "../types";
+
+// Piano focus = a key. Reuse the existing rich key labels (e.g. "G major").
+// Unknown ids fall back to the raw id so a malformed focus never crashes a header.
+function pianoFocusLabel(focusId: string): string {
+  return KEY_META[focusId as KeyId]?.name ?? focusId;
+}
 
 // Adapter: agnostic InstrumentVisualProps → Keyboard. Defaults match the
 // historical inline usage (rangeStart "C4", 2 octaves) so warmup rendering is
@@ -74,6 +82,12 @@ export const pianoModule: InstrumentModule = {
   unlockLibrary: UNLOCK_LIBRARY,
   skillNodes: PIANO_NODES,
   ghostRotation: GHOST_ROTATION_PER_PHASE,
+  // Instrument-aware presentation hooks (V2 Phase A). Piano focuses on KEYS,
+  // renders the keymap, and keeps using the shared earRounds generator (earRounds
+  // left undefined → todayPlan falls back to the existing behavior).
+  focusKind: "key",
+  focusLabel: pianoFocusLabel,
+  progressMapKind: "keymap",
   InstrumentVisual: PianoInstrumentVisual,
   NotationVisual: PianoNotationVisual,
 };

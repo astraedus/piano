@@ -1,4 +1,4 @@
-import type { AppState, ChainDrill, EarRound, KeyId, Warmup } from "./types";
+import type { AppState, ChainDrill, EarRound, KeyId, TodayMode, Warmup } from "./types";
 import { ghostKeyFor, weeksSinceEpoch } from "./ghostKey";
 import { pickChainDrill } from "./chainDrillPicker";
 import { miniShelfLineFor } from "./miniShelfLines";
@@ -21,7 +21,7 @@ function warmupForWeek(module: InstrumentModule | undefined, weekNumber: number,
   return module.warmups[rotation[idx]];
 }
 
-export type TodayMode = "full" | "short" | "long" | "first-back" | "just-play";
+export type { TodayMode };
 
 export interface TodayPlan {
   mode: TodayMode;
@@ -74,18 +74,40 @@ export function computeTodayPlan(state: AppState, date: Date, overrideMode?: Tod
     }
   }
 
+  // Ear round: if the instrument module supplies its own ear-training set/generator
+  // (guitar will, B1), pull from there; otherwise leave null so the Stand keeps
+  // generating piano ear rounds independently via the shared earRounds.ts (existing
+  // behavior — piano's module.earRounds is undefined).
+  const earRound = earRoundFromModule(module, state.earLevel, ghostKey);
+
   return {
     mode,
     ghostKey,
     warmup,
     pieceId: state.currentPieceId,
     chainDrill,
-    earRound: null, // generated independently in the Piano Stand
+    earRound,
     northStarNudge,
     miniShelfLine: miniShelfLineFor(state, date),
     firstBackMessage,
     gapDays: gapDays ?? undefined,
   };
+}
+
+// Resolve an ear round from the module's optional per-instrument ear set/generator.
+// Returns null when the module supplies none (piano) — preserving the prior
+// behavior where the Stand generates piano ear rounds itself.
+function earRoundFromModule(
+  module: InstrumentModule | undefined,
+  level: EarRound["level"],
+  focusId: KeyId,
+): EarRound | null {
+  const er = module?.earRounds;
+  if (!er) return null;
+  if (typeof er === "function") return er(level, focusId);
+  if (er.length === 0) return null;
+  // Pick a level-appropriate round, else the first available.
+  return er.find((r) => r.level === level) ?? er[0];
 }
 
 function gapDaysSince(iso: string | undefined, date: Date): number | null {
