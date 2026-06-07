@@ -4,6 +4,11 @@ import type { ReactNode } from "react";
 import { STORAGE_KEY, defaultState, loadState, saveState } from "@/lib/storage";
 import { setRootAttrs } from "@/lib/domAttrs";
 import type { AppState, UnlockCard } from "@/lib/types";
+// Importing the piano module self-registers it into the instrument-registry sync
+// cache (registerInstrumentModule runs at import time). This warms the cache at
+// app init — before any computeTodayPlan / ghostKeyFor read — for every page that
+// renders state through this provider. (P4 adds a guitar import here likewise.)
+import "@/lib/piano/module";
 
 interface Ctx {
   state: AppState;

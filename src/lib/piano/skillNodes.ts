@@ -1,0 +1,264 @@
+// Piano skill-tree DAG — PIANO_NODES.
+//
+// A real, coherent prereq graph (not stubs). Guitar (P4) is the showcase tree;
+// piano is intentionally a lighter set, but every edge is real and the graph is
+// acyclic + fully reachable from the tier-0 roots.
+//
+// Design axes mapped from the existing app:
+//   - the 12 unlock cards (lib/piano/unlocks.ts) → each maps to the node whose
+//     completion earns it, via `unlock` (the capability sentence is carried here
+//     and on the card; the linkage is by id convention "u-<node-suffix>").
+//   - the key-depth concept (KeyDepth 0..5 per key) → per-key foundation nodes
+//     (p-key-C, p-key-am, ...) tagged with `keyId` so a future surface can tie
+//     node progress to keyDepths.
+//   - chain-drill pillars (technique / ear / expression / lead-sheet / improv /
+//     repertoire) → SkillCategory + chainDrillId links to concrete drills.
+//
+// Tiers (sunrise ramp, shared with guitar):
+//   t0 orientation · t1 foundation + first keys · t2 more keys + improv + ear ·
+//   t3 lead-sheet / jazz / expression.
+
+import type { SkillNode } from "../types";
+
+export const PIANO_NODES: SkillNode[] = [
+  // ───── Tier 0 — orientation ─────
+  {
+    id: "p-t0-keyboard-map",
+    instrument: "piano",
+    title: "Map the Keyboard",
+    tier: 0,
+    category: "setup",
+    prereqs: [],
+    masteryDrill: "Close your eyes, pick a letter, touch it in under a second.",
+    unlock: "Find any note in under a second.",
+  },
+  {
+    id: "p-t0-posture",
+    instrument: "piano",
+    title: "Posture & Arm Weight",
+    tier: 0,
+    category: "technique",
+    prereqs: ["p-t0-keyboard-map"],
+    masteryDrill: "Five-finger pattern with relaxed arm weight, zero tension between strikes.",
+    unlock: "Play without tension — the foundation of tone.",
+  },
+  {
+    id: "p-t0-staff",
+    instrument: "piano",
+    title: "Reading the Staff",
+    tier: 0,
+    category: "notation",
+    prereqs: ["p-t0-keyboard-map"],
+    masteryDrill: "Name treble + bass clef notes on sight, no counting up from a landmark.",
+    unlock: "Decode a basic score.",
+  },
+
+  // ───── Tier 1 — foundation + first keys ─────
+  {
+    id: "p-key-C",
+    instrument: "piano",
+    title: "C major is yours",
+    tier: 1,
+    category: "scales",
+    prereqs: ["p-t0-posture"],
+    masteryDrill: "C scale hands-separate, C triad, I–IV–V–I in C.",
+    unlock: "C major is yours.",
+    chainDrillId: "p1-c-major-chain",
+    keyId: "C",
+  },
+  {
+    id: "p-key-G",
+    instrument: "piano",
+    title: "G major (one sharp)",
+    tier: 1,
+    category: "scales",
+    prereqs: ["p-key-C"],
+    masteryDrill: "G scale hands-separate — listen for the F♯. G triad, G–C–D–G.",
+    unlock: "A second key under your hands.",
+    chainDrillId: "p1-g-major-chain",
+    keyId: "G",
+  },
+  {
+    id: "p-key-F",
+    instrument: "piano",
+    title: "F major (one flat)",
+    tier: 1,
+    category: "scales",
+    prereqs: ["p-key-C"],
+    masteryDrill: "F scale, thumb on F and C. F triad, F–Bb–C–F.",
+    unlock: "The home key of countless ballads.",
+    chainDrillId: "p1-f-major-chain",
+    keyId: "F",
+  },
+  {
+    id: "p-key-am",
+    instrument: "piano",
+    title: "A minor longing",
+    tier: 1,
+    category: "scales",
+    prereqs: ["p-key-C"],
+    masteryDrill: "A natural minor, Am triad, i–iv–V–i. Feel the E resolve.",
+    unlock: "Hear major vs minor reliably.",
+    chainDrillId: "p1-a-minor-chain",
+    keyId: "am",
+  },
+  {
+    id: "p-t1-first-improv",
+    instrument: "piano",
+    title: "First Improvisation",
+    tier: 1,
+    category: "expression",
+    prereqs: ["p-key-C"],
+    masteryDrill: "Loop C–F–G–C with the left hand, noodle C pentatonic with the right.",
+    unlock: "Make something up that sounds good.",
+    chainDrillId: "p1-c-major-chain",
+  },
+  {
+    id: "p-t1-echo-ear",
+    instrument: "piano",
+    title: "The Echo (ear)",
+    tier: 1,
+    category: "ear",
+    prereqs: ["p-t0-keyboard-map"],
+    masteryDrill: "Hear 3–4 notes in C, echo them back. Then with eyes closed.",
+    unlock: "Your ear can find notes it just heard.",
+    chainDrillId: "p1-echo-ear",
+  },
+  {
+    id: "p-t1-three-moods",
+    instrument: "piano",
+    title: "Three Moods",
+    tier: 1,
+    category: "expression",
+    prereqs: ["p-key-C"],
+    masteryDrill: "Play I–vi–IV–V three ways: tender, restless, resigned. Same notes.",
+    unlock: "Touch and timing change the whole feeling.",
+    chainDrillId: "p1-three-moods-lite",
+  },
+
+  // ───── Tier 2 — more keys, the pop formula, transcribing ─────
+  {
+    id: "p-t2-chord-under-melody",
+    instrument: "piano",
+    title: "Chord Under Melody",
+    tier: 2,
+    category: "technique",
+    prereqs: ["p-key-C", "p-key-am"],
+    masteryDrill: "Left hand holds a chord while the right hand plays a melody.",
+    unlock: "Hold a chord with the left hand while the right plays a melody.",
+  },
+  {
+    id: "p-t2-pop-formula",
+    instrument: "piano",
+    title: "The Pop Formula",
+    tier: 2,
+    category: "chords",
+    prereqs: ["p-t2-chord-under-melody"],
+    masteryDrill: "Am–F–C–G as block chords, then a melody over the loop.",
+    unlock: "You can play half of pop music.",
+    chainDrillId: "p2-am-pop-formula",
+  },
+  {
+    id: "p-t2-4-bar-improv",
+    instrument: "piano",
+    title: "4-Bar Improv",
+    tier: 2,
+    category: "expression",
+    prereqs: ["p-t1-first-improv", "p-key-am"],
+    masteryDrill: "Loop i–iv–V in A minor, improvise eight bars without panicking.",
+    unlock: "Improvise a 4-bar idea without panicking.",
+    chainDrillId: "p2-left-hand-loop",
+  },
+  {
+    id: "p-t2-transcribe",
+    instrument: "piano",
+    title: "Put a Melody on the Keys",
+    tier: 2,
+    category: "ear",
+    prereqs: ["p-t1-echo-ear", "p-key-C"],
+    masteryDrill: "Play Happy Birthday, then Ode to Joy, by ear in C.",
+    unlock: "Put a melody you heard onto the piano.",
+    chainDrillId: "p2-song-transcribe",
+  },
+  {
+    id: "p-key-D",
+    instrument: "piano",
+    title: "D major daylight",
+    tier: 2,
+    category: "scales",
+    prereqs: ["p-key-G"],
+    masteryDrill: "D scale (two sharps), I–V–vi–IV in D.",
+    unlock: "A bright two-sharp key.",
+    chainDrillId: "p2-d-major-daylight",
+    keyId: "D",
+  },
+  {
+    id: "p-key-em",
+    instrument: "piano",
+    title: "E minor mood",
+    tier: 2,
+    category: "scales",
+    prereqs: ["p-key-am", "p-key-G"],
+    masteryDrill: "E natural minor, i–III–VII–VI in Em, played two moods.",
+    unlock: "A relative-minor colour to reach for.",
+    chainDrillId: "p2-e-minor-mood",
+    keyId: "em",
+  },
+
+  // ───── Tier 3 — lead-sheet, jazz, expression ─────
+  {
+    id: "p-t3-lead-sheet",
+    instrument: "piano",
+    title: "Read a Lead Sheet",
+    tier: 3,
+    category: "chords",
+    prereqs: ["p-t2-pop-formula", "p-key-G"],
+    masteryDrill: "LH comps chord symbols while RH finds the melody, in real time.",
+    unlock: "Read a lead sheet in real time.",
+    chainDrillId: "p2-g-lead-sheet",
+  },
+  {
+    id: "p-t3-three-moods",
+    instrument: "piano",
+    title: "Same Progression, Three Ways",
+    tier: 3,
+    category: "expression",
+    prereqs: ["p-t1-three-moods", "p-t2-chord-under-melody"],
+    masteryDrill: "vi–IV–I–V played tender, angry, resigned — only touch and timing change.",
+    unlock: "Play the same progression three ways.",
+    chainDrillId: "p2-three-moods",
+  },
+  {
+    id: "p-t3-pop-pull",
+    instrument: "piano",
+    title: "Pull a Song from a Recording",
+    tier: 3,
+    category: "ear",
+    prereqs: ["p-t2-transcribe", "p-t2-pop-formula"],
+    masteryDrill: "Put on a half-known song, find the melody, find a chord under each bar.",
+    unlock: "Pick up a pop song from a recording.",
+    chainDrillId: "p3-pop-pull",
+  },
+  {
+    id: "p-t3-ii-v-i",
+    instrument: "piano",
+    title: "ii–V–I (first jazz)",
+    tier: 3,
+    category: "chords",
+    prereqs: ["p-t3-lead-sheet"],
+    masteryDrill: "ii–V–I in F and C with shell voicings, melody landing on chord tones.",
+    unlock: "You can read and play a ii–V–I.",
+    chainDrillId: "p3-ii-v-i-taste",
+  },
+  {
+    id: "p-t3-blues",
+    instrument: "piano",
+    title: "12-Bar Blues",
+    tier: 3,
+    category: "rhythm",
+    prereqs: ["p-t2-4-bar-improv", "p-key-C"],
+    masteryDrill: "12-bar blues in C, LH roots, RH C minor pentatonic + blue note, swung.",
+    unlock: "Play blues without permission.",
+    chainDrillId: "p3-blues-starter",
+  },
+];
