@@ -1,0 +1,103 @@
+// Instrument registry — the single seam between the shared practice spine and
+// per-instrument content/visuals (plan §1.3, decision D1).
+//
+// One shared <PracticeStand> consumes getInstrumentModule(state.instrument).
+// Guitar is data + 2 injected visual components, NOT a parallel app.
+//
+// Loading model (plan note under §1.3): instrument *data* is small and is held
+// in a SYNC cache so pure functions like computeTodayPlan can read it without
+// awaiting. Heavy visual components are code-split via next/dynamic inside each
+// module. Modules self-register into the cache at import time.
+//
+// P0 ships the interface + cache + registration mechanism only. The piano module
+// (P1) and guitar module (P4) register themselves; until then getModuleSync
+// returns undefined and getInstrumentModule rejects with a clear error rather
+// than crashing the app.
+
+import type { ComponentType } from "react";
+import type {
+  ChainDrill,
+  Warmup,
+  UnlockCard,
+  SkillNode,
+  Instrument,
+  Phase,
+  KeyId,
+} from "./types";
+
+// Minimal tab payload shape; the guitar module (P4) defines the concrete data
+// it feeds to its VexFlow TabStave NotationVisual. Kept loose here so P0 has no
+// dependency on guitar internals.
+export interface TabData {
+  strings?: number;
+  positions?: { str: number; fret: number }[];
+  [key: string]: unknown;
+}
+
+export interface InstrumentVisualProps {
+  notes?: string[];
+  shape?: number[];
+  className?: string;
+}
+
+export interface NotationVisualProps {
+  notes?: string[];
+  tab?: TabData;
+  className?: string;
+}
+
+export interface InstrumentModule {
+  id: Instrument;
+  displayName: string;                 // "Piano" | "Electric Guitar"
+  accentVar: string;                   // "piano" | "guitar" → drives data-instrument
+  chainDrills: ChainDrill[];
+  warmups: Record<string, Warmup>;
+  warmupRotation: { phase1: string[]; phase2Plus: string[] };
+  unlockLibrary: UnlockCard[];
+  skillNodes: SkillNode[];
+  ghostRotation: Record<Phase, KeyId[]>;
+  // injected visuals — the ONLY instrument-coupled components
+  InstrumentVisual: ComponentType<InstrumentVisualProps>;
+  NotationVisual: ComponentType<NotationVisualProps>;
+}
+
+// --- Sync cache + registration -------------------------------------------
+
+const CACHE = new Map<Instrument, InstrumentModule>();
+
+/**
+ * Register a module into the sync cache. Each instrument module calls this at
+ * import time (e.g. `registerInstrumentModule(pianoModule)`). Idempotent —
+ * re-registering the same id overwrites the previous entry.
+ */
+export function registerInstrumentModule(module: InstrumentModule): void {
+  CACHE.set(module.id, module);
+}
+
+/**
+ * Sync cache lookup for use inside pure functions (computeTodayPlan etc.).
+ * Returns undefined if the module hasn't registered yet — callers must guard.
+ */
+export function getModuleSync(id: Instrument): InstrumentModule | undefined {
+  return CACHE.get(id);
+}
+
+/** True once a module for `id` has registered. */
+export function isModuleRegistered(id: Instrument): boolean {
+  return CACHE.has(id);
+}
+
+/**
+ * Async accessor. Returns the cached module if present. P1/P4 may replace the
+ * body with dynamic imports that ensure the module file is loaded (which
+ * triggers its self-registration); for P0 it resolves from cache or rejects
+ * with an actionable error.
+ */
+export async function getInstrumentModule(id: Instrument): Promise<InstrumentModule> {
+  const cached = CACHE.get(id);
+  if (cached) return cached;
+  throw new Error(
+    `Instrument module "${id}" is not registered. Import its module file ` +
+      `(which self-registers via registerInstrumentModule) before calling getInstrumentModule.`,
+  );
+}
