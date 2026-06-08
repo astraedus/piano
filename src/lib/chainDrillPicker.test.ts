@@ -1,7 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { pickChainDrill } from "./chainDrillPicker";
+import {
+  pickChainDrill,
+  buildInterleavePlan,
+  INTERLEAVE_REPS_PER_SKILL,
+} from "./chainDrillPicker";
 import { defaultState } from "./storage";
-import type { AppState, Phase } from "./types";
+import type { AppState, Phase, SkillProgress } from "./types";
 import "./piano/module"; // self-registers piano so chainDrills resolve
 
 function stateWith(partial: Partial<AppState> = {}): AppState {
@@ -72,5 +76,69 @@ describe("pickChainDrill — recency exclusion", () => {
     const drill = pickChainDrill(stateWith({ phase, recentDrillIds: allRecent }), DAY);
     expect(drill).not.toBeNull();
     expect(drill?.phase).toBe(phase);
+  });
+});
+
+describe("buildInterleavePlan (R4 interleaved rep sequence)", () => {
+  const learned = (): SkillProgress => ({ status: "learned", reps: 5, learnedAt: "2026-01-01" });
+  const inProgress = (): SkillProgress => ({ status: "in-progress", reps: 2 });
+
+  it("returns null when fewer than 2 established interleavable skills exist", () => {
+    // Nothing learned, so no node is past the early stage and there is no weave.
+    const plan = buildInterleavePlan(stateWith({ phase: 1 }), DAY, null);
+    expect(plan).toBeNull();
+  });
+
+  it("weaves 2-3 established skills into an alternating rep sequence", () => {
+    // p-key-C/G/F link to the seeded interleavable phase-1 drills. Make them
+    // established so all three qualify.
+    const s = stateWith({
+      phase: 1,
+      skillProgress: {
+        "p-key-C": learned(),
+        "p-key-G": inProgress(),
+        "p-key-F": inProgress(),
+      },
+    });
+    const plan = buildInterleavePlan(s, DAY, null);
+    expect(plan).not.toBeNull();
+    expect(plan!.drills.length).toBeGreaterThanOrEqual(2);
+    expect(plan!.drills.length).toBeLessThanOrEqual(3);
+
+    // Sequence length is reps-per-skill times the number of skills.
+    expect(plan!.repSequence).toHaveLength(INTERLEAVE_REPS_PER_SKILL * plan!.drills.length);
+
+    // Each round cycles through every drill once (A,B,C,A,B,C,...).
+    const n = plan!.drills.length;
+    const order = plan!.drills.map((d) => d.id);
+    for (let r = 0; r < INTERLEAVE_REPS_PER_SKILL; r++) {
+      expect(plan!.repSequence.slice(r * n, (r + 1) * n)).toEqual(order);
+    }
+  });
+
+  it("excludes brand-new (cognitive-stage) skills from interleaving", () => {
+    // p-key-C established, but p-key-G/F untouched (never started), so only one
+    // eligible skill remains and there is no weave.
+    const s = stateWith({
+      phase: 1,
+      skillProgress: { "p-key-C": learned() },
+    });
+    const plan = buildInterleavePlan(s, DAY, null);
+    expect(plan).toBeNull(); // need at least 2 eligible
+  });
+
+  it("places the primary drill first in the weave when it qualifies", () => {
+    const s = stateWith({
+      phase: 1,
+      skillProgress: {
+        "p-key-C": learned(),
+        "p-key-G": learned(),
+        "p-key-F": learned(),
+      },
+    });
+    const primary = { id: "p1-g-major-chain" } as never;
+    const plan = buildInterleavePlan(s, DAY, primary);
+    expect(plan).not.toBeNull();
+    expect(plan!.drills[0].id).toBe("p1-g-major-chain");
   });
 });

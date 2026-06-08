@@ -1,6 +1,17 @@
-import type { AppState, ChainDrill, EarRound, KeyId, TodayMode, Warmup } from "./types";
+import type {
+  AppState,
+  BpmLadderConfig,
+  ChainDrill,
+  EarRound,
+  KeyId,
+  RepBlockConfig,
+  SkillNode,
+  TodayMode,
+  Warmup,
+} from "./types";
 import { ghostKeyFor, weeksSinceEpoch } from "./ghostKey";
-import { pickChainDrill } from "./chainDrillPicker";
+import { buildInterleavePlan, pickChainDrill, type InterleavePlan } from "./chainDrillPicker";
+import { dueReviews } from "./skillReview";
 import { miniShelfLineFor } from "./miniShelfLines";
 import { getModuleSync, type InstrumentModule } from "./instrumentRegistry";
 
@@ -36,6 +47,18 @@ export interface TodayPlan {
   miniShelfLine?: string | null;
   firstBackMessage?: string | null;
   gapDays?: number;
+  // ── V3 motor-learning data (consumed by P2/P3 UI) ──
+  // R2/R5 — the resolved drill's micro-rest + tempo-ladder config, surfaced here
+  // so the rep-engine can read them without re-resolving the drill. Absent when
+  // the drill defines none (piano behavior unchanged when unset).
+  repBlocks?: RepBlockConfig | null;
+  bpmLadder?: BpmLadderConfig | null;
+  // R4 — interleaved rep sequence when 2-3 established skills can be woven. Null
+  // when there aren't enough eligible skills (the default single-drill flow).
+  interleave?: InterleavePlan | null;
+  // R7 — learned skill nodes due for spaced review today, for P3 to surface in
+  // free-play / ear slots. Empty array when nothing is due.
+  reviewSkills: SkillNode[];
 }
 
 export function computeTodayPlan(state: AppState, date: Date, overrideMode?: TodayMode): TodayPlan {
@@ -56,6 +79,22 @@ export function computeTodayPlan(state: AppState, date: Date, overrideMode?: Tod
   }
 
   const chainDrill = mode === "first-back" || mode === "just-play" ? null : pickChainDrill(state, date);
+
+  // R2/R5 — surface the resolved drill's rep-block + BPM-ladder config (null when
+  // the drill defines none, keeping piano behavior identical for unconfigured drills).
+  const repBlocks = chainDrill?.repBlocks ?? null;
+  const bpmLadder = chainDrill?.bpmLadder ?? null;
+
+  // R4 — build an interleaved rep sequence when enough established skills qualify.
+  // Skipped in the light modes (first-back / just-play) where there's no chain slot.
+  const interleave = mode === "first-back" || mode === "just-play"
+    ? null
+    : buildInterleavePlan(state, date, chainDrill);
+
+  // R7 — learned nodes due for spaced review today, resolved to full SkillNodes.
+  const allNodes = module?.skillNodes ?? [];
+  const dueIds = new Set(dueReviews(state.skillReview ?? {}, date.toISOString()));
+  const reviewSkills = allNodes.filter((n) => dueIds.has(n.id));
 
   // North star nudge — once per month, surface for 48h
   let northStarNudge: string | null = null;
@@ -91,6 +130,10 @@ export function computeTodayPlan(state: AppState, date: Date, overrideMode?: Tod
     miniShelfLine: miniShelfLineFor(state, date),
     firstBackMessage,
     gapDays: gapDays ?? undefined,
+    repBlocks,
+    bpmLadder,
+    interleave,
+    reviewSkills,
   };
 }
 
