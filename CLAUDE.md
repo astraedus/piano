@@ -24,6 +24,7 @@ These docs live in the repo. Read the relevant one before working on its area; t
 - `docs/BUILD-V2.md` -- V2 Build — Gamification + Guitar-Native Loop
 - `docs/BUILD-V3.md` -- V3 Build — Motor-Learning Actionables (R1-R10)
 - `docs/BUILD-V4.md` -- V4 Build — Soul-First Learning + UX/Resume Fixes
+- `docs/BUILD-V5.md` -- V5 Build — Real Content + Guidance (the "fuel for the machine" build)
 - `docs/BUILD.md` -- Multi-Instrument Build — Status Tracker
 - `docs/exec-plans/completed/plan-v3-phase3.md` -- Plan: V3 Phase 3 (P3a + P3b) — motor-learning surfacing + framing
 - `docs/research/audit.md` -- Now I have a thorough picture of the entire codebase. Let me produce the report.

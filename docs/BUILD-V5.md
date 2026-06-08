@@ -33,11 +33,11 @@ watchOut?, song? }` — all plain strings (JSON-serializable so content is gener
 | Phase | What | How | Status |
 |-------|------|-----|--------|
 | P-A Foundation | `NodeLesson` types + `lessons.ts` registry + gold-standard examples | main, inline | ✅ |
-| P-B Content | Author `NodeLesson` for all 27 guitar + 21 piano nodes | **Workflow** (parallel writers + fact-check verify), orchestrator assembles into the two `lessons.ts` files | ⬜ |
-| P-C Panel | `SkillGraphPanel` renders the full lesson (what/why/steps/goodWhen/watchOut/song, auto-chipped) + tests | worktree dev agent | ⬜ |
-| P-D Path view | "Your Path" curriculum surface (ordered DAG walk, you-are-here, next-up, song-framed) + Tree tab + "Start Here" setup entry | worktree dev agent | ⬜ |
-| P-E Stand | Warmup/chain slots lead with lesson guidance; route unlearned-foundation users into Setup first; kill generic "do whatever" framing | worktree dev agent | ⬜ |
-| P-F Gate+ship | Assemble content, merge worktrees sequentially, full gate, deploy, live QA | main | ⬜ |
+| P-B Content | Author `NodeLesson` for all 27 guitar + 21 piano nodes | **Workflow** (6 parallel writers + fact-check verify), orchestrator assembled into the two `lessons.ts` files. 48/48 covered, asserted by `lessons.test.ts` | ✅ |
+| P-C Panel | `SkillGraphPanel` renders the full lesson (what/why/steps/goodWhen/watchOut/song, auto-chipped) + tests | worktree dev agent | ✅ |
+| P-D Path view | "Your Path" curriculum surface (ordered DAG walk, you-are-here, next-up, song-framed) + default Tree tab + "Start Here" setup entry | worktree dev agent | ✅ |
+| P-E Stand | Warmup/chain slots lead with lesson guidance; route unlearned-foundation users into Setup via a Start-Here card | worktree dev agent | ✅ |
+| P-F Gate+ship | Content assembled, 3 worktrees merged sequentially, full gate (406 tests, tsc, build all green), deployed | main | ✅ |
 
 Content is DATA-only (two files) so the Workflow never collides with the UI
 worktrees. UI agents build/test against the gold-standard examples before full
