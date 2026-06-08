@@ -18,6 +18,12 @@
 
 import type { SkillNode } from "../types";
 
+// V4 soul-first labels + path membership applied per docs/research/soul-first-learning.md
+// Section 3 (guitar table). Path-tag rule: rhythm/chord/foundation skills are on all
+// three paths; lead/expression skills are play-with-soul + go-deep; theory nodes are
+// go-deep + theory:true and carry NO soulTitle (they only show in Go Deep, where the
+// theory name is the right label). All fields optional and backward-compatible.
+
 export const GUITAR_NODES: SkillNode[] = [
   // ───── Tier 0 — setup & orientation ─────
   {
@@ -31,6 +37,9 @@ export const GUITAR_NODES: SkillNode[] = [
     unlock: "Tune & orient independently",
     chainDrillId: "g-t0-tuning-chain",
     unlockCardId: "u-g-anatomy",
+    soulTitle: "Your Guitar's Names",
+    keepTitle: "Guitar Anatomy & Tuning",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "g-t0-posture",
@@ -42,6 +51,9 @@ export const GUITAR_NODES: SkillNode[] = [
     masteryDrill: "30s body check: wrist relaxed, thumb behind neck, pick 45°",
     unlock: "Foundation posture",
     viz: "animation",
+    soulTitle: "Hold It Right",
+    keepTitle: "Holding & Pick Grip",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "g-t0-tab",
@@ -55,6 +67,9 @@ export const GUITAR_NODES: SkillNode[] = [
     viz: "tab",
     chainDrillId: "g-t0-tab-chain",
     unlockCardId: "u-g-tab",
+    soulTitle: "Read the Map",
+    keepTitle: "Reading Tab Basics",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
 
   // ───── Tier 1 — beginner foundations ─────
@@ -68,6 +83,9 @@ export const GUITAR_NODES: SkillNode[] = [
     masteryDrill: "Every string rings clean frets 1-5, fingertip only",
     unlock: "Clean single-note fretting",
     chainDrillId: "g-t1-fretting-chain",
+    soulTitle: "Clean Notes",
+    keepTitle: "Fretting Hand Placement",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "g-t1-downpick",
@@ -80,6 +98,9 @@ export const GUITAR_NODES: SkillNode[] = [
     unlock: "Controlled attack",
     chainDrillId: "g-t1-downpick-chain",
     unlockCardId: "u-g-first-riff",
+    soulTitle: "Hit It Once",
+    keepTitle: "Down-Picking",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "g-t1-altpick",
@@ -91,6 +112,9 @@ export const GUITAR_NODES: SkillNode[] = [
     masteryDrill: "Chromatic 1-2-3-4 all 6 strings, alt-pick 80bpm",
     unlock: "Efficient scale motion",
     chainDrillId: "g-t1-altpick-chain",
+    soulTitle: "Pick in Both Directions",
+    keepTitle: "Alternate Picking",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t1-openEM",
@@ -106,6 +130,9 @@ export const GUITAR_NODES: SkillNode[] = [
     chainDrillId: "g-t1-open-chords-em-chain",
     unlockCardId: "u-g-open-chords",
     fluencyTest: { prompt: "Switch Em↔Am↔E↔A in time with a backing track, eyes on the page (not your fretting hand)." },
+    soulTitle: "The Minor Heart",
+    keepTitle: "Open Chords (Em, Am, E, A)",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "g-t1-openDGC",
@@ -120,6 +147,9 @@ export const GUITAR_NODES: SkillNode[] = [
     chordShape: [-1, 3, 2, 0, 1, 0] /*C*/,
     chainDrillId: "g-t1-open-chords-dgc-chain",
     unlockCardId: "u-g-open-chords-full",
+    soulTitle: "The Full Chord Set",
+    keepTitle: "Open Chords (D, G, C)",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "g-t1-strum",
@@ -131,6 +161,9 @@ export const GUITAR_NODES: SkillNode[] = [
     masteryDrill: "D-DU-UDU over Em→Am→C→G 80bpm 2min",
     unlock: "Accompany songs",
     chainDrillId: "g-t1-strum-chain",
+    soulTitle: "The Strum Pattern",
+    keepTitle: "Basic Strumming",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "g-t1-power",
@@ -146,6 +179,9 @@ export const GUITAR_NODES: SkillNode[] = [
     chainDrillId: "g-t1-power-chords-chain",
     unlockCardId: "u-g-power-chords",
     fluencyTest: { prompt: "Play the E5→A5→D5→G5 riff to a backing track without looking at the fretboard." },
+    soulTitle: "The Rock Chug",
+    keepTitle: "Power Chords",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "g-t1-palmmute",
@@ -158,6 +194,9 @@ export const GUITAR_NODES: SkillNode[] = [
     unlock: "Rhythmic punch",
     viz: "animation",
     chainDrillId: "g-t1-palmmute-chain",
+    soulTitle: "Muted Crunch",
+    keepTitle: "Palm Muting",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "g-t1-tabrhythm",
@@ -169,6 +208,9 @@ export const GUITAR_NODES: SkillNode[] = [
     masteryDrill: "Tap a 4-bar tab rhythm before playing, note values correct",
     unlock: "Learn from tab without hearing",
     viz: "tab",
+    keepTitle: "Tab Rhythm Reading",
+    pathTags: ["go-deep"],
+    theory: true,
   },
 
   // ───── Tier 2 — early intermediate ─────
@@ -183,6 +225,9 @@ export const GUITAR_NODES: SkillNode[] = [
     unlock: "Legato phrasing",
     viz: "tab",
     chainDrillId: "g-t2-legato-chain",
+    soulTitle: "One Pick, Two Notes",
+    keepTitle: "Hammer-Ons",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t2-pulloff",
@@ -194,6 +239,9 @@ export const GUITAR_NODES: SkillNode[] = [
     masteryDrill: "G string 7p5 rings clearly, 10 reps/string",
     unlock: "Full legato vocabulary",
     viz: "tab",
+    soulTitle: "Pull Back Into Sound",
+    keepTitle: "Pull-Offs",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t2-slide",
@@ -205,6 +253,9 @@ export const GUITAR_NODES: SkillNode[] = [
     masteryDrill: "B string 5/7 and 7\\5 80bpm, landing rings full beat",
     unlock: "Melodic glide",
     viz: "tab",
+    soulTitle: "Glide Between Notes",
+    keepTitle: "Slides",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t2-bend",
@@ -218,6 +269,9 @@ export const GUITAR_NODES: SkillNode[] = [
     viz: "animation",
     chainDrillId: "g-t2-bend-vibrato-chain",
     unlockCardId: "u-g-bend",
+    soulTitle: "Make a Note Cry",
+    keepTitle: "String Bending (Whole Step)",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t2-vibrato",
@@ -229,6 +283,9 @@ export const GUITAR_NODES: SkillNode[] = [
     masteryDrill: "B fret7 even oscillation 4×/beat 60bpm 8s",
     unlock: "Sustained notes breathe",
     viz: "animation",
+    soulTitle: "Make a Note Breathe",
+    keepTitle: "Vibrato",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t2-pent-box1",
@@ -243,6 +300,9 @@ export const GUITAR_NODES: SkillNode[] = [
     chainDrillId: "g-t2-pentatonic-box1-chain",
     unlockCardId: "u-g-pentatonic",
     fluencyTest: { prompt: "Improvise over an Am backing track using Box 1 while keeping a steady tap with your foot." },
+    soulTitle: "Your First Solo",
+    keepTitle: "Minor Pentatonic (Box 1)",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t2-pent-box2",
@@ -255,6 +315,9 @@ export const GUITAR_NODES: SkillNode[] = [
     unlock: "Leave first position",
     viz: "fretboard_map",
     chainDrillId: "g-t2-pentatonic-box2-chain",
+    soulTitle: "Move Up the Neck",
+    keepTitle: "Minor Pentatonic (Box 2 + Connect)",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t2-barre-E",
@@ -269,6 +332,9 @@ export const GUITAR_NODES: SkillNode[] = [
     cagedShape: "E",
     chainDrillId: "g-t2-barre-e-chain",
     unlockCardId: "u-g-barre",
+    soulTitle: "The Shape That Moves",
+    keepTitle: "Barre Chords (E Shape)",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "g-t2-barre-A",
@@ -282,6 +348,9 @@ export const GUITAR_NODES: SkillNode[] = [
     viz: "chord_diagram",
     cagedShape: "A",
     chainDrillId: "g-t2-barre-a-chain",
+    soulTitle: "Any Key, Any Fret",
+    keepTitle: "Barre Chords (A Shape)",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
 
   // ───── Tier 3 — intermediate rewards ─────
@@ -296,6 +365,9 @@ export const GUITAR_NODES: SkillNode[] = [
     unlock: "Harmonic spine of blues/rock; can jam",
     chainDrillId: "g-t3-blues12-chain",
     unlockCardId: "u-g-blues12",
+    soulTitle: "The Spine of Rock",
+    keepTitle: "12-Bar Blues",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t3-phrasing",
@@ -308,6 +380,9 @@ export const GUITAR_NODES: SkillNode[] = [
     unlock: "Solos sound musical",
     chainDrillId: "g-t3-phrasing-chain",
     unlockCardId: "u-g-phrasing",
+    soulTitle: "Ask and Answer",
+    keepTitle: "Lead Phrasing (Q&A)",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t3-licks",
@@ -320,6 +395,9 @@ export const GUITAR_NODES: SkillNode[] = [
     unlock: "Solo with intent",
     viz: "tab",
     chainDrillId: "g-t3-licks-chain",
+    soulTitle: "Musical Sentences",
+    keepTitle: "Pentatonic Licks (Box 1)",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t3-fullneck",
@@ -332,6 +410,9 @@ export const GUITAR_NODES: SkillNode[] = [
     unlock: "Full fretboard freedom",
     viz: "fretboard_map",
     chainDrillId: "g-t3-fullneck-chain",
+    soulTitle: "The Whole Fretboard",
+    keepTitle: "Full-Neck Pentatonic",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t3-bendaccuracy",
@@ -343,6 +424,9 @@ export const GUITAR_NODES: SkillNode[] = [
     masteryDrill: "Whole-step bends in-tune 9/10; pre-bend",
     unlock: "Real blues-rock lead",
     viz: "animation",
+    soulTitle: "Feel the Pitch",
+    keepTitle: "Bending Accuracy + Expression",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "g-t3-syncopation",
@@ -354,5 +438,8 @@ export const GUITAR_NODES: SkillNode[] = [
     masteryDrill: "D-x-DU-x-DU over Em 90bpm 2min, muted strokes even",
     unlock: "Rhythm sounds alive",
     chainDrillId: "g-t3-syncopation-chain",
+    soulTitle: "Rhythm With Attitude",
+    keepTitle: "Rhythm Syncopation & Accents",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
 ];

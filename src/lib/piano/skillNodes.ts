@@ -20,6 +20,13 @@
 
 import type { SkillNode } from "../types";
 
+// V4 soul-first labels + path membership applied per docs/research/soul-first-learning.md
+// Section 3 (piano table). The four foundation keys (C/G/F/am) are on all three paths
+// and are NOT theory (a beginner needs a home key to play in). Reading-the-staff,
+// lead-sheet, and ii-V-I are the only piano theory:true nodes; they carry NO soulTitle
+// (they only render in Go Deep, where the theory name is the right label). All fields
+// optional and backward-compatible.
+
 export const PIANO_NODES: SkillNode[] = [
   // ───── Tier 0 — orientation ─────
   {
@@ -32,6 +39,9 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "Close your eyes, pick a letter, touch it in under a second.",
     unlock: "Find any note in under a second.",
     unlockCardId: "u-p1-keyboard-map",
+    soulTitle: "Find Any Note",
+    keepTitle: "Keyboard Map",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "p-t0-posture",
@@ -42,6 +52,9 @@ export const PIANO_NODES: SkillNode[] = [
     prereqs: ["p-t0-keyboard-map"],
     masteryDrill: "Five-finger pattern with relaxed arm weight, zero tension between strikes.",
     unlock: "Play without tension — the foundation of tone.",
+    soulTitle: "Sit and Settle",
+    keepTitle: "Posture and Arm Weight",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "p-t0-staff",
@@ -52,6 +65,9 @@ export const PIANO_NODES: SkillNode[] = [
     prereqs: ["p-t0-keyboard-map"],
     masteryDrill: "Name treble + bass clef notes on sight, no counting up from a landmark.",
     unlock: "Decode a basic score.",
+    keepTitle: "Reading the Staff",
+    pathTags: ["go-deep"],
+    theory: true,
   },
 
   // ───── Tier 1 — foundation + first keys ─────
@@ -68,6 +84,9 @@ export const PIANO_NODES: SkillNode[] = [
     keyId: "C",
     unlockCardId: "u-p1-c-map",
     fluencyTest: { prompt: "Play the C major scale, hands together, while counting the beats out loud." },
+    soulTitle: "The Home Shape",
+    keepTitle: "C major",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "p-key-G",
@@ -80,6 +99,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "A second key under your hands.",
     chainDrillId: "p1-g-major-chain",
     keyId: "G",
+    soulTitle: "One Sharp",
+    keepTitle: "G major (one sharp)",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "p-key-F",
@@ -92,6 +114,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "The home key of countless ballads.",
     chainDrillId: "p1-f-major-chain",
     keyId: "F",
+    soulTitle: "One Flat",
+    keepTitle: "F major (one flat)",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "p-key-am",
@@ -105,6 +130,9 @@ export const PIANO_NODES: SkillNode[] = [
     chainDrillId: "p1-a-minor-chain",
     keyId: "am",
     unlockCardId: "u-p1-minor-feeling",
+    soulTitle: "The Sad Shape",
+    keepTitle: "A minor",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "p-t1-first-improv",
@@ -117,6 +145,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "Make something up that sounds good.",
     chainDrillId: "p1-c-major-chain",
     unlockCardId: "u-p1-first-improv",
+    soulTitle: "Make It Up",
+    keepTitle: "First Improvisation",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "p-t1-echo-ear",
@@ -128,6 +159,9 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "Hear 3–4 notes in C, echo them back. Then with eyes closed.",
     unlock: "Your ear can find notes it just heard.",
     chainDrillId: "p1-echo-ear",
+    soulTitle: "Echo It Back",
+    keepTitle: "The Echo (ear training)",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "p-t1-three-moods",
@@ -139,6 +173,9 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "Play I–vi–IV–V three ways: tender, restless, resigned. Same notes.",
     unlock: "Touch and timing change the whole feeling.",
     chainDrillId: "p1-three-moods-lite",
+    soulTitle: "Same Notes, Three Feelings",
+    keepTitle: "Three Moods",
+    pathTags: ["play-with-soul", "go-deep"],
   },
 
   // ───── Tier 2 — more keys, the pop formula, transcribing ─────
@@ -152,6 +189,9 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "Left hand holds a chord while the right hand plays a melody.",
     unlock: "Hold a chord with the left hand while the right plays a melody.",
     unlockCardId: "u-p2-chord-under-melody",
+    soulTitle: "Two Hands Together",
+    keepTitle: "Chord Under Melody",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "p-t2-pop-formula",
@@ -165,6 +205,9 @@ export const PIANO_NODES: SkillNode[] = [
     chainDrillId: "p2-am-pop-formula",
     unlockCardId: "u-p2-pop-formula",
     fluencyTest: { prompt: "Play the Am–F–C–G loop without looking at your hands, and hum the melody on top." },
+    soulTitle: "Half of All Pop",
+    keepTitle: "The Pop Formula",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
     id: "p-t2-4-bar-improv",
@@ -177,6 +220,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "Improvise a 4-bar idea without panicking.",
     chainDrillId: "p2-left-hand-loop",
     unlockCardId: "u-p2-4-bar-improv",
+    soulTitle: "Improvise Without Panic",
+    keepTitle: "4-Bar Improvisation",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "p-t2-transcribe",
@@ -189,6 +235,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "Put a melody you heard onto the piano.",
     chainDrillId: "p2-song-transcribe",
     unlockCardId: "u-p2-first-transcribe",
+    soulTitle: "Play It By Ear",
+    keepTitle: "Transcribing by Ear",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "p-key-D",
@@ -201,6 +250,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "A bright two-sharp key.",
     chainDrillId: "p2-d-major-daylight",
     keyId: "D",
+    soulTitle: "Bright and Wide Open",
+    keepTitle: "D major",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "p-key-em",
@@ -213,6 +265,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "A relative-minor colour to reach for.",
     chainDrillId: "p2-e-minor-mood",
     keyId: "em",
+    soulTitle: "Dark and Cinematic",
+    keepTitle: "E minor",
+    pathTags: ["play-with-soul", "go-deep"],
   },
 
   // ───── Tier 3 — lead-sheet, jazz, expression ─────
@@ -227,6 +282,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "Read a lead sheet in real time.",
     chainDrillId: "p2-g-lead-sheet",
     unlockCardId: "u-p3-lead-sheet",
+    keepTitle: "Reading a Lead Sheet",
+    pathTags: ["go-deep"],
+    theory: true,
   },
   {
     id: "p-t3-three-moods",
@@ -239,6 +297,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "Play the same progression three ways.",
     chainDrillId: "p2-three-moods",
     unlockCardId: "u-p3-three-moods",
+    soulTitle: "Feel, Not Notes",
+    keepTitle: "Same Progression, Three Ways",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "p-t3-pop-pull",
@@ -251,6 +312,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "Pick up a pop song from a recording.",
     chainDrillId: "p3-pop-pull",
     unlockCardId: "u-p3-pop-pull",
+    soulTitle: "Pull a Song Off a Record",
+    keepTitle: "Transcribing Pop Songs",
+    pathTags: ["play-with-soul", "go-deep"],
   },
   {
     id: "p-t3-ii-v-i",
@@ -263,6 +327,9 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "You can read and play a ii–V–I.",
     chainDrillId: "p3-ii-v-i-taste",
     unlockCardId: "u-p3-ii-v-i",
+    keepTitle: "ii-V-I (jazz foundation)",
+    pathTags: ["go-deep"],
+    theory: true,
   },
   {
     id: "p-t3-blues",
@@ -274,5 +341,8 @@ export const PIANO_NODES: SkillNode[] = [
     masteryDrill: "12-bar blues in C, LH roots, RH C minor pentatonic + blue note, swung.",
     unlock: "Play blues without permission.",
     chainDrillId: "p3-blues-starter",
+    soulTitle: "Blues Permission",
+    keepTitle: "12-Bar Blues",
+    pathTags: ["play-with-soul", "go-deep"],
   },
 ];
