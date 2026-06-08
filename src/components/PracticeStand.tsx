@@ -63,6 +63,9 @@ export function PracticeStand() {
   const [earCorrect, setEarCorrect] = useState<string[]>([]);
   const [earWrong, setEarWrong] = useState<string[]>([]);
   const [journal, setJournal] = useState("");
+  // R8 — per-rep quality captured by the chain-drill rep-engine, folded into the
+  // session log so P1's XP weighting + node success-rate gate read real data.
+  const [chainQuality, setChainQuality] = useState<import("@/lib/types").SessionQuality | null>(null);
 
   if (!ready || !plan) {
     return <div className="text-[color:var(--ink-3)] font-serif italic">Loading…</div>;
@@ -93,6 +96,9 @@ export function PracticeStand() {
         { slot: "ear" as const, touched: earRounds.length > 0 },
         { slot: "free" as const, touched: true },
       ],
+      // R8 — only attach quality when the rep-engine actually recorded reps, so a
+      // session where the user never ran the engine stays back-compatible (no gate).
+      quality: chainQuality && (chainQuality.attempts ?? 0) > 0 ? chainQuality : undefined,
     };
     const prevXp = state.xp ?? 0;
     const prevLevel = state.level ?? 1;
@@ -162,7 +168,13 @@ export function PracticeStand() {
         <div className="mt-5">
           <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} />
           <PieceSlot module={module} piece={piece} printAlways={printing} />
-          <ChainDrillSlot module={module} drill={plan.chainDrill ?? null} printAlways={printing} />
+          <ChainDrillSlot
+            module={module}
+            drill={plan.chainDrill ?? null}
+            interleave={plan.interleave ?? null}
+            printAlways={printing}
+            onQualityChangeAction={setChainQuality}
+          />
           <EarMomentSlot
             rounds={earRounds}
             muted={plan.mode === "first-back"}

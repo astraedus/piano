@@ -1,9 +1,14 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "motion/react";
 import { Slot } from "../Slot";
 import type { EarRound } from "@/lib/types";
 import { ensureAudio, playEarRound } from "@/lib/audio";
 import { clsx } from "clsx";
+
+// R2 — a short consolidation pause between ear rounds. Ear rounds are the slot's
+// "reps"; a brief rest between them gives the just-heard interval a beat to settle.
+const EAR_REST_SEC = 8;
 
 export function EarMomentSlot({
   rounds, muted, printAlways, onResultAction,
@@ -13,8 +18,10 @@ export function EarMomentSlot({
   printAlways?: boolean;
   onResultAction?: (correctIds: string[], wrongIds: string[]) => void;
 }) {
+  const reduce = useReducedMotion();
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
+  const [resting, setResting] = useState(false);
   const [correct, setCorrect] = useState<string[]>([]);
   const [wrong, setWrong] = useState<string[]>([]);
   const playedRef = useRef(false);
@@ -54,11 +61,26 @@ export function EarMomentSlot({
       setWrong(next);
       onResultAction?.(correct, next);
     }
+    // After feedback, a brief micro-rest before the next round (R2), unless this
+    // was the last round.
+    const isLast = i >= rounds.length - 1;
     setTimeout(() => {
       setPicked(null);
-      setI((v) => v + 1);
+      if (isLast) { setI((v) => v + 1); return; }
+      setResting(true);
     }, 1200);
   };
+
+  if (resting) {
+    return (
+      <Slot index={4} title="Ear Moment" pillar="ear" duration={`Round ${i + 1} of ${rounds.length}`} summary={<>A beat to let it settle.</>} printAlways={printAlways}>
+        <EarRest
+          reduce={!!reduce}
+          onDoneAction={() => { setResting(false); setI((v) => v + 1); }}
+        />
+      </Slot>
+    );
+  }
 
   return (
     <Slot index={4} title="Ear Moment" pillar="ear" duration={`Round ${i + 1} of ${rounds.length}`} summary={<>{round.prompt}</>} printAlways={printAlways}>
@@ -97,5 +119,33 @@ export function EarMomentSlot({
         )}
       </div>
     </Slot>
+  );
+}
+
+/** A short calm rest between ear rounds (R2) — mirrors the rep-engine's rest cue. */
+function EarRest({ reduce, onDoneAction }: { reduce: boolean; onDoneAction: () => void }) {
+  const [left, setLeft] = useState(EAR_REST_SEC);
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setLeft((v) => {
+        if (v <= 1) { clearInterval(iv); onDoneAction(); return 0; }
+        return v - 1;
+      });
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [onDoneAction]);
+
+  return (
+    <div className="rounded-lg border border-[color:var(--accent-soft)] bg-[color:var(--accent)]/5 px-4 py-4 text-center space-y-2">
+      <div className="flex items-center justify-center gap-3">
+        <span
+          className={clsx("inline-block h-3 w-3 rounded-full bg-[color:var(--accent)]", !reduce && "rest-pulse")}
+          aria-hidden
+        />
+        <span className="font-serif text-xl tabular-nums text-[color:var(--ink)]">{left}s</span>
+      </div>
+      <p className="text-sm text-[color:var(--ink-2)] font-medium">Rest. Let the sound settle.</p>
+      <button type="button" onClick={onDoneAction} className="chip text-xs px-3 py-1">Skip rest</button>
+    </div>
   );
 }

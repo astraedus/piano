@@ -1,14 +1,34 @@
 "use client";
+import { useRef } from "react";
 import { Slot } from "../Slot";
-import type { ChainDrill } from "@/lib/types";
+import type { ChainDrill, SessionQuality } from "@/lib/types";
 import { drillRepId } from "@/lib/types";
 import { KEY_META, midiToSpn, pitchMidi, progressionChords } from "@/lib/music";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { ensureAudio, playProgression, playSequence } from "@/lib/audio";
 import { useAppState } from "@/hooks/useAppState";
+import { RepEngine } from "../RepEngine";
+import { buildRepItems, type RepEngineConfig } from "@/lib/repEngine";
+import type { InterleavePlan } from "@/lib/chainDrillPicker";
 
-export function ChainDrillSlot({ module, drill, printAlways }: { module?: InstrumentModule; drill?: ChainDrill | null; printAlways?: boolean }) {
+export function ChainDrillSlot({
+  module,
+  drill,
+  interleave,
+  printAlways,
+  onQualityChangeAction,
+}: {
+  module?: InstrumentModule;
+  drill?: ChainDrill | null;
+  /** R4 — interleave plan from todayPlan; when present the rep-engine weaves skills. */
+  interleave?: InterleavePlan | null;
+  printAlways?: boolean;
+  /** R8 — bubble the rep-engine's captured quality up to the session log. */
+  onQualityChangeAction?: (quality: SessionQuality) => void;
+}) {
   const { state, bumpRep } = useAppState();
+  // Fire the legacy "tried it" rep counter exactly once per drill session.
+  const bumpedRef = useRef(false);
   const summary = drill ? (
     <>{drill.name} · {drill.minutes} min</>
   ) : (
@@ -30,9 +50,31 @@ export function ChainDrillSlot({ module, drill, printAlways }: { module?: Instru
 
   const rep = state.skillReps?.[drillRepId(drill.id)];
 
+  // Build the rep-engine config from the resolved plan. R2/R5 read the drill's
+  // own config; R4 weaves the interleave plan when present. Absent config ->
+  // a plain flat run (graceful degrade, identical practice to before + quality).
+  const repItems = buildRepItems({
+    drill: { id: drill.id, name: drill.name },
+    interleave: interleave
+      ? { drills: interleave.drills.map((d) => ({ id: d.id, name: d.name })), repSequence: interleave.repSequence }
+      : null,
+    repBlocks: drill.repBlocks ?? null,
+  });
+  const interleaved = !!interleave && interleave.drills.length > 1;
+  const engineConfig: RepEngineConfig = {
+    reps: repItems,
+    repBlocks: drill.repBlocks ?? null,
+    bpmLadder: drill.bpmLadder ?? null,
+    interleaved,
+  };
+
+  const interleaveNote = interleaved
+    ? "Reps weave between skills tonight. It feels harder and less fluent than drilling one thing. That feeling is the point."
+    : undefined;
+
   return (
     <Slot index={3} title="Chain drill" pillar="improv" duration={`${drill.minutes} min`} status={rep ? "done" : null} summary={summary} printAlways={printAlways}>
-      <div className="space-y-3 text-sm">
+      <div className="space-y-4 text-sm">
         <ol className="space-y-1.5">
           {drill.steps.map((s, i) => (
             <li key={i} className="flex gap-3 items-baseline">
@@ -70,14 +112,28 @@ export function ChainDrillSlot({ module, drill, printAlways }: { module?: Instru
           </div>
         </div>
 
+        {/* The interactive rep-engine (R2/R4/R5/R8). */}
+        <div className="pt-2 border-t border-[color:var(--rule)] no-print">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-2">
+            Run the reps
+          </p>
+          <RepEngine
+            config={engineConfig}
+            noteText={interleaveNote}
+            onQualityChangeAction={(q) => {
+              onQualityChangeAction?.(q);
+              // Keep the legacy "tried it" rep counter warm on the first clean rep
+              // so the historical skillReps signal (and the "done" pill) still fire.
+              // Guard with a ref so a parent re-render can't double-count it.
+              if (!bumpedRef.current && (q.successes ?? 0) >= 1) {
+                bumpedRef.current = true;
+                bumpRep(drillRepId(drill.id), { bpm: q.bpmReached });
+              }
+            }}
+          />
+        </div>
+
         <div className="flex items-center gap-3 pt-1 no-print">
-          <button
-            type="button"
-            onClick={() => bumpRep(drillRepId(drill.id))}
-            className="chip chip-accent text-xs px-3 py-1"
-          >
-            Tried It
-          </button>
           {rep && (
             <span className="text-xs text-[color:var(--ink-3)] italic">
               {rep.count === 1 ? "First time" : `${rep.count} times so far`}
