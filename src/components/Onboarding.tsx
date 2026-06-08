@@ -3,7 +3,48 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/hooks/useAppState";
 import { weekIdOf } from "@/lib/ghostKey";
-import type { Phase, Grade, KeyId, Instrument } from "@/lib/types";
+import type { Phase, Grade, KeyId, Instrument, PathTag } from "@/lib/types";
+
+/**
+ * The path-setting rule, shared by Onboarding and Settings.
+ *
+ * Choosing "Go Deep" forces `theoryEnabled: true` (theory IS the point of Go Deep).
+ * Choosing any other path leaves theory as the user last set it, because theory is
+ * an orthogonal toggle the user controls. Switching AWAY from Go Deep must NOT force
+ * theory off — once turned on, only the user turns it off.
+ *
+ * Pass the current `theoryEnabled` so a non-Go-Deep choice preserves it.
+ */
+export function learningPathPatch(
+  chosen: PathTag,
+  currentTheoryEnabled: boolean | undefined,
+): { learningPath: PathTag; theoryEnabled: boolean } {
+  return {
+    learningPath: chosen,
+    theoryEnabled: chosen === "go-deep" ? true : !!currentTheoryEnabled,
+  };
+}
+
+export const PATH_OPTIONS: { tag: PathTag; label: string; sub: (instrumentNoun: string) => string }[] = [
+  {
+    tag: "just-play",
+    label: "Just Play",
+    sub: () => "Learn riffs, chords, and songs. Make noise you love. No music theory needed, ever.",
+  },
+  {
+    tag: "play-with-soul",
+    label: "Play With Soul",
+    sub: (n) =>
+      n === "guitar"
+        ? "Solo, bend, improvise. Learn to make the guitar sing and cry. Builds on Just Play."
+        : "Solo, improvise, shape every note. Learn to make the piano sing. Builds on Just Play.",
+  },
+  {
+    tag: "go-deep",
+    label: "Go Deep",
+    sub: () => "All of the above, plus the theory of why it works. Reading, the full picture.",
+  },
+];
 
 const PHASE_OPTIONS: { label: string; phase: Phase; grade: Grade; ghost: KeyId; earLevel: 1 | 2 | 3 | 4 | 5 | 6 | 7 }[] = [
   { label: "I've never touched one.", phase: 1, grade: "initial", ghost: "C", earLevel: 1 },
@@ -18,6 +59,7 @@ export function Onboarding() {
   const [step, setStep] = useState(0);
   const [instrument, setInstrument] = useState<Instrument | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
+  const [learningPath, setLearningPath] = useState<PathTag | null>(null);
   const [northStar, setNorthStar] = useState("");
   const [keyboardChoice, setKeyboardChoice] = useState<"now" | "elsewhere" | "not-yet" | null>(null);
   const [name, setName] = useState("");
@@ -87,11 +129,18 @@ export function Onboarding() {
       });
     }
 
+    // Default a path-less finish to "just-play" (the safest, theory-free start);
+    // Go Deep forces theory on, every other choice leaves theory off for a fresh
+    // profile. New users have no prior theory preference, so currentTheoryEnabled
+    // is false here — learningPathPatch keeps the orthogonal rule in one place.
+    const pathPatch = learningPathPatch(learningPath ?? "just-play", false);
+
     patch({
       instrument: chosen,
       firstOpenedAt: state.firstOpenedAt ?? now,
       name: name.trim() || undefined,
       northStar: northStar.trim() || undefined,
+      ...pathPatch,
       hasKeyboardNow: keyboardChoice !== "not-yet",
       phase: option.phase,
       grade: option.grade,
@@ -176,6 +225,36 @@ export function Onboarding() {
       )}
 
       {step === 2 && (
+        <section className="fade-in space-y-6" data-testid="onboarding-path-step">
+          <p className="font-serif text-xl text-[color:var(--ink)]">
+            What do you want to do?
+          </p>
+          <div className="space-y-3">
+            {PATH_OPTIONS.map((o) => (
+              <button
+                key={o.tag}
+                type="button"
+                data-path-choice={o.tag}
+                aria-pressed={learningPath === o.tag}
+                onClick={() => setLearningPath(o.tag)}
+                className={
+                  "w-full text-left px-4 py-5 rounded-lg border transition-colors " +
+                  (learningPath === o.tag
+                    ? "border-[color:var(--accent)] bg-[color:var(--accent)]/10 text-[color:var(--ink)]"
+                    : "border-[color:var(--rule)] text-[color:var(--ink-2)] hover:border-[color:var(--accent-soft)]")
+                }
+              >
+                <span className="block font-serif text-lg text-[color:var(--ink)]">{o.label}</span>
+                <span className="block text-sm text-[color:var(--ink-3)] mt-1">{o.sub(instrumentNoun)}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-sm text-[color:var(--ink-3)] italic">You can change this anytime in Settings.</p>
+          <Nav onBack={() => setStep(1)} onNext={() => setStep(3)} disabled={learningPath === null} />
+        </section>
+      )}
+
+      {step === 3 && (
         <section className="fade-in space-y-6">
           <p className="font-serif text-xl text-[color:var(--ink)]">
             What do you want to play, eventually?
@@ -188,11 +267,11 @@ export function Onboarding() {
             placeholder="To play Hallelujah without crying. To pick up songs I hear. To feel at home at an instrument."
             className="w-full bg-[color:var(--surface)] border border-[color:var(--rule)] rounded-lg px-4 py-3 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)] font-serif"
           />
-          <Nav onBack={() => setStep(1)} onNext={() => setStep(3)} />
+          <Nav onBack={() => setStep(2)} onNext={() => setStep(4)} />
         </section>
       )}
 
-      {step === 3 && (
+      {step === 4 && (
         <section className="fade-in space-y-6">
           <p className="font-serif text-xl text-[color:var(--ink)]">
             Do you have a {haveNoun} right now?
@@ -242,7 +321,7 @@ export function Onboarding() {
               />
             </label>
           </div>
-          <Nav onBack={() => setStep(2)} onNext={finish} nextLabel="Open the App" disabled={keyboardChoice === null} />
+          <Nav onBack={() => setStep(3)} onNext={finish} nextLabel="Open the App" disabled={keyboardChoice === null} />
         </section>
       )}
     </div>
