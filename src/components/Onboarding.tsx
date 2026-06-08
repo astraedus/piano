@@ -225,6 +225,12 @@ export function Onboarding() {
                 : "That's fine. The theory side is free and useful. Come back when you have keys under your fingers. The piano will be worth the wait."}
             </p>
           )}
+          <p
+            data-testid="onboarding-daily-framing"
+            className="text-sm text-[color:var(--ink-2)] border-l-2 border-[color:var(--accent-soft)] pl-3"
+          >
+            One last thing: 15 minutes today beats 2 hours on Sunday. Showing up daily, even briefly, is what builds it.
+          </p>
           <div className="pt-4">
             <label className="block">
               <span className="block text-xs text-[color:var(--ink-3)] mb-1 tracking-wide">Name (optional)</span>

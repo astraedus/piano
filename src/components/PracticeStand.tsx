@@ -145,7 +145,7 @@ export function PracticeStand() {
         <div className="stage-card px-5 py-6 sm:px-7 sm:py-7">
           <Header ghostName={ghost.name} ghostKey={plan.ghostKey} instrumentLabel={instrumentLabel} mode="just-play" module={module} />
           <div className="mt-6">
-            <FreeSlot journalInitial={journal} onJournalChange={setJournal} urlInitial={state.freeSlotUrl} expanded />
+            <FreeSlot journalInitial={journal} onJournalChange={setJournal} urlInitial={state.freeSlotUrl} reviewSkills={plan.reviewSkills} expanded />
           </div>
           <Footer
             onDone={handleDone}
@@ -165,6 +165,8 @@ export function PracticeStand() {
       <div className="stage-card px-5 py-6 sm:px-7 sm:py-7">
         <Header ghostName={ghost.name} ghostKey={plan.ghostKey} instrumentLabel={instrumentLabel} mode={plan.mode} firstBackMessage={plan.firstBackMessage} module={module} />
         <StatsStrip xp={state.xp ?? 0} streak={state.streak ?? emptyStreak()} />
+        <DailyFramingLine />
+        <MentalPracticeCard firstBack={plan.mode === "first-back"} pieceTitle={piece?.title} />
         <div className="mt-5">
           <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} />
           <PieceSlot module={module} piece={piece} printAlways={printing} />
@@ -181,7 +183,7 @@ export function PracticeStand() {
             printAlways={printing}
             onResultAction={(correct: string[], wrong: string[]) => { setEarCorrect(correct); setEarWrong(wrong); }}
           />
-          <FreeSlot urlInitial={state.freeSlotUrl} journalInitial={journal} onJournalChange={setJournal} printAlways={printing} />
+          <FreeSlot urlInitial={state.freeSlotUrl} journalInitial={journal} onJournalChange={setJournal} reviewSkills={plan.reviewSkills} printAlways={printing} />
         </div>
         <Footer
           onDone={handleDone}
@@ -286,6 +288,56 @@ function StatsStrip({ xp, streak }: { xp: number; streak: import("@/lib/types").
     <div className="mt-4 flex items-center justify-between gap-4 flex-wrap">
       <XPBar xp={xp} className="flex-1 min-w-[200px]" />
       <StreakFlame streak={streak} />
+    </div>
+  );
+}
+
+/** R1 — daily-practice framing. A quiet, true motivator that makes showing up
+ *  daily salient. Complements the streak UI without nagging. */
+function DailyFramingLine() {
+  return (
+    <p
+      data-testid="daily-framing"
+      className="mt-3 text-xs text-[color:var(--ink-3)] italic"
+    >
+      15 minutes today beats 2 hours on Sunday. Small and daily wins.
+    </p>
+  );
+}
+
+/** R9 — mental-practice (audiation) card. An OPTIONAL prompt for the times you're
+ *  away from the instrument or easing back in. Dismissible for the session, so it
+ *  helps rather than nags. Surfaced more prominently on a first-back day. */
+function MentalPracticeCard({ firstBack, pieceTitle }: { firstBack: boolean; pieceTitle?: string }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  const subject = pieceTitle ? `“${pieceTitle}”` : "this week's piece";
+  return (
+    <div
+      data-testid="mental-practice-card"
+      className="mt-4 rounded-lg border border-[color:var(--rule)] bg-[color:var(--bg-surface-2)] px-4 py-3 fade-in"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 space-y-1">
+          <p className="text-sm font-medium text-[color:var(--ink)]">
+            Away from your instrument?
+          </p>
+          <p className="text-xs text-[color:var(--ink-2)] leading-relaxed">
+            {firstBack
+              ? `Ease back in without touching a key. Close your eyes and hear ${subject}. Feel the fingering, beat by beat. Mental reps count.`
+              : `Close your eyes and hear ${subject}. Feel the fingering in your hands. Even a minute of this strengthens the real thing.`}
+          </p>
+        </div>
+        <button
+          type="button"
+          data-testid="mental-practice-dismiss"
+          onClick={() => setDismissed(true)}
+          aria-label="dismiss mental practice card"
+          className="shrink-0 text-[color:var(--ink-3)] hover:text-[color:var(--ink)] text-lg leading-none -mt-0.5"
+        >
+          ×
+        </button>
+      </div>
     </div>
   );
 }
