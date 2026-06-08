@@ -50,18 +50,20 @@ const t1NodeA: SkillNode = {
   keepTitle: "Power Chords",
 };
 
-// A node with NO authored lesson (to test fallback)
+// A node with NO authored lesson (to test the graceful fallback). Every REAL node
+// now has a lesson (lessons.test.ts asserts full coverage), so the fallback branch
+// can only be exercised with a synthetic id that intentionally maps to no lesson.
 const t1NodeB: SkillNode = {
-  id: "g-t1-fretting",
+  id: "g-t1-synthetic-nolesson",
   instrument: "guitar",
-  title: "Fretting Hand Placement",
+  title: "Synthetic No-Lesson Node",
   tier: 1,
   category: "technique",
   prereqs: ["g-t0-anatomy"],
-  masteryDrill: "Every string rings clean frets 1-5, fingertip only",
-  unlock: "Clean single-note fretting",
-  soulTitle: "Clean Notes",
-  keepTitle: "Fretting Hand Placement",
+  masteryDrill: "Synthetic drill text for the fallback test",
+  unlock: "Synthetic unlock for the fallback test",
+  soulTitle: "Fallback Probe",
+  keepTitle: "Synthetic No-Lesson Node",
 };
 
 // Piano node with an authored lesson
@@ -274,8 +276,8 @@ describe("PathView — expand a step with a full lesson", () => {
 
 describe("PathView — fallback when no lesson authored", () => {
   it("shows masteryDrill and unlock when node has no authored lesson", () => {
-    // t1NodeA (g-t1-power) has a lesson. t1NodeB (g-t1-fretting) does NOT have
-    // a lesson in the test fixture (only g-t0-anatomy and g-t1-power do in guitar/lessons.ts).
+    // t1NodeA (g-t1-power) has a lesson. t1NodeB is a synthetic id that maps to no
+    // lesson, so getLesson returns undefined and the fallback path renders.
     // Make t0 learned so t1NodeB is available.
     const progress: Record<string, SkillProgress> = {
       [t0Node.id]: { status: "learned", reps: 5 },
