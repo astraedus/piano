@@ -84,6 +84,50 @@ export async function playCadence(key: KeyId, kind: "V-I" | "IV-I" | "ii-V-I"): 
   await playProgression(progressionChords(key, romans));
 }
 
+// V4 glossary "HEAR" helpers — small expressive demos for the explainer cards.
+
+/**
+ * Approximate a string bend: play the start note, then quickly the target note,
+ * close together so the ear reads it as one pitch sliding up. Not a true
+ * portamento (PolySynth has no glide) but a recognizable bend gesture.
+ */
+export async function playBend(from: string, to: string): Promise<void> {
+  const { synth } = await getSynth();
+  const Tone = await getTone();
+  const t0 = Tone.now();
+  synth.triggerAttackRelease(from, 0.18, t0);
+  synth.triggerAttackRelease(to, 0.7, t0 + 0.16);
+  await sleep(1000);
+}
+
+/**
+ * Approximate vibrato: the same note re-struck a few times in quick succession,
+ * simulating the warm pulsating wobble of a held, shaken note.
+ */
+export async function playVibrato(note: string, shakes = 5): Promise<void> {
+  const { synth } = await getSynth();
+  const Tone = await getTone();
+  const t0 = Tone.now();
+  for (let i = 0; i < shakes; i++) {
+    synth.triggerAttackRelease(note, 0.16, t0 + i * 0.14);
+  }
+  await sleep((shakes * 0.14 + 0.2) * 1000);
+}
+
+/**
+ * Palm-muted chug: short, damped, sustain-less hits of the same note(s).
+ * Used for power-chord / palm-mute demos where the point is the muffled attack.
+ */
+export async function playMutedChug(notes: string[], hits = 4): Promise<void> {
+  const { synth } = await getSynth();
+  const Tone = await getTone();
+  const t0 = Tone.now();
+  for (let i = 0; i < hits; i++) {
+    synth.triggerAttackRelease(notes, 0.1, t0 + i * 0.22);
+  }
+  await sleep((hits * 0.22 + 0.2) * 1000);
+}
+
 export async function playEarRound(round: EarRound): Promise<void> {
   // Play twice with a small pause.
   const play = async () => {
