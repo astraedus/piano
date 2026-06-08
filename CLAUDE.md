@@ -22,11 +22,15 @@ A nightly practice app for learning instruments. **Piano AND electric guitar** (
 These docs live in the repo. Read the relevant one before working on its area; they are pointers, not loaded into context. Regenerate this list with `astra-doc-index.py <repo>`.
 
 - `docs/BUILD-V2.md` -- V2 Build — Gamification + Guitar-Native Loop
+- `docs/BUILD-V3.md` -- V3 Build — Motor-Learning Actionables (R1-R10)
+- `docs/BUILD-V4.md` -- V4 Build — Soul-First Learning + UX/Resume Fixes
 - `docs/BUILD.md` -- Multi-Instrument Build — Status Tracker
+- `docs/exec-plans/completed/plan-v3-phase3.md` -- Plan: V3 Phase 3 (P3a + P3b) — motor-learning surfacing + framing
 - `docs/research/audit.md` -- Now I have a thorough picture of the entire codebase. Let me produce the report.
 - `docs/research/design.md` -- Now I have a complete picture. The current app already has Fraunces + Inter, a warm dark palette, and a light parchment
 - `docs/research/guitar.md` -- I now have enough research to produce the full curriculum report. Let me compile it.
 - `docs/research/libs.md` -- I now have all the data I need. Here is the full recommendation.
 - `docs/research/motor-learning.md` -- Motor Learning Science for Instrument Practice Apps
 - `docs/research/plan.md` -- All four reports are accurate against the live code. One important note I caught: chainDrills.ts uses type: "improv" on
+- `docs/research/soul-first-learning.md` -- Soul-First Learning — Execution-Ready Build Spec
 <!-- DOC-INDEX:END -->
