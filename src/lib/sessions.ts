@@ -9,8 +9,14 @@ import type {
   UnlockCard,
 } from "./types";
 import { getModuleSync } from "./instrumentRegistry";
-import { markNodeProgress, prereqsMet, resolveStatus } from "./skillTree";
+import {
+  markNodeProgress,
+  meetsLearnSuccessRate,
+  prereqsMet,
+  resolveStatus,
+} from "./skillTree";
 import { levelForXp, localDateKey, updateStreak, xpForSession } from "./progression";
+import { advanceReview, dueReviews, enqueueReview } from "./skillReview";
 
 export function endSession(
   state: AppState,
@@ -60,16 +66,29 @@ export function endSession(
   const prevProgress = state.skillProgress ?? {};
   const prevStatus = resolveStatus(nodes, prevProgress);
 
+  // R3/R5/R8 — per-rep quality captured by the rep-engine (P2). Absent on legacy
+  // sessions, in which case completion is NOT gated on success rate (back-compat).
+  const q = log.quality ?? {};
+  const qualityOpts = {
+    attempts: q.attempts,
+    successes: q.successes,
+    bpmReached: q.bpmReached,
+  };
+
   let nextProgress = prevProgress;
   for (const node of nodes) {
     if (prevStatus.get(node.id) === "learned") continue;
     if (!nodeSatisfiedThisSession(node, log, keyDepths)) continue;
-    if (!prereqsMet(node, nextProgress)) {
-      // Record the attempt as progress, but it can't become `learned` until the
-      // prereq chain is complete. resolveStatus will keep it locked/in-progress.
-      nextProgress = markNodeProgress(nextProgress, node.id, { now: log.endedAt });
-      continue;
-    }
+
+    // Record this session's quality on the node first (so the success-rate gate
+    // reads the accumulated total, including this session's reps).
+    nextProgress = markNodeProgress(nextProgress, node.id, { now: log.endedAt, ...qualityOpts });
+
+    // R3 gate: a node becomes `learned` only when prereqs are met AND recent
+    // success rate is solidly high. With no quality data the rate gate passes
+    // (legacy behavior). With data, sloppy practice keeps the node in-progress.
+    if (!prereqsMet(node, nextProgress)) continue;
+    if (!meetsLearnSuccessRate(nextProgress[node.id])) continue;
     nextProgress = markNodeProgress(nextProgress, node.id, { learned: true, now: log.endedAt });
   }
 
@@ -77,6 +96,22 @@ export function endSession(
   const newlyLearned = nodes.filter(
     (n) => nextStatus.get(n.id) === "learned" && prevStatus.get(n.id) !== "learned",
   );
+
+  // ── R7: spaced-retrieval queue ──
+  // Newly-learned nodes get enqueued (+1 day). Any node already due for review
+  // that was practiced this session advances along the 1→3→7→14 day ladder.
+  let skillReview = state.skillReview ?? {};
+  for (const node of newlyLearned) {
+    skillReview = enqueueReview(skillReview, node.id, log.endedAt);
+  }
+  const dueNow = new Set(dueReviews(skillReview, log.endedAt));
+  const newlyLearnedIds = new Set(newlyLearned.map((n) => n.id));
+  for (const node of nodes) {
+    if (newlyLearnedIds.has(node.id)) continue; // just enqueued, don't double-advance
+    if (!dueNow.has(node.id)) continue;
+    if (!nodeSatisfiedThisSession(node, log, keyDepths)) continue;
+    skillReview = advanceReview(skillReview, node.id, log.endedAt);
+  }
 
   // Each newly-learned node with a linked UnlockCard earns that card (once).
   const earnedIds = new Set((state.unlocks ?? []).map((u) => u.id));
@@ -102,10 +137,15 @@ export function endSession(
   }
   const earCorrect = log.earResults?.correctIds.length ?? 0;
 
+  // R5/R8: a BPM-ladder advance is signaled when this session cleared a higher
+  // tempo than the node's previously-recorded best on the satisfied drill.
+  const bpmStepAdvanced = bpmAdvancedThisSession(nodes, prevProgress, log, keyDepths);
+
   const earnedXp = xpForSession(log, {
     nodesLearned: newlyLearned.length,
     depthUps,
     earCorrect,
+    bpmStepAdvanced,
   });
   const xp = (state.xp ?? 0) + earnedXp;
 
@@ -143,12 +183,30 @@ export function endSession(
     pendingUnlocks,
     recentDrillIds,
     skillProgress: nextProgress,
+    skillReview,
     xp,
     level: nextLevel,
     streak,
     pendingLevelUps,
   };
   return { state: nextState, newUnlocks: newlyEarned };
+}
+
+/** True iff the session's reported bpmReached exceeds the prior best on any node
+ *  this session satisfied — i.e. a BPM-ladder step was advanced (R5/R8). */
+function bpmAdvancedThisSession(
+  nodes: SkillNode[],
+  prevProgress: Record<string, SkillProgress>,
+  log: SessionLog,
+  keyDepths: Partial<Record<KeyId, KeyDepth>>,
+): boolean {
+  const bpm = log.quality?.bpmReached;
+  if (bpm == null) return false;
+  for (const node of nodes) {
+    if (!nodeSatisfiedThisSession(node, log, keyDepths)) continue;
+    if (bpm > (prevProgress[node.id]?.bpmReached ?? 0)) return true;
+  }
+  return false;
 }
 
 /** True iff this session's activity satisfies the node's concrete requirement

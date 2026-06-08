@@ -176,8 +176,11 @@ describe("endSession — gamification accrual", () => {
       logBase({ ghostKey: "C" }),
       new Date("2026-06-07T10:30:00.000Z"),
     );
-    // full base (50) + 2 engaged slots * 10 = 70
-    expect(next.xp).toBe(XP_AWARDS.sessionBase.full + 20);
+    // V3 model: full base (50) + warmup minimal (2) + chain quality-floor (12,
+    // no quality data) = 64. Chain is no longer a flat +10 slot — it is the
+    // quality-weighted drill award (R6/R8).
+    const floorDrill = Math.round(XP_AWARDS.drillQualityMax * XP_AWARDS.drillQualityFloor);
+    expect(next.xp).toBe(XP_AWARDS.sessionBase.full + XP_AWARDS.perWarmupEngaged + floorDrill);
     expect(next.level).toBe(levelForXp(next.xp).level);
   });
 
@@ -188,7 +191,10 @@ describe("endSession — gamification accrual", () => {
       logBase({ ghostKey: "C", earResults: { correctIds: ["a", "b", "c"], wrongIds: ["d"] } }),
       new Date("2026-06-07T10:30:00.000Z"),
     );
-    expect(next.xp).toBe(XP_AWARDS.sessionBase.full + 20 + 3 * XP_AWARDS.perEarCorrect);
+    const floorDrill = Math.round(XP_AWARDS.drillQualityMax * XP_AWARDS.drillQualityFloor);
+    expect(next.xp).toBe(
+      XP_AWARDS.sessionBase.full + XP_AWARDS.perWarmupEngaged + floorDrill + 3 * XP_AWARDS.perEarCorrect,
+    );
   });
 
   it("crossing a level threshold emits a level-up arc event AND a pending level-up", () => {
@@ -196,7 +202,7 @@ describe("endSession — gamification accrual", () => {
     const s = baseState({ xp: 95, level: 1 });
     const { state: next } = endSession(
       s,
-      logBase({ ghostKey: "C" }), // +70 → 165 → level 2
+      logBase({ ghostKey: "C" }), // +64 (50 base + 2 warmup + 12 chain floor) → 159 → level 2
       new Date("2026-06-07T10:30:00.000Z"),
     );
     expect(next.level).toBe(2);
@@ -214,7 +220,7 @@ describe("endSession — gamification accrual", () => {
     const s = baseState({ xp: 240, level: 2 }); // just below L3 (250)
     const { state: next } = endSession(
       s,
-      // base 50 + 4 engaged slots (40) = 90 → 330 → crosses L3 (250) and L4 (450)? 330 < 450 → only L3
+      // base 50 + warmup 2 + chain floor 12 + piece 10 + ear 10 = 84 → 324 → crosses L3 (250) only (324 < 450)
       logBase({
         ghostKey: "C",
         slotsTouched: [
@@ -267,6 +273,91 @@ describe("endSession — gamification accrual", () => {
     );
     expect(reset.state.streak.current).toBe(1); // reset
     expect(reset.state.streak.longest).toBe(3); // longest preserved
+  });
+});
+
+// ─────────────── V3: R3 success-rate gate + R7 spaced review wiring ───────────────
+describe("endSession — V3 success-rate gate (R3) + spaced review (R7)", () => {
+  // Roots pre-learned so p-key-C is reachable; success rate then decides learning.
+  function readyState(partial: Partial<AppState> = {}): AppState {
+    return stateWith({
+      phase: 1,
+      keyDepths: { C: 5 }, // already maxed → no depth-up noise
+      skillProgress: { "p-t0-keyboard-map": learned(), "p-t0-posture": learned() },
+      ...partial,
+    });
+  }
+
+  it("does NOT learn a node when the recorded success rate is too low (R3)", () => {
+    const { state: next } = endSession(
+      readyState(),
+      logBase({ ghostKey: "C", chainDrillId: "p1-c-major-chain", quality: { attempts: 10, successes: 5 } }), // 50%
+      new Date("2026-06-08T10:30:00.000Z"),
+    );
+    expect(next.skillProgress?.["p-key-C"]?.status).toBe("in-progress");
+    expect(next.skillProgress?.["p-key-C"]?.attempts).toBe(10);
+    expect(next.skillProgress?.["p-key-C"]?.successes).toBe(5);
+    // No learn → no review enqueued.
+    expect(next.skillReview?.["p-key-C"]).toBeUndefined();
+  });
+
+  it("learns a node at a solid success rate AND enqueues it for review +1 day (R7)", () => {
+    const end = "2026-06-08T10:30:00.000Z";
+    const { state: next } = endSession(
+      readyState(),
+      logBase({ ghostKey: "C", chainDrillId: "p1-c-major-chain", endedAt: end, quality: { attempts: 10, successes: 9 } }), // 90%
+      new Date(end),
+    );
+    expect(next.skillProgress?.["p-key-C"]?.status).toBe("learned");
+    const review = next.skillReview?.["p-key-C"];
+    expect(review).toBeDefined();
+    expect(review!.intervalIndex).toBe(0);
+    // Enqueued +1 day from the session's endedAt.
+    expect(review!.dueAt).toBe(new Date(new Date(end).getTime() + 86400000).toISOString());
+  });
+
+  it("still learns with no quality data (legacy back-compat: gate not applied)", () => {
+    const { state: next } = endSession(
+      readyState(),
+      logBase({ ghostKey: "C", chainDrillId: "p1-c-major-chain" }), // no quality
+      new Date("2026-06-08T10:30:00.000Z"),
+    );
+    expect(next.skillProgress?.["p-key-C"]?.status).toBe("learned");
+  });
+
+  it("advances the review interval for a due, practiced node (R7 ladder)", () => {
+    // p-key-C already learned and due for review; practicing its drill advances it.
+    const end = "2026-06-08T10:30:00.000Z";
+    const s = readyState({
+      skillProgress: {
+        "p-t0-keyboard-map": learned(),
+        "p-t0-posture": learned(),
+        "p-key-C": learned(),
+      },
+      skillReview: { "p-key-C": { dueAt: "2026-06-01T00:00:00.000Z", intervalIndex: 0 } }, // overdue
+    });
+    const { state: next } = endSession(
+      s,
+      logBase({ ghostKey: "C", chainDrillId: "p1-c-major-chain", endedAt: end, quality: { attempts: 5, successes: 5 } }),
+      new Date(end),
+    );
+    const review = next.skillReview?.["p-key-C"];
+    expect(review!.intervalIndex).toBe(1); // 0 → 1 (3-day interval)
+    expect(review!.dueAt).toBe(new Date(new Date(end).getTime() + 3 * 86400000).toISOString());
+  });
+
+  it("awards a metronome XP bonus when the session reports metronomeOn (R8)", () => {
+    const withMetro = endSession(
+      readyState({ xp: 0 }),
+      logBase({ ghostKey: "C", chainDrillId: "p1-c-major-chain", quality: { attempts: 5, successes: 5, metronomeOn: true } }),
+      new Date("2026-06-08T10:30:00.000Z"),
+    );
+    const withoutMetro = endSession(
+      readyState({ xp: 0 }),
+      logBase({ ghostKey: "C", chainDrillId: "p1-c-major-chain", quality: { attempts: 5, successes: 5 } }),
+      new Date("2026-06-08T10:30:00.000Z"),
+    );
+    expect(withMetro.state.xp).toBe((withoutMetro.state.xp ?? 0) + XP_AWARDS.metronomeBonus);
   });
 });
 
