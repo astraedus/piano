@@ -290,8 +290,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     what: "The home base of a piece: which notes belong and what home sounds like.",
     why: "It is the single most useful concept for improvising and writing your own music.",
     hear: () => hear(() => playProgression([["C4", "E4", "G4"], ["G3", "B3", "D4"], ["C4", "E4", "G4"]])),
-    seeKind: "text",
-    seeText: "A key signature at the start of the staff tells you which sharps or flats belong all the way through.",
+    seeKind: "keyboard",
+    seeNotes: ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"],
   },
   {
     id: "tonic",
@@ -315,8 +315,8 @@ export const GLOSSARY: GlossaryEntry[] = [
       ["C4", "E4", "G4"],
       ["G3", "B3", "D4"],
     ])),
-    seeKind: "text",
-    seeText: "Am - F - C - G, looping around: four chords under hundreds of songs.",
+    seeKind: "keyboard",
+    seeNotes: ["A3", "C4", "E4"],
   },
   {
     id: "pop-formula",
@@ -330,8 +330,8 @@ export const GLOSSARY: GlossaryEntry[] = [
       ["C4", "E4", "G4"],
       ["G3", "B3", "D4"],
     ])),
-    seeKind: "text",
-    seeText: "A circular loop: I - V - vi - IV (e.g. C - G - Am - F).",
+    seeKind: "keyboard",
+    seeNotes: ["A3", "C4", "E4", "G4"],
   },
   {
     id: "12-bar-blues",
@@ -345,8 +345,8 @@ export const GLOSSARY: GlossaryEntry[] = [
       ["A2", "E3"],
       ["E3", "B3"],
     ])),
-    seeKind: "text",
-    seeText: "12 bars: I I I I | IV IV I I | V IV I I.",
+    seeKind: "fretboard",
+    seeNotes: ["E2", "A2", "D3"],
   },
   {
     id: "ii-v-i",
@@ -359,8 +359,8 @@ export const GLOSSARY: GlossaryEntry[] = [
       ["G3", "B3", "D4", "F4"],
       ["C4", "E4", "G4", "B4"],
     ])),
-    seeKind: "text",
-    seeText: "Dm7 - G7 - Cmaj7, the jazz turnaround.",
+    seeKind: "keyboard",
+    seeNotes: ["D4", "F4", "A4", "C5"],
   },
 
   // ---- Guitar technique (Cluster 5) ----
@@ -407,8 +407,8 @@ export const GLOSSARY: GlossaryEntry[] = [
       ["E2", "B2", "E3", "G3", "B3", "E4"],
       ["E2", "B2", "E3", "G3", "B3", "E4"],
     ], { chordDurationSec: 0.5 })),
-    seeKind: "text",
-    seeText: "A pattern of down and up arrows: D - DU - UDU.",
+    seeKind: "chord-diagram",
+    seeChordShape: [0, 2, 2, 1, 0, 0],
     instrument: "guitar",
   },
   {
@@ -421,8 +421,8 @@ export const GLOSSARY: GlossaryEntry[] = [
       await playMutedChug(["E2", "B2"], 4);
       await playChord(["E2", "B2", "E3"], { durationSec: 0.8 });
     }),
-    seeKind: "text",
-    seeText: "The heel of your picking hand rests lightly on the strings at the bridge.",
+    seeKind: "fretboard",
+    seeNotes: ["E2", "B2"],
     instrument: "guitar",
   },
   {
@@ -432,8 +432,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     what: "Sounding a higher note by hammering a finger down onto the string, without picking again.",
     why: "It makes melodies flow and is the key to smooth, legato blues and rock lines.",
     hear: () => hear(() => playBend("G4", "A4")),
-    seeKind: "text",
-    seeText: "Tab written 5h7: pick the 5th fret, hammer onto the 7th.",
+    seeKind: "fretboard",
+    seeNotes: ["A4", "B4"],
     instrument: "guitar",
   },
   {
@@ -443,8 +443,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     what: "Pulling a finger off the string to sound the lower note, without picking again.",
     why: "It is the descending half of legato, the partner to the hammer-on.",
     hear: () => hear(() => playBend("A4", "G4")),
-    seeKind: "text",
-    seeText: "Tab written 7p5: pick the 7th fret, pull off to the 5th.",
+    seeKind: "fretboard",
+    seeNotes: ["A4", "B4"],
     instrument: "guitar",
   },
   {
@@ -454,8 +454,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     what: "Moving a fretting finger along the string while keeping it pressed down, so the pitch glides.",
     why: "It adds a vocal, bluesy quality almost instantly.",
     hear: () => hear(() => playBend("D5", "E5")),
-    seeKind: "text",
-    seeText: "Tab written 5/7 (slide up) or 7\\5 (slide down).",
+    seeKind: "fretboard",
+    seeNotes: ["E4", "F#4"],
     instrument: "guitar",
   },
   {
@@ -487,8 +487,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     what: "A short, repeated guitar phrase that is the backbone of a song.",
     why: "It is the entry point to real playing, and the first thing you can show people.",
     hear: () => hear(() => playSequence(["E2", "E2", "G2", "E2", "A2", "G2"], { noteDurationSec: 0.3 })),
-    seeKind: "text",
-    seeText: "A short bracketed phrase of tab you repeat over and over.",
+    seeKind: "fretboard",
+    seeNotes: ["E2", "G2", "A2"],
     instrument: "guitar",
   },
   {
@@ -571,8 +571,8 @@ export const GLOSSARY: GlossaryEntry[] = [
       await playChord(["C4", "E4", "G4"]);
       await playChord(["C4", "Eb4", "G4"]);
     }),
-    seeKind: "text",
-    seeText: "A Major / Minor choice: hear the chord, pick which one it was.",
+    seeKind: "keyboard",
+    seeNotes: ["A3", "C4", "E4"],
   },
 
   {
@@ -645,8 +645,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     what: "The right pedal, which lifts the dampers so notes keep ringing after you let go of the keys.",
     why: "It creates the lush, flowing sound of ballads and classical music.",
     hear: () => hear(() => playChord(["C4", "E4", "G4"], { durationSec: 2 })),
-    seeKind: "text",
-    seeText: "The pedal held down, with wavy lines showing the notes ringing on.",
+    seeKind: "keyboard",
+    seeNotes: ["C4", "E4", "G4"],
     instrument: "piano",
   },
   {
