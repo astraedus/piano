@@ -16,6 +16,7 @@ export const GUITAR_WARMUPS: Record<string, Warmup> = {
     id: "free" as WarmupType,
     instrument: "guitar",
     label: "tune up",
+    soulSummary: "Get in tune so everything sounds right",
     lines: [
       "tune all six strings to a tuner — E A D G B E, low to high.",
       "play each open string slowly. listen. a guitar in tune is half the battle.",
@@ -26,6 +27,7 @@ export const GUITAR_WARMUPS: Record<string, Warmup> = {
     id: "weight-transfer" as WarmupType,
     instrument: "guitar",
     label: "finger stretch",
+    soulSummary: "Loosen the hand before you play",
     lines: [
       "thumb behind the neck, fingers curved. press fret 1 to 4 on the low E, one finger each.",
       "no death-grip — the lightest pressure that rings clean. shake the hand out after.",
@@ -36,6 +38,7 @@ export const GUITAR_WARMUPS: Record<string, Warmup> = {
     id: "tone-drill" as WarmupType,
     instrument: "guitar",
     label: "one-minute changes",
+    soulSummary: "Make chord switches feel automatic",
     lines: [
       "pick two chords you know. count how many clean changes you make in 60 seconds.",
       "write the number down. tomorrow, beat it. the count going up is the whole game.",
@@ -46,6 +49,7 @@ export const GUITAR_WARMUPS: Record<string, Warmup> = {
     id: "ghost-scale" as WarmupType,
     instrument: "guitar",
     label: "chromatic spider",
+    soulSummary: "Wake up all four fingers, slow and even",
     lines: [
       "frets 1-2-3-4 on every string, alternate-picked, slow. one finger per fret.",
       "the spider walk. even volume, even timing. speed comes later, on its own.",
@@ -56,6 +60,7 @@ export const GUITAR_WARMUPS: Record<string, Warmup> = {
     id: "free" as WarmupType,
     instrument: "guitar",
     label: "free warmup",
+    soulSummary: "Play a riff you love, just to drop in",
     lines: [
       "no plan tonight.",
       "play a riff you like for 90 seconds. anything that makes you want to keep going.",

@@ -5,6 +5,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
     id: "ghost-scale",
     instrument: "piano",
     label: "ghost scale",
+    soulSummary: "Loosen up in this week's home key",
     lines: [
       "today's ghost, hands separate. 2 octaves. slow on the return.",
       "or just play the ghost for a minute. don't count.",
@@ -15,6 +16,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
     id: "weight-transfer",
     instrument: "piano",
     label: "weight transfer",
+    soulSummary: "Let your arm do the work, no tension",
     lines: [
       "five-finger pattern — C D E F G F E D C.",
       "transfer arm weight finger to finger. zero tension between strikes.",
@@ -26,6 +28,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
     id: "triad-tour",
     instrument: "piano",
     label: "triad tour",
+    soulSummary: "Walk the chords and feel where home is",
     lines: [
       "walk I–IV–V–vi in today's ghost. both hands.",
       "once around, slowly. feel where home is.",
@@ -36,6 +39,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
     id: "mirror",
     instrument: "piano",
     label: "mirror",
+    soulSummary: "Two hands, two directions, wake up coordination",
     lines: [
       "left hand plays the scale backwards while the right plays forwards.",
       "if it falls apart, laugh. begin again.",
@@ -46,6 +50,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
     id: "free",
     instrument: "piano",
     label: "free warmup",
+    soulSummary: "Play anything for 90 seconds, just to drop in",
     lines: [
       "no structure tonight.",
       "play for 90 seconds. anything. any key you press counts.",
@@ -56,6 +61,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
     id: "parallel-sets",
     instrument: "piano",
     label: "parallel sets",
+    soulSummary: "Build speed in short bursts, then rest",
     lines: [
       "pick a 4-note burst in today's key. play it at target tempo, pause, again.",
       "build speed inside the burst. knit later.",
@@ -66,6 +72,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
     id: "tone-drill",
     instrument: "piano",
     label: "tone drill",
+    soulSummary: "One note, many feelings, all from your touch",
     lines: [
       "one note, ten ways — whisper · clear · bright · dark · ringing · singing · punchy · distant · warm · cold.",
       "use weight and alignment, not force.",
