@@ -3,12 +3,18 @@ import { AppShell } from "@/components/AppShell";
 import { AppStateProvider } from "@/hooks/useAppState";
 import { useAppState } from "@/hooks/useAppState";
 import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import type { Grade, KeyId, Phase } from "@/lib/types";
 import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META } from "@/lib/music";
 import { exportStateJson, importStateJson, clearState } from "@/lib/storage";
 import { weekIdOf } from "@/lib/ghostKey";
 import { setRootAttrs } from "@/lib/domAttrs";
+import type { Instrument } from "@/lib/types";
+
+const INSTRUMENTS: { id: Instrument; label: string }[] = [
+  { id: "piano", label: "Piano" },
+  { id: "guitar", label: "Electric Guitar" },
+];
 
 export default function SettingsPage() {
   return (
@@ -37,10 +43,8 @@ const GRADES: { id: Grade; phase: Phase; label: string }[] = [
 function Settings() {
   const { state, patch } = useAppState();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [northStar, setNorthStar] = useState(state.northStar ?? "");
   const [name, setName] = useState(state.name ?? "");
-  const focusGhost = searchParams?.get("focus") === "ghost";
 
   useEffect(() => {
     setNorthStar(state.northStar ?? "");
@@ -63,6 +67,16 @@ function Settings() {
     });
     // set data-phase attribute live
     setRootAttrs({ phase: target.phase });
+  };
+
+  const switchInstrument = (id: Instrument) => {
+    if (id === state.instrument) return;
+    // Switching takes effect immediately: the module re-resolves via
+    // getModuleSync(state.instrument) on the next render, and the data-instrument
+    // accent flips amber <-> crimson. No data is lost — each instrument keeps its
+    // own progress in the same profile.
+    patch({ instrument: id });
+    setRootAttrs({ instrument: id, phase: state.phase, theme: state.theme });
   };
 
   const setGhostNow = (k: KeyId) => {
@@ -99,7 +113,7 @@ function Settings() {
   };
 
   const doReset = () => {
-    if (!confirm("clear all state? this cannot be undone.")) return;
+    if (!confirm("Clear all data? This cannot be undone.")) return;
     clearState();
     window.location.href = "/onboarding";
   };
@@ -107,22 +121,44 @@ function Settings() {
   return (
     <div className="space-y-10">
       <header>
-        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">settings</p>
-        <h1 className="font-serif text-3xl text-[color:var(--ink)]">the room</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">Settings</p>
+        <h1 className="font-serif text-3xl text-[color:var(--ink)]">The Room</h1>
       </header>
 
-      <Section title="the person">
-        <Field label="a name (optional)">
-          <input value={name} onChange={(e) => setName(e.target.value)} onBlur={saveName} className={fieldCls} placeholder="what the app calls you" />
+      <Section title="Instrument">
+        <p className="text-xs text-[color:var(--ink-3)] mb-3">Switch between piano and electric guitar. Your progress for each is kept separately.</p>
+        <div className="inline-flex rounded-full border border-[color:var(--rule)] p-1 bg-[color:var(--surface)]">
+          {INSTRUMENTS.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              aria-pressed={state.instrument === o.id}
+              onClick={() => switchInstrument(o.id)}
+              className={
+                "text-sm px-4 py-1.5 rounded-full transition-colors " +
+                (state.instrument === o.id
+                  ? "bg-[color:var(--accent)]/15 text-[color:var(--ink)] font-medium"
+                  : "text-[color:var(--ink-2)] hover:text-[color:var(--ink)]")
+              }
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Profile">
+        <Field label="Name (optional)">
+          <input value={name} onChange={(e) => setName(e.target.value)} onBlur={saveName} className={fieldCls} placeholder="What the app calls you" />
         </Field>
-        <Field label="north star — why you're here">
-          <textarea value={northStar} onChange={(e) => setNorthStar(e.target.value)} onBlur={saveNorthStar} rows={2} className={fieldCls + " font-serif"} placeholder="to play hallelujah without crying." />
-          <p className="text-xs text-[color:var(--ink-3)] italic mt-1">shown quietly once a month. edit anytime.</p>
+        <Field label="North star: why you're here">
+          <textarea value={northStar} onChange={(e) => setNorthStar(e.target.value)} onBlur={saveNorthStar} rows={2} className={fieldCls + " font-serif"} placeholder="To play Hallelujah without crying." />
+          <p className="text-xs text-[color:var(--ink-3)] italic mt-1">Shown quietly once a month. Edit anytime.</p>
         </Field>
       </Section>
 
-      <Section title="where you are">
-        <p className="text-xs text-[color:var(--ink-3)] italic mb-3">pick the grade band you want to work with. no gatekeeping.</p>
+      <Section title="Your Progress">
+        <p className="text-xs text-[color:var(--ink-3)] mb-3">Pick the grade band you want to work with. No gatekeeping.</p>
         <div className="flex gap-2 flex-wrap">
           {GRADES.map((g) => (
             <button
@@ -142,8 +178,8 @@ function Settings() {
         </div>
       </Section>
 
-      <Section title={focusGhost ? "tonight's ghost" : "ghost override"}>
-        <p className="text-xs text-[color:var(--ink-3)] italic mb-3">the app picks a ghost key each week. override for this week if you want.</p>
+      <Section title="Key of the Week">
+        <p className="text-xs text-[color:var(--ink-3)] mb-3">The app picks a key each week. Override it for this week if you want.</p>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-1.5">
           {[...CIRCLE_MAJORS, ...CIRCLE_MINORS].map((k) => (
             <button
@@ -161,10 +197,10 @@ function Settings() {
             </button>
           ))}
         </div>
-        <button type="button" onClick={() => router.push("/")} className="mt-4 text-sm text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">← back to the stand</button>
+        <button type="button" onClick={() => router.push("/")} className="mt-4 text-sm text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">← Back to the Stand</button>
       </Section>
 
-      <Section title="quiet nudge">
+      <Section title="Reminders">
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
@@ -173,13 +209,13 @@ function Settings() {
             className="accent-[color:var(--accent)]"
           />
           <span className="text-sm text-[color:var(--ink-2)]">
-            one note after five days away: <span className="italic text-[color:var(--ink-3)]">"the piano is here when you are."</span>
+            One note after five days away: <span className="italic text-[color:var(--ink-3)]">"The piano is here when you are."</span>
           </span>
         </label>
-        <p className="text-xs text-[color:var(--ink-3)] italic mt-1">off by default. nothing else, ever.</p>
+        <p className="text-xs text-[color:var(--ink-3)] italic mt-1">Off by default. Nothing else, ever.</p>
       </Section>
 
-      <Section title="theme">
+      <Section title="Theme">
         <div className="flex gap-2">
           {(["light", "dark"] as const).map((t) => (
             <button
@@ -196,18 +232,18 @@ function Settings() {
                   : "border-[color:var(--rule)] text-[color:var(--ink-2)] hover:border-[color:var(--accent-soft)]")
               }
             >
-              {t}
+              {t === "light" ? "Light" : "Dark"}
             </button>
           ))}
         </div>
-        <p className="text-xs text-[color:var(--ink-3)] italic mt-1">the studio is warm and light by default. dark is here for late nights.</p>
+        <p className="text-xs text-[color:var(--ink-3)] italic mt-1">The studio is warm and light by default. Dark is here for late nights.</p>
       </Section>
 
-      <Section title="your data">
+      <Section title="Your Data">
         <div className="flex gap-3 flex-wrap">
-          <button type="button" onClick={doExport} className="text-sm px-4 py-1.5 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-2)] hover:border-[color:var(--accent-soft)]">export json</button>
-          <button type="button" onClick={doImport} className="text-sm px-4 py-1.5 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-2)] hover:border-[color:var(--accent-soft)]">import json</button>
-          <button type="button" onClick={doReset} className="text-sm px-4 py-1.5 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-red-400 hover:text-red-300">reset app</button>
+          <button type="button" onClick={doExport} className="text-sm px-4 py-1.5 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-2)] hover:border-[color:var(--accent-soft)]">Export JSON</button>
+          <button type="button" onClick={doImport} className="text-sm px-4 py-1.5 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-2)] hover:border-[color:var(--accent-soft)]">Import JSON</button>
+          <button type="button" onClick={doReset} className="text-sm px-4 py-1.5 rounded-full border border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-red-400 hover:text-red-300">Reset App</button>
         </div>
       </Section>
     </div>
@@ -226,7 +262,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-xs text-[color:var(--ink-3)] mb-1 lowercase tracking-wide">{label}</span>
+      <span className="block text-xs text-[color:var(--ink-3)] mb-1 tracking-wide">{label}</span>
       {children}
     </label>
   );
