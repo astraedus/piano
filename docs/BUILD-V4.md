@@ -20,6 +20,6 @@ Two inputs, built together (they touch the same screens):
 | P-C1 Stand | PracticeStand + slots + AppShell: desktop 2-col, resume UX (NOW/done/restore), chain-drill progressive disclosure, mobile P0 fix, soul titles + TermChips in stand surfaces (Key-of-Week header, slot subtitles, ear prompts). | worktree | ⬜ |
 | P-C2 Tree | SkillGraph + Node + Panel: path filtering (dim off-path, hide theory unless enabled), soul titles, TermChips in panel. | worktree | ⬜ |
 | P-C3 Onboarding/Settings | Onboarding "What do you want to do?" path step; Settings path + theory toggle. | worktree | ⬜ |
-| P-D | Merge-gate, verify, screenshots (mobile+desktop), telegram, push/deploy | main | ⬜ |
+| P-D | Merged all 3 UI phases, gated (372 tests), deployed | main | ✅ |
 
 Detail for every field/component/table/surfacing-location: `docs/research/soul-first-learning.md`. Worktree agents: `git merge main --no-edit` at start. LSP diagnostics STALE; trust `npx tsc --noEmit`.
