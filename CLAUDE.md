@@ -2,7 +2,7 @@
 
 # piano — multi-instrument practice studio (Anti's personal app)
 
-A nightly practice app for learning instruments. **Piano AND electric guitar** (as of 2026-06-07). Next.js 16 / React 19 / TS / Tailwind v4 / Tone.js (audio) / VexFlow 5 (notation) / svguitar (chord diagrams) / @xyflow/react + dagre (skill graph) / motion (reward animations). Client-side, localStorage persistence. Deployed: https://piano-two-blue.vercel.app (Vercel auto-deploys on push to `main`).
+A nightly practice app for learning instruments. **Piano AND electric guitar** (as of 2026-06-07). Next.js 16 / React 19 / TS / Tailwind v4 / Tone.js (audio) / VexFlow 5 (notation) / svguitar (chord diagrams) / @xyflow/react + dagre (skill graph) / motion (reward animations). Client-side, localStorage persistence. Deployed: https://music.raeduslabs.com (live custom domain) + https://piano-two-blue.vercel.app (Vercel auto-deploys on push to `main`).
 
 ## Architecture (read `docs/BUILD.md` for the full story + `docs/research/plan.md` for the design rationale)
 - **Instrument-agnostic spine + plugin registry.** `lib/instrumentRegistry.ts` defines `InstrumentModule`; each instrument is `lib/<name>/` (e.g. `lib/piano/`, `lib/guitar/`) with a `module.tsx` that self-registers via `registerInstrumentModule()`. The ONLY instrument-coupled components are `InstrumentVisual` (keyboard / fretboard) and `NotationVisual` (staff / tab). Adding an instrument = new `lib/<name>/` dir + one `import "@/lib/<name>/module";` line in `hooks/useAppState.tsx`.
