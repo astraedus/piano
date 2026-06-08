@@ -105,6 +105,7 @@ export const GUITAR_NODES: SkillNode[] = [
     chordShape: [0, 2, 2, 0, 0, 0] /*Em*/,
     chainDrillId: "g-t1-open-chords-em-chain",
     unlockCardId: "u-g-open-chords",
+    fluencyTest: { prompt: "Switch Em↔Am↔E↔A in time with a backing track, eyes on the page (not your fretting hand)." },
   },
   {
     id: "g-t1-openDGC",
@@ -144,6 +145,7 @@ export const GUITAR_NODES: SkillNode[] = [
     chordShape: [0, 2, 2, -1, -1, -1] /*E5*/,
     chainDrillId: "g-t1-power-chords-chain",
     unlockCardId: "u-g-power-chords",
+    fluencyTest: { prompt: "Play the E5→A5→D5→G5 riff to a backing track without looking at the fretboard." },
   },
   {
     id: "g-t1-palmmute",
@@ -240,6 +242,7 @@ export const GUITAR_NODES: SkillNode[] = [
     viz: "fretboard_map",
     chainDrillId: "g-t2-pentatonic-box1-chain",
     unlockCardId: "u-g-pentatonic",
+    fluencyTest: { prompt: "Improvise over an Am backing track using Box 1 while keeping a steady tap with your foot." },
   },
   {
     id: "g-t2-pent-box2",

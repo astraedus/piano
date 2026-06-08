@@ -67,6 +67,7 @@ export const PIANO_NODES: SkillNode[] = [
     chainDrillId: "p1-c-major-chain",
     keyId: "C",
     unlockCardId: "u-p1-c-map",
+    fluencyTest: { prompt: "Play the C major scale, hands together, while counting the beats out loud." },
   },
   {
     id: "p-key-G",
@@ -163,6 +164,7 @@ export const PIANO_NODES: SkillNode[] = [
     unlock: "You can play half of pop music.",
     chainDrillId: "p2-am-pop-formula",
     unlockCardId: "u-p2-pop-formula",
+    fluencyTest: { prompt: "Play the Am–F–C–G loop without looking at your hands, and hum the melody on top." },
   },
   {
     id: "p-t2-4-bar-improv",

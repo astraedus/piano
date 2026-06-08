@@ -82,6 +82,10 @@ export const GUITAR_CHAIN_DRILLS: ChainDrill[] = [
       { type: "song", durationSec: 30, instruction: "Seven Nation Army main riff — one string, all downstrokes." },
     ],
     closingNote: "You can't play this wrong. Even and relaxed beats fast and tense every time.",
+    // V3 seed: micro-rest cadence + tempo ladder; eligible for interleaving.
+    repBlocks: { repsPerBlock: 3, restSec: 12 },
+    bpmLadder: { startBpm: 60, targetBpm: 120, step: 5, advanceAfterSuccesses: 3 },
+    interleavable: true,
   },
   {
     id: "g-t1-altpick-chain",
@@ -98,6 +102,10 @@ export const GUITAR_CHAIN_DRILLS: ChainDrill[] = [
       { type: "song", durationSec: 30, instruction: "Play a short melody using alternate picking. Smoke on the Water works." },
     ],
     closingNote: "Down-up is the engine of every fast line. Learn it now, not after the bad habits.",
+    // V3 seed: micro-rest cadence + tempo ladder; eligible for interleaving.
+    repBlocks: { repsPerBlock: 3, restSec: 12 },
+    bpmLadder: { startBpm: 80, targetBpm: 140, step: 5, advanceAfterSuccesses: 3 },
+    interleavable: true,
   },
   {
     id: "g-t1-open-chords-em-chain",
@@ -162,6 +170,10 @@ export const GUITAR_CHAIN_DRILLS: ChainDrill[] = [
       { type: "song", durationSec: 60, instruction: "Iron Man riff — it's E5/G5/A5/D5. Play it slow and heavy." },
     ],
     closingNote: "One moveable shape = the whole rock vocabulary. This is the electric guitar sound.",
+    // V3 seed: micro-rest cadence + tempo ladder; eligible for interleaving.
+    repBlocks: { repsPerBlock: 3, restSec: 12 },
+    bpmLadder: { startBpm: 80, targetBpm: 120, step: 5, advanceAfterSuccesses: 3 },
+    interleavable: true,
   },
   {
     id: "g-t1-palmmute-chain",

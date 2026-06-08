@@ -21,6 +21,10 @@ export const CHAIN_DRILLS: ChainDrill[] = [
       { type: "song",        durationSec: 30,  instruction: "First line of Let It Be." },
     ],
     closingNote: "You cannot play this wrong. Try twice. Move on.",
+    // V3 seed: micro-rest cadence + tempo ladder; eligible for interleaving.
+    repBlocks: { repsPerBlock: 3, restSec: 12 },
+    bpmLadder: { startBpm: 60, targetBpm: 100, step: 5, advanceAfterSuccesses: 3 },
+    interleavable: true,
   },
   {
     id: "p1-c-tone-chain",
@@ -55,6 +59,10 @@ export const CHAIN_DRILLS: ChainDrill[] = [
       { type: "song",        durationSec: 30,  instruction: "Chorus of Let It Be in G (same progression, different home)." },
     ],
     closingNote: "You cannot play this wrong. Try twice. Move on.",
+    // V3 seed: micro-rest cadence + tempo ladder; eligible for interleaving.
+    repBlocks: { repsPerBlock: 3, restSec: 12 },
+    bpmLadder: { startBpm: 60, targetBpm: 100, step: 5, advanceAfterSuccesses: 3 },
+    interleavable: true,
   },
   {
     id: "p1-f-major-chain",
@@ -72,6 +80,10 @@ export const CHAIN_DRILLS: ChainDrill[] = [
       { type: "song",        durationSec: 30,  instruction: "First line of Yesterday (Beatles). It's in F." },
     ],
     closingNote: "Home key. Nothing to prove.",
+    // V3 seed: micro-rest cadence + tempo ladder; eligible for interleaving.
+    repBlocks: { repsPerBlock: 3, restSec: 12 },
+    bpmLadder: { startBpm: 60, targetBpm: 100, step: 5, advanceAfterSuccesses: 3 },
+    interleavable: true,
   },
   {
     id: "p1-a-minor-chain",
