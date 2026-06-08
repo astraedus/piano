@@ -21,6 +21,8 @@ export interface SkillGraphNodeData {
   /** On the learning frontier (returned by nextToLearn) → gets the pulse ring. */
   isFrontier: boolean;
   tierColor: string;
+  /** R10 — node has passed its autonomous fluency test → gets the "Fluent" badge. */
+  fluent: boolean;
   [key: string]: unknown; // React-Flow node data is an open record
 }
 
@@ -102,6 +104,7 @@ export function buildGraphModel(
       status: status.get(node.id) ?? "locked",
       isFrontier: frontierIds.has(node.id),
       tierColor: tierColorVar(node.tier),
+      fluent: progress[node.id]?.fluent === true,
     },
   }));
 

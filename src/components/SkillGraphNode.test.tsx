@@ -25,12 +25,13 @@ const baseNode: SkillNode = {
   unlock: "u",
 };
 
-function renderNode(status: SkillNodeStatus, isFrontier = false) {
+function renderNode(status: SkillNodeStatus, isFrontier = false, fluent = false) {
   const data: SkillGraphNodeData = {
     node: baseNode,
     status,
     isFrontier,
     tierColor: "var(--color-tier-2)",
+    fluent,
   };
   // NodeProps has many required fields the component never reads; build a minimal
   // shape and cast through NodeProps so tsc stays happy without spreading.
@@ -65,5 +66,13 @@ describe("SkillGraphNode", () => {
     const { container } = renderNode("locked", false);
     expect(container.querySelector(".opacity-60")).toBeTruthy();
     expect(container.querySelector(".sg-pulse")).toBeNull();
+  });
+
+  it("shows the Fluent badge only when the node is fluent (R10)", () => {
+    renderNode("learned", false, true);
+    expect(screen.getByTestId("sg-node-fluent-n1")).toBeTruthy();
+    cleanup();
+    renderNode("learned", false, false);
+    expect(screen.queryByTestId("sg-node-fluent-n1")).toBeNull();
   });
 });

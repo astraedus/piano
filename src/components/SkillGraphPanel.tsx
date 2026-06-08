@@ -9,6 +9,7 @@
 // Both write through the AppState hook's `patch`, so the graph re-derives status.
 
 import type { SkillNode, SkillNodeStatus } from "@/lib/types";
+import type { DifficultyVerdict } from "@/lib/skillTree";
 import { ChordDiagram } from "@/lib/guitar/components/ChordDiagram";
 import { Fretboard } from "@/lib/guitar/components/Fretboard";
 import { Tab } from "@/lib/guitar/components/Tab";
@@ -20,6 +21,14 @@ const STATUS_LABEL: Record<SkillNodeStatus, string> = {
   learned: "Learned",
 };
 
+// R3 — self-assessment label + helper line per difficulty bucket. `unknown` is
+// not rendered (not enough attempts to judge).
+const DIFFICULTY_META: Record<Exclude<DifficultyVerdict, "unknown">, { label: string; hint: string }> = {
+  "too-easy": { label: "Too Easy", hint: "You're clearing this almost every time. Push the tempo or move on." },
+  "just-right": { label: "Just Right", hint: "This is sitting in the sweet spot. Keep at it." },
+  "too-hard": { label: "Too Hard", hint: "You're missing a lot. Slow it down and shrink the chunk." },
+};
+
 export interface SkillGraphPanelProps {
   node: SkillNode | null;
   status: SkillNodeStatus | undefined;
@@ -27,9 +36,15 @@ export interface SkillGraphPanelProps {
   statusById: Map<string, SkillNodeStatus>;
   /** node id → title, for naming prereqs. */
   titleById: Map<string, string>;
+  /** R10 — node has passed its fluency test. */
+  fluent?: boolean;
+  /** R3 — self-assessment verdict from the node's recorded success rate. */
+  difficulty?: DifficultyVerdict;
   onCloseAction: () => void;
   onAddToTodayAction: (nodeId: string) => void;
   onMarkLearnedAction: (nodeId: string) => void;
+  /** R10 — mark the node fluent (passed the autonomous test). */
+  onMarkFluentAction: (nodeId: string) => void;
 }
 
 export function SkillGraphPanel({
@@ -37,13 +52,18 @@ export function SkillGraphPanel({
   status,
   statusById,
   titleById,
+  fluent,
+  difficulty,
   onCloseAction,
   onAddToTodayAction,
   onMarkLearnedAction,
+  onMarkFluentAction,
 }: SkillGraphPanelProps) {
   if (!node) return null;
   const learned = status === "learned";
   const locked = status === "locked";
+  const difficultyMeta =
+    difficulty && difficulty !== "unknown" ? DIFFICULTY_META[difficulty] : null;
 
   return (
     <aside
@@ -57,13 +77,23 @@ export function SkillGraphPanel({
             tier {node.tier} · {node.category}
           </p>
           <h3 className="font-serif text-lg leading-tight text-[color:var(--ink)]">{node.title}</h3>
-          <p
-            data-testid="sg-panel-status"
-            className="text-xs italic"
-            style={{ color: locked ? "var(--ink-3)" : "var(--instrument-accent-deep)" }}
-          >
-            {STATUS_LABEL[status ?? "locked"]}
-          </p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p
+              data-testid="sg-panel-status"
+              className="text-xs italic"
+              style={{ color: locked ? "var(--ink-3)" : "var(--instrument-accent-deep)" }}
+            >
+              {STATUS_LABEL[status ?? "locked"]}
+            </p>
+            {fluent && (
+              <span
+                data-testid="sg-panel-fluent"
+                className="inline-flex items-center gap-1 rounded-full bg-[color:var(--instrument-accent-bg)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--instrument-accent-deep)]"
+              >
+                ✦ Fluent
+              </span>
+            )}
+          </div>
         </div>
         <button
           type="button"
@@ -82,6 +112,45 @@ export function SkillGraphPanel({
       <Section label="what it unlocks">
         <p className="text-sm text-[color:var(--ink-2)] italic">{node.unlock}</p>
       </Section>
+
+      {/* R3 — difficulty self-assessment from the recorded success rate. Only shown
+          once there are enough attempts to judge (verdict !== unknown). */}
+      {difficultyMeta && (
+        <Section label="how it's going">
+          <div data-testid="sg-panel-difficulty" data-verdict={difficulty} className="space-y-1">
+            <p
+              className="text-sm font-medium"
+              style={{ color: "var(--instrument-accent-deep)" }}
+            >
+              {difficultyMeta.label}
+            </p>
+            <p className="text-xs text-[color:var(--ink-3)]">{difficultyMeta.hint}</p>
+          </div>
+        </Section>
+      )}
+
+      {/* R10 — fluency milestone. Knowing a skill is not the same as it being
+          automatic. Offered once a node is learned, has a fluencyTest, and is not
+          already marked fluent. */}
+      {learned && node.fluencyTest && !fluent && (
+        <Section label="fluency check">
+          <div data-testid="sg-panel-fluency-check" className="space-y-2">
+            <p className="text-xs text-[color:var(--ink-3)]">
+              Knowing it is not the same as it being automatic. Prove it runs without your full attention:
+            </p>
+            <p className="text-sm text-[color:var(--ink-2)]">{node.fluencyTest.prompt}</p>
+            <button
+              type="button"
+              data-testid="sg-mark-fluent"
+              onClick={() => onMarkFluentAction(node.id)}
+              className="rounded-lg px-3 py-1.5 text-sm text-[color:var(--bg-base)] transition-opacity hover:opacity-90"
+              style={{ background: "var(--instrument-accent)" }}
+            >
+              I Did It
+            </button>
+          </div>
+        </Section>
+      )}
 
       {node.prereqs.length > 0 && (
         <Section label="needs first">

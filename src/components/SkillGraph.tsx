@@ -25,7 +25,7 @@ import "@xyflow/react/dist/style.css";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { isModuleRegistered } from "@/lib/instrumentRegistry";
-import { markNodeProgress, resolveStatus } from "@/lib/skillTree";
+import { difficultyVerdict, isFluent, markNodeProgress, resolveStatus } from "@/lib/skillTree";
 import {
   buildLaidOutGraph,
   nodesForInstrument,
@@ -59,7 +59,7 @@ export function SkillGraph() {
 }
 
 function SkillGraphInner() {
-  const { state, patch } = useAppState();
+  const { state, patch, markFluent } = useAppState();
   const [filter, setFilter] = useState<GraphInstrumentFilter>(state.instrument);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -141,6 +141,12 @@ function SkillGraphInner() {
     [patch, state.skillProgress],
   );
 
+  // R3/R10 — per-node quality signals for the panel, derived from the selected
+  // node's progress snapshot.
+  const selectedProgress = selectedNode ? progress?.[selectedNode.id] : undefined;
+  const selectedFluent = isFluent(selectedProgress);
+  const selectedDifficulty = difficultyVerdict(selectedProgress);
+
   const empty = allNodes.length === 0;
 
   return (
@@ -183,9 +189,12 @@ function SkillGraphInner() {
             status={statusById.get(selectedNode.id)}
             statusById={statusById}
             titleById={titleById}
+            fluent={selectedFluent}
+            difficulty={selectedDifficulty}
             onCloseAction={() => setSelectedId(null)}
             onAddToTodayAction={addToToday}
             onMarkLearnedAction={markLearned}
+            onMarkFluentAction={markFluent}
           />
         ) : (
           <PanelHint empty={empty} />

@@ -44,6 +44,7 @@ describe("SkillGraphPanel", () => {
         onCloseAction={() => {}}
         onAddToTodayAction={() => {}}
         onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
       />,
     );
     expect(screen.getByText("Map the Keyboard")).toBeTruthy();
@@ -66,6 +67,7 @@ describe("SkillGraphPanel", () => {
         onCloseAction={() => {}}
         onAddToTodayAction={add}
         onMarkLearnedAction={learn}
+        onMarkFluentAction={() => {}}
       />,
     );
     fireEvent.click(screen.getByTestId("sg-add-today"));
@@ -84,6 +86,7 @@ describe("SkillGraphPanel", () => {
         onCloseAction={() => {}}
         onAddToTodayAction={() => {}}
         onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
       />,
     );
     expect((screen.getByTestId("sg-add-today") as HTMLButtonElement).disabled).toBe(true);
@@ -100,6 +103,7 @@ describe("SkillGraphPanel", () => {
         onCloseAction={() => {}}
         onAddToTodayAction={() => {}}
         onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
       />,
     );
     expect(screen.queryByTestId("sg-add-today")).toBeNull();
@@ -117,6 +121,7 @@ describe("SkillGraphPanel", () => {
         onCloseAction={() => {}}
         onAddToTodayAction={() => {}}
         onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
       />,
     );
     const slot = screen.getByTestId("sg-viz-slot");
@@ -131,9 +136,101 @@ describe("SkillGraphPanel", () => {
         onCloseAction={() => {}}
         onAddToTodayAction={() => {}}
         onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
       />,
     );
     expect(screen.queryByTestId("sg-viz-slot")).toBeNull();
+  });
+
+  it("shows the fluency check on a learned node with a fluencyTest and fires onMarkFluentAction", () => {
+    const fluentFn = vi.fn();
+    const fNode: SkillNode = { ...node, fluencyTest: { prompt: "Play it while counting aloud." } };
+    render(
+      <SkillGraphPanel
+        node={fNode}
+        status="learned"
+        statusById={statusById("learned")}
+        titleById={titleById}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={fluentFn}
+      />,
+    );
+    expect(screen.getByTestId("sg-panel-fluency-check")).toBeTruthy();
+    expect(screen.getByText("Play it while counting aloud.")).toBeTruthy();
+    fireEvent.click(screen.getByTestId("sg-mark-fluent"));
+    expect(fluentFn).toHaveBeenCalledWith("n1");
+  });
+
+  it("hides the fluency check and shows the Fluent badge once fluent", () => {
+    const fNode: SkillNode = { ...node, fluencyTest: { prompt: "Play it while counting aloud." } };
+    render(
+      <SkillGraphPanel
+        node={fNode}
+        status="learned"
+        statusById={statusById("learned")}
+        titleById={titleById}
+        fluent
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    expect(screen.queryByTestId("sg-panel-fluency-check")).toBeNull();
+    expect(screen.getByTestId("sg-panel-fluent")).toBeTruthy();
+  });
+
+  it("does not offer the fluency check before a node is learned", () => {
+    const fNode: SkillNode = { ...node, fluencyTest: { prompt: "Play it while counting aloud." } };
+    render(
+      <SkillGraphPanel
+        node={fNode}
+        status="in-progress"
+        statusById={statusById("in-progress")}
+        titleById={titleById}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    expect(screen.queryByTestId("sg-panel-fluency-check")).toBeNull();
+  });
+
+  it("renders the difficulty verdict when supplied, and omits it for unknown", () => {
+    const { rerender } = render(
+      <SkillGraphPanel
+        node={node}
+        status="in-progress"
+        statusById={statusById("in-progress")}
+        titleById={titleById}
+        difficulty="too-hard"
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    const verdict = screen.getByTestId("sg-panel-difficulty");
+    expect(verdict.getAttribute("data-verdict")).toBe("too-hard");
+    expect(screen.getByText("Too Hard")).toBeTruthy();
+
+    rerender(
+      <SkillGraphPanel
+        node={node}
+        status="in-progress"
+        statusById={statusById("in-progress")}
+        titleById={titleById}
+        difficulty="unknown"
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    expect(screen.queryByTestId("sg-panel-difficulty")).toBeNull();
   });
 
   it("renders nothing when node is null", () => {
@@ -146,6 +243,7 @@ describe("SkillGraphPanel", () => {
         onCloseAction={() => {}}
         onAddToTodayAction={() => {}}
         onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
       />,
     );
     expect(container.firstChild).toBeNull();

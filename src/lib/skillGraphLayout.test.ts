@@ -71,6 +71,18 @@ describe("buildGraphModel — status derivation", () => {
     const leaf = nodes.find((n) => n.id === "leaf")!;
     expect(leaf.data.tierColor).toBe("var(--color-tier-2)");
   });
+
+  it("carries the fluent flag from progress onto node data (R10)", () => {
+    const progress: Record<string, SkillProgress> = {
+      root: { status: "learned", reps: 5, fluent: true, fluentAt: "2026-06-08" },
+      mid: { status: "learned", reps: 2 },
+    };
+    const { nodes } = buildGraphModel(fixture, progress, "piano");
+    const byId = new Map(nodes.map((n) => [n.id, n.data]));
+    expect(byId.get("root")!.fluent).toBe(true);
+    expect(byId.get("mid")!.fluent).toBe(false); // learned but not fluent
+    expect(byId.get("leaf")!.fluent).toBe(false); // no progress entry
+  });
 });
 
 describe("buildGraphModel — edges", () => {

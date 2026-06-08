@@ -24,7 +24,7 @@ function statusGlyph(status: SkillGraphNodeData["status"]): string {
 
 export function SkillGraphNode({ data, selected }: NodeProps) {
   const d = data as SkillGraphNodeData;
-  const { node, status, isFrontier, tierColor } = d;
+  const { node, status, isFrontier, tierColor, fluent } = d;
   const learned = status === "learned";
   const locked = status === "locked";
   const inProgress = status === "in-progress";
@@ -86,6 +86,18 @@ export function SkillGraphNode({ data, selected }: NodeProps) {
       >
         {node.title}
       </p>
+      {fluent && (
+        <span
+          data-testid={`sg-node-fluent-${node.id}`}
+          className="mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em]"
+          style={{
+            background: learned ? "rgba(251,246,238,0.22)" : "var(--instrument-accent-bg)",
+            color: learned ? "#FBF6EE" : "var(--instrument-accent-deep)",
+          }}
+        >
+          ✦ Fluent
+        </span>
+      )}
       <Handle type="source" position={Position.Bottom} className="!opacity-0" />
     </div>
   );
