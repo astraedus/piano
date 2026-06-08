@@ -1,6 +1,8 @@
 "use client";
 import { useRef } from "react";
 import { Slot } from "../Slot";
+import { Disclosure } from "./Disclosure";
+import { TermChip } from "../explain";
 import type { ChainDrill, SessionQuality } from "@/lib/types";
 import { drillRepId } from "@/lib/types";
 import { KEY_META, midiToSpn, pitchMidi, progressionChords } from "@/lib/music";
@@ -16,6 +18,8 @@ export function ChainDrillSlot({
   drill,
   interleave,
   printAlways,
+  forceOpen,
+  status,
   onQualityChangeAction,
 }: {
   module?: InstrumentModule;
@@ -23,21 +27,36 @@ export function ChainDrillSlot({
   /** R4 — interleave plan from todayPlan; when present the rep-engine weaves skills. */
   interleave?: InterleavePlan | null;
   printAlways?: boolean;
+  /** V4 resume UX — auto-expand this slot when it is the current "NOW" slot. */
+  forceOpen?: boolean;
+  /** V4 resume UX — slot status override from the stand (NOW / done). */
+  status?: "done" | "active" | null;
   /** R8 — bubble the rep-engine's captured quality up to the session log. */
   onQualityChangeAction?: (quality: SessionQuality) => void;
 }) {
   const { state, bumpRep } = useAppState();
   // Fire the legacy "tried it" rep counter exactly once per drill session.
   const bumpedRef = useRef(false);
+  // V4 soul-first: lead with the feeling/outcome name when present; the theory
+  // drill name becomes a tappable subtitle TermChip (degrades to plain text).
+  const heading = drill?.soulName ?? drill?.name ?? "Chain drill";
   const summary = drill ? (
-    <>{drill.name} · {drill.minutes} min</>
+    drill.soulName ? (
+      <span className="flex flex-wrap items-baseline gap-x-1.5">
+        <span>{drill.soulName}</span>
+        <span className="text-[color:var(--ink-3)]">·</span>
+        <TermChip term={drill.name} label={drill.name} variant="subtitle" />
+      </span>
+    ) : (
+      <>{drill.name} · {drill.minutes} min</>
+    )
   ) : (
     <span className="text-[color:var(--ink-3)]">No chain drill tonight. Just the piece.</span>
   );
 
   if (!drill) {
     return (
-      <Slot index={3} title="Chain drill" pillar="improv" summary={summary} printAlways={printAlways} />
+      <Slot index={3} title="Chain drill" pillar="improv" summary={summary} printAlways={printAlways} status={status} />
     );
   }
 
@@ -73,53 +92,30 @@ export function ChainDrillSlot({
     : undefined;
 
   return (
-    <Slot index={3} title="Chain drill" pillar="improv" duration={`${drill.minutes} min`} status={rep ? "done" : null} summary={summary} printAlways={printAlways}>
+    <Slot
+      index={3}
+      title={heading}
+      pillar="improv"
+      duration={`${drill.minutes} min`}
+      status={status ?? (rep ? "done" : null)}
+      summary={summary}
+      printAlways={printAlways}
+      defaultOpen={forceOpen}
+    >
+      {/* V4 progressive disclosure: lead with the rep ENGINE (the action) so it is
+          reachable without scrolling past reference. The step list and the
+          progression/keyboard (reference) collapse behind "Show steps" / "Hear
+          it" toggles. */}
       <div className="space-y-4 text-sm">
-        <ol className="space-y-1.5">
-          {drill.steps.map((s, i) => (
-            <li key={i} className="flex gap-3 items-baseline">
-              <span className="text-[color:var(--ink-3)] text-xs font-serif tabular-nums w-6">{i + 1}.</span>
-              <span className="flex-1 text-[color:var(--ink-2)]">{s.instruction}</span>
-              <span className="text-[color:var(--ink-3)] text-xs tabular-nums">{fmtStep(s.durationSec)}</span>
-            </li>
-          ))}
-        </ol>
-
-        <div className="pt-2 border-t border-[color:var(--rule)] space-y-3">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-1.5">
-              progression · {romans.join(" — ")}
-            </p>
-            {module?.InstrumentVisual && (
-              <module.InstrumentVisual notes={prog.flat()} rangeStart="C3" octaves={2} />
-            )}
-            <div className="mt-2 flex gap-2 no-print">
-              <button
-                type="button"
-                onClick={async () => { await ensureAudio(); await playProgression(prog); }}
-                className="chip text-xs px-3 py-1"
-              >
-                Hear the Loop
-              </button>
-              <button
-                type="button"
-                onClick={async () => { await ensureAudio(); await playSequence(pentatonicNotes); }}
-                className="chip text-xs px-3 py-1"
-              >
-                Hear Pentatonic
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* The interactive rep-engine (R2/R4/R5/R8). */}
-        <div className="pt-2 border-t border-[color:var(--rule)] no-print">
+        {/* The interactive rep-engine (R2/R4/R5/R8) — pinned at the top. */}
+        <div className="no-print">
           <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-2">
             Run the reps
           </p>
           <RepEngine
             config={engineConfig}
             noteText={interleaveNote}
+            resumeKey={drillRepId(drill.id)}
             onQualityChangeAction={(q) => {
               onQualityChangeAction?.(q);
               // Keep the legacy "tried it" rep counter warm on the first clean rep
@@ -132,6 +128,48 @@ export function ChainDrillSlot({
             }}
           />
         </div>
+
+        {/* Reference 1 — the step list, collapsed by default. */}
+        <Disclosure label="Show steps">
+          <ol className="space-y-1.5">
+            {drill.steps.map((s, i) => (
+              <li key={i} className="flex gap-3 items-baseline">
+                <span className="text-[color:var(--ink-3)] text-xs font-serif tabular-nums w-6">{i + 1}.</span>
+                <span className="flex-1 text-[color:var(--ink-2)]">{s.richInstruction ?? s.instruction}</span>
+                <span className="text-[color:var(--ink-3)] text-xs tabular-nums">{fmtStep(s.durationSec)}</span>
+              </li>
+            ))}
+          </ol>
+        </Disclosure>
+
+        {/* Reference 2 — the progression + keyboard + hear buttons, collapsed. */}
+        <Disclosure label="Hear it · see the shape">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-1.5">
+            progression · {romans.join(" — ")}
+          </p>
+          {/* overflow guard so the keyboard never clips at the card edge (P2). */}
+          <div className="overflow-x-auto">
+            {module?.InstrumentVisual && (
+              <module.InstrumentVisual notes={prog.flat()} rangeStart="C3" octaves={2} />
+            )}
+          </div>
+          <div className="mt-2 flex gap-2 no-print">
+            <button
+              type="button"
+              onClick={async () => { await ensureAudio(); await playProgression(prog); }}
+              className="chip text-xs px-3 py-1"
+            >
+              Hear the Loop
+            </button>
+            <button
+              type="button"
+              onClick={async () => { await ensureAudio(); await playSequence(pentatonicNotes); }}
+              className="chip text-xs px-3 py-1"
+            >
+              Hear Pentatonic
+            </button>
+          </div>
+        </Disclosure>
 
         <div className="flex items-center gap-3 pt-1 no-print">
           {rep && (

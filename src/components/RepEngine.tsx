@@ -11,9 +11,37 @@ import {
   ladderProgress,
   toSessionQuality,
   type RepEngineConfig,
+  type RepEngineState,
 } from "@/lib/repEngine";
 import type { SessionQuality } from "@/lib/types";
+import { localDateKey } from "@/lib/progression";
+import {
+  rehydrateRepState,
+  snapshotFromState,
+  repSessionKey,
+  type RepSessionSnapshot,
+} from "./slots/repResume";
 import { Metronome } from "./Metronome";
+
+/**
+ * Lazy reducer init: build the fresh engine for the day's config, then restore the
+ * user's PLACE in it from any same-day snapshot in localStorage. This is the fix
+ * for the audit's "reload resets to Rep 1": the per-rep data persisted, but the
+ * engine restarted at repIndex 0. Day-scoped so a new day starts fresh. SSR-safe
+ * (no window -> fresh state, matching the server render).
+ */
+function initWithResume(args: { config: RepEngineConfig; resumeKey?: string }): RepEngineState {
+  const fresh = initRepEngine(args.config);
+  if (typeof window === "undefined" || !args.resumeKey) return fresh;
+  try {
+    const raw = window.localStorage.getItem(repSessionKey(args.resumeKey));
+    if (!raw) return fresh;
+    const snap = JSON.parse(raw) as RepSessionSnapshot;
+    return rehydrateRepState(args.config, snap, localDateKey(new Date()));
+  } catch {
+    return fresh;
+  }
+}
 
 /**
  * The interactive rep-engine. Consumes a resolved RepEngineConfig (built from the
@@ -24,19 +52,29 @@ import { Metronome } from "./Metronome";
  *
  * Degrades gracefully: a config with no repBlocks/bpmLadder/interleave renders a
  * plain flat run of reps with no rest, no metronome ladder, no skill switch.
+ *
+ * `resumeKey` (the drill's rep id) opts the engine into reload-resume: its
+ * in-flight state persists to localStorage and rehydrates on the next mount.
  */
 export function RepEngine({
   config,
   noteText,
+  resumeKey,
   onQualityChangeAction,
 }: {
   config: RepEngineConfig;
   /** A short functional note shown once at the top (e.g. the interleave warning). */
   noteText?: string;
+  /** Stable per-drill key enabling reload-resume of the in-flight session. */
+  resumeKey?: string;
   onQualityChangeAction?: (quality: SessionQuality) => void;
 }) {
   const reduce = useReducedMotion();
-  const [state, dispatch] = useReducer(repEngineReducer, config, initRepEngine);
+  const [state, dispatch] = useReducer(
+    repEngineReducer,
+    { config, resumeKey },
+    initWithResume,
+  );
   // Per-rep confirm flash key — bumps so the animation re-fires each success.
   const [confirmKey, setConfirmKey] = useState(0);
 
@@ -44,6 +82,25 @@ export function RepEngine({
   useEffect(() => {
     onQualityChangeAction?.(toSessionQuality(state));
   }, [state, onQualityChangeAction]);
+
+  // Persist the in-flight session day-scoped so a reload resumes here (the audit
+  // resume fix). A finished session is cleared so it does not re-hydrate as stale.
+  useEffect(() => {
+    if (typeof window === "undefined" || !resumeKey) return;
+    const key = repSessionKey(resumeKey);
+    try {
+      if (state.phase === "done") {
+        window.localStorage.removeItem(key);
+      } else {
+        window.localStorage.setItem(
+          key,
+          JSON.stringify(snapshotFromState(state, localDateKey(new Date()))),
+        );
+      }
+    } catch {
+      /* storage full / disabled — resume is a nicety, never block practice. */
+    }
+  }, [state, resumeKey]);
 
   const mark = (success: boolean) => {
     if (success) setConfirmKey((k) => k + 1);

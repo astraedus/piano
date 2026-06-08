@@ -11,7 +11,7 @@ import type { SkillNode } from "@/lib/types";
 // Server Component passes down, which never happens for this component.
 export function FreeSlot({
   urlInitial, journalInitial, onJournalChange, onUrlChange, printAlways, expanded,
-  reviewSkills,
+  reviewSkills, isNow, status,
 }: {
   urlInitial?: string;
   journalInitial?: string;
@@ -19,6 +19,8 @@ export function FreeSlot({
   onUrlChange?: (v: string) => void;
   printAlways?: boolean;
   expanded?: boolean;
+  isNow?: boolean;
+  status?: "done" | "active" | null;
   // R7 — learned skill nodes due for spaced review today. Absent/empty → nothing
   // shown (no regression). Marking one done advances its review interval.
   reviewSkills?: SkillNode[];
@@ -46,6 +48,8 @@ export function FreeSlot({
       summary={<>Free play. Anything you want.</>}
       defaultOpen={expanded}
       printAlways={printAlways}
+      isNow={isNow}
+      status={status}
     >
       <div className="space-y-3 text-sm">
         {dueReviews.length > 0 && (

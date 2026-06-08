@@ -14,6 +14,7 @@ import { ChainDrillSlot } from "./slots/ChainDrillSlot";
 import { EarMomentSlot } from "./slots/EarMomentSlot";
 import { FreeSlot } from "./slots/FreeSlot";
 import { generateEarRound } from "@/lib/earRounds";
+import { drillRepId, scaleRepId } from "@/lib/types";
 import type { EarRound } from "@/lib/types";
 import { UnlockCardModal } from "./UnlockCardModal";
 import { LevelUpModal } from "./LevelUpModal";
@@ -21,8 +22,17 @@ import { XPBar } from "./XPBar";
 import { StreakFlame } from "./StreakFlame";
 import { Horizons } from "./Horizons";
 import { GhostPicker } from "./GhostPicker";
+import { TermChip } from "./explain";
+import { ghostKeyToTermId } from "@/lib/pathFilter";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
-import { emptyStreak, levelForXp, titleForLevel } from "@/lib/progression";
+import { emptyStreak, levelForXp, localDateKey, titleForLevel } from "@/lib/progression";
+import {
+  currentSlot,
+  hasResumableWork,
+  repSessionKey,
+  type RepSessionSnapshot,
+  type SlotKey,
+} from "./slots/repResume";
 
 export function PracticeStand() {
   const router = useRouter();
@@ -75,6 +85,30 @@ export function PracticeStand() {
   const ghost = KEY_META[plan.ghostKey];
   const piece = state.pieces.find((p) => p.id === state.currentPieceId);
   const printing = false;
+
+  // ── V4 resume UX: derive per-slot done-state, the current "NOW" slot, and any
+  // in-flight chain-drill rep session to resume. Done-state comes from the
+  // persistent rep counters (warmup scale + chain drill); piece/ear/free have no
+  // persistent completion so they fall to the NOW marker by order. Pure helpers
+  // (currentSlot / hasResumableWork) are unit-tested in repResume.test.ts. ──
+  const warmupDone = !!(plan.warmup && state.skillReps?.[scaleRepId(plan.ghostKey)]);
+  const chainDone = !!(plan.chainDrill && state.skillReps?.[drillRepId(plan.chainDrill.id)]);
+  const slotDone: Partial<Record<SlotKey, boolean>> = { warmup: warmupDone, chain: chainDone };
+  const nowSlot: SlotKey = currentSlot(slotDone);
+  const slotStatus = (key: SlotKey): "done" | "active" | null =>
+    slotDone[key] ? "done" : null;
+
+  // Read the chain drill's persisted rep session for the "Resume: …, rep N" line.
+  // The banner shows whenever there is in-flight, same-day, not-yet-done chain
+  // work to pick up — independent of which slot is NOW. (Gating on nowSlot ===
+  // "chain" hid it whenever an earlier slot was unfinished, which is exactly when
+  // a returning user most needs the pointer.) hasResumableWork already scopes to
+  // today + non-finished + has-progress.
+  const chainResume = plan.chainDrill
+    ? readRepSnapshot(drillRepId(plan.chainDrill.id))
+    : null;
+  const resumeRepN = chainResume ? chainResume.attempts + 1 : null;
+  const showResume = hasResumableWork(chainResume, localDateKey(new Date()));
 
   const handleDone = () => {
     const endedAt = new Date().toISOString();
@@ -164,26 +198,49 @@ export function PracticeStand() {
     <div>
       <div className="stage-card px-5 py-6 sm:px-7 sm:py-7">
         <Header ghostName={ghost.name} ghostKey={plan.ghostKey} instrumentLabel={instrumentLabel} mode={plan.mode} firstBackMessage={plan.firstBackMessage} module={module} />
-        <StatsStrip xp={state.xp ?? 0} streak={state.streak ?? emptyStreak()} />
-        <DailyFramingLine />
-        <MentalPracticeCard firstBack={plan.mode === "first-back"} pieceTitle={piece?.title} />
-        <div className="mt-5">
-          <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} />
-          <PieceSlot module={module} piece={piece} printAlways={printing} />
-          <ChainDrillSlot
-            module={module}
-            drill={plan.chainDrill ?? null}
-            interleave={plan.interleave ?? null}
-            printAlways={printing}
-            onQualityChangeAction={setChainQuality}
+        {showResume && (
+          <ResumeBanner
+            slotLabel="Chain drill"
+            repN={resumeRepN ?? 1}
           />
-          <EarMomentSlot
-            rounds={earRounds}
-            muted={plan.mode === "first-back"}
-            printAlways={printing}
-            onResultAction={(correct: string[], wrong: string[]) => { setEarCorrect(correct); setEarWrong(wrong); }}
-          />
-          <FreeSlot urlInitial={state.freeSlotUrl} journalInitial={journal} onJournalChange={setJournal} reviewSkills={plan.reviewSkills} printAlways={printing} />
+        )}
+        {/* Desktop (lg+) splits into an info rail + the slot column so the screen
+            is no longer ~40% dead gutter. Mobile/tablet stay single-column. */}
+        <div className="mt-4 lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8 lg:items-start">
+          {/* Info rail — stats + streak + goal. On mobile it stacks above the
+              slots (as today); on lg+ it sits in its own column beside them and
+              sticks while you scroll the slots. */}
+          <aside className="lg:sticky lg:top-20 space-y-4">
+            <StatsStrip xp={state.xp ?? 0} streak={state.streak ?? emptyStreak()} />
+            <DailyFramingLine />
+            <GoalRail nowSlot={nowSlot} />
+          </aside>
+
+          <div>
+            <MentalPracticeCard firstBack={plan.mode === "first-back"} pieceTitle={piece?.title} />
+            <div className="mt-5">
+              <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} isNow={nowSlot === "warmup"} status={slotStatus("warmup")} />
+              <PieceSlot module={module} piece={piece} printAlways={printing} isNow={nowSlot === "piece"} status={slotStatus("piece")} />
+              <ChainDrillSlot
+                module={module}
+                drill={plan.chainDrill ?? null}
+                interleave={plan.interleave ?? null}
+                printAlways={printing}
+                forceOpen={nowSlot === "chain"}
+                status={chainDone ? "done" : null}
+                onQualityChangeAction={setChainQuality}
+              />
+              <EarMomentSlot
+                rounds={earRounds}
+                muted={plan.mode === "first-back"}
+                printAlways={printing}
+                isNow={nowSlot === "ear"}
+                status={slotStatus("ear")}
+                onResultAction={(correct: string[], wrong: string[]) => { setEarCorrect(correct); setEarWrong(wrong); }}
+              />
+              <FreeSlot urlInitial={state.freeSlotUrl} journalInitial={journal} onJournalChange={setJournal} reviewSkills={plan.reviewSkills} printAlways={printing} isNow={nowSlot === "free"} status={slotStatus("free")} />
+            </div>
+          </div>
         </div>
         <Footer
           onDone={handleDone}
@@ -196,6 +253,54 @@ export function PracticeStand() {
       <Horizons ghostKey={plan.ghostKey} warmup={plan.warmup} />
       <UnlockQueue queue={unlocksQueue} onClose={() => setUnlocksQueue((q) => q.slice(1))} unlocks={state.unlocks} />
       <LevelUpQueue pending={state.pendingLevelUps} onClose={dismissLevelUp} />
+    </div>
+  );
+}
+
+/** Read a chain-drill rep session snapshot from localStorage (browser only). The
+ *  pure rehydrate logic lives in repResume; this is just the IO wrapper for the
+ *  stand's "Resume: …, rep N" affordance. Returns null on SSR or parse failure. */
+function readRepSnapshot(drillRepKey: string): RepSessionSnapshot | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(repSessionKey(drillRepKey));
+    return raw ? (JSON.parse(raw) as RepSessionSnapshot) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** A one-line "pick up where you left off" affordance shown near the top when
+ *  there is in-flight chain-drill work to resume on reload (V4 resume UX). */
+function ResumeBanner({ slotLabel, repN }: { slotLabel: string; repN: number }) {
+  return (
+    <div
+      data-testid="resume-banner"
+      className="mt-4 flex items-center gap-2 rounded-lg border border-[color:var(--accent-soft)] bg-[color:var(--accent)]/8 px-4 py-2.5 text-sm fade-in"
+    >
+      <span className="inline-block h-2 w-2 rounded-full bg-[color:var(--accent)]" aria-hidden />
+      <span className="text-[color:var(--ink-2)]">
+        Resume: <span className="font-medium text-[color:var(--ink)]">{slotLabel}</span>, rep {repN}
+      </span>
+    </div>
+  );
+}
+
+/** A quiet "your goal right now" line in the desktop info rail — names the NOW
+ *  slot so the rail reinforces where the stand is pointing the user. */
+function GoalRail({ nowSlot }: { nowSlot: SlotKey }) {
+  const LABELS: Record<SlotKey, string> = {
+    warmup: "Warm up",
+    piece: "Work your piece",
+    chain: "Run the chain drill",
+    ear: "Train your ear",
+    free: "Free play",
+  };
+  return (
+    <div className="hidden lg:block rounded-lg border border-[color:var(--rule)] bg-[color:var(--bg-surface-2)] px-4 py-3">
+      <p className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-1">Your goal</p>
+      <p className="font-serif text-base text-[color:var(--ink)]">{LABELS[nowSlot]}</p>
+      <p className="text-xs text-[color:var(--ink-3)] mt-1">Start here, then flow down the stand.</p>
     </div>
   );
 }
@@ -217,7 +322,13 @@ function Header({ ghostName, ghostKey, instrumentLabel, mode, firstBackMessage, 
         </span>
       </div>
       <div className="flex items-baseline gap-3 mt-1.5 flex-wrap">
-        <h1 className="font-serif text-[length:var(--text-3xl)] text-[color:var(--ink)] tracking-[-0.025em]" style={{ fontVariationSettings: "'opsz' 36, 'SOFT' 50" }}>{focusName}</h1>
+        {/* V4 soul-first (spec 4.4.1): the focus name is the theory term itself, so
+            it leads as the headline AND is the always-tappable explainer — one tap
+            opens "what / hear / see / why" for the week's key/chord. Degrades to
+            plain text for keys with no glossary entry (never a dead chip). */}
+        <h1 className="font-serif text-[length:var(--text-3xl)] tracking-[-0.025em]" style={{ fontVariationSettings: "'opsz' 36, 'SOFT' 50" }}>
+          <TermChip term={ghostKeyToTermId(ghostKey)} label={focusName} className="text-[color:var(--ink)] decoration-1" />
+        </h1>
         <GhostPicker current={ghostKey} />
       </div>
       {mode === "first-back" && firstBackMessage && (

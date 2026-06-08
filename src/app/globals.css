@@ -138,6 +138,11 @@
   --accent:       var(--instrument-accent);
   --accent-soft:  var(--instrument-accent-soft);
   --accent-deep:  var(--instrument-accent-deep);
+  /* Success aliases — components read --success / --success-bg via var()
+     directly (the done checkmark + the "done" status pill). Point them at the
+     @theme color tokens so the green resolves instead of rendering invalid. */
+  --success:      var(--color-success);
+  --success-bg:   var(--color-success-bg);
 
   /* === MISC === */
   --radius-full:  9999px;
@@ -266,6 +271,23 @@ body > * { position: relative; z-index: 1; }
    canonical token names already defined above).
    ===================================================================== */
 
+/* Shared page-width container. The nav header and the main content both use it
+   so they ALWAYS share an edge (fixes the V4 audit's nav-vs-content
+   misalignment). Single column up to lg (768px, unchanged on mobile/tablet);
+   at lg+ it widens to make room for the desktop 2-col stand (info rail + slots)
+   so the screen is no longer ~40% dead gutter. Centered at every width. */
+.shell-container {
+  width: 100%;
+  max-width: 48rem; /* 768px — the proven single-column width */
+  margin-inline: auto;
+}
+@media (min-width: 1024px) {
+  .shell-container { max-width: 64rem; } /* 1024px — room for the 2-col stand */
+}
+@media (min-width: 1280px) {
+  .shell-container { max-width: 72rem; } /* 1152px on wide desktops */
+}
+
 /* The main stage container (Practice Stand). */
 .stage-card {
   background: var(--bg-surface);
@@ -302,6 +324,23 @@ body > * { position: relative; z-index: 1; }
       color-mix(in oklab, var(--pillar, var(--instrument-accent)) 6%, transparent) 0%,
       transparent 24%),
     var(--bg-surface);
+}
+
+/* V4 resume UX — the "NOW / start here" slot. A clear accent ring + thicker
+   accent pillar so the current step is unmistakable, beyond the category color. */
+.slot-card-now {
+  border-left-width: 4px;
+  outline: 2px solid var(--instrument-accent-soft);
+  outline-offset: 1px;
+  box-shadow: var(--shadow-hover), 0 0 0 4px var(--instrument-accent-glow), var(--lit-edge);
+}
+
+/* V4 resume UX — a completed slot reads as settled: muted surface, quieter
+   pillar, so attention flows to what is still ahead. */
+.slot-card-done {
+  background: var(--bg-surface-2);
+  border-left-color: color-mix(in oklab, var(--pillar, var(--instrument-accent)) 45%, var(--bg-rule));
+  box-shadow: var(--lit-edge);
 }
 
 /* Primary CTA pill — instrument accent fill, accent glow. */
