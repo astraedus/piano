@@ -18,6 +18,7 @@ import { getModuleSync } from "@/lib/instrumentRegistry";
 import { resolveStatus, nextToLearn } from "@/lib/skillTree";
 import { getLesson } from "@/lib/lessons";
 import { linkTerms } from "@/components/explain";
+import { LessonMedia } from "@/components/LessonMedia";
 import type { NodeLesson, SkillNode, SkillNodeStatus } from "@/lib/types";
 
 // ── Tier section names ──────────────────────────────────────────────────────
@@ -242,6 +243,9 @@ function LessonContent({ node, lesson }: { node: SkillNode; lesson: NodeLesson }
         </p>
       </Section>
 
+      {/* V5.1 — inline visual + audio strip */}
+      <LessonMedia node={node} />
+
       <Section label="why it matters">
         <p className="text-sm text-[color:var(--ink-2)] leading-relaxed italic">
           {linkTerms(lesson.why, `why-${node.id}`)}
@@ -309,6 +313,9 @@ function LessonContent({ node, lesson }: { node: SkillNode; lesson: NodeLesson }
 function FallbackContent({ node }: { node: SkillNode }) {
   return (
     <>
+      {/* V5.1 — inline visual + audio strip */}
+      <LessonMedia node={node} />
+
       <Section label="the drill">
         <p
           data-testid="fallback-mastery-drill"

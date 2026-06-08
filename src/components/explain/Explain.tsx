@@ -13,9 +13,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { GlossaryEntry } from "@/lib/explain/glossary";
-import { Fretboard } from "@/lib/guitar/components/Fretboard";
-import { ChordDiagram } from "@/lib/guitar/components/ChordDiagram";
-import { Keyboard } from "@/lib/piano/components/Keyboard";
+import { TermVisual } from "@/components/explain/TermVisual";
 
 export interface ExplainProps {
   entry: GlossaryEntry;
@@ -145,7 +143,7 @@ export function Explain({ entry, anchor, onClose }: ExplainProps) {
 
       {/* SEE IT */}
       <div className="mt-3">
-        <SeeIt entry={entry} />
+        <TermVisual entry={entry} />
       </div>
 
       {/* WHY IT MATTERS */}
@@ -155,21 +153,3 @@ export function Explain({ entry, anchor, onClose }: ExplainProps) {
   );
 }
 
-/** Dispatch the SEE section on the entry's `seeKind`. */
-function SeeIt({ entry }: { entry: GlossaryEntry }) {
-  switch (entry.seeKind) {
-    case "keyboard":
-      return <Keyboard notes={entry.seeNotes ?? []} labelNotes height={96} />;
-    case "fretboard":
-      return <Fretboard notes={entry.seeNotes ?? []} ariaLabel={`${entry.title} on the fretboard`} />;
-    case "chord-diagram":
-      return <ChordDiagram chordShape={entry.seeChordShape} title={entry.title} />;
-    case "text":
-    default:
-      return entry.seeText ? (
-        <p className="whitespace-pre-wrap font-mono text-xs text-[color:var(--ink-2)] bg-[color:var(--bg-surface-2)] rounded-md p-2">
-          {entry.seeText}
-        </p>
-      ) : null;
-  }
-}

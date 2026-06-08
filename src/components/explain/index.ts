@@ -10,3 +10,5 @@ export { Explain } from "./Explain";
 export type { ExplainProps } from "./Explain";
 export { ExplainProvider, useExplain } from "./useExplain";
 export { linkTerms } from "./linkTerms";
+export { TermVisual, termHasVisual } from "./TermVisual";
+export type { TermVisualProps } from "./TermVisual";

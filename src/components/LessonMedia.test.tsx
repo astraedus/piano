@@ -1,0 +1,241 @@
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
+import { LessonMedia } from "./LessonMedia";
+import type { SkillNode } from "@/lib/types";
+
+// Mock @/lib/explain/glossary so we can control lookupTerm in each test.
+// The real glossary has audio deps (Tone.js) which are heavy; mocking keeps tests fast.
+vi.mock("@/lib/explain/glossary", () => {
+  return {
+    lookupTerm: vi.fn(),
+    GLOSSARY: [],
+  };
+});
+
+// Mock the guitar visual components — they use SVG/canvas which jsdom can't render.
+vi.mock("@/lib/guitar/components/ChordDiagram", () => ({
+  ChordDiagram: ({ title }: { title?: string }) => (
+    <div data-testid="chord-diagram">{title}</div>
+  ),
+}));
+
+vi.mock("@/lib/guitar/components/Fretboard", () => ({
+  Fretboard: ({ ariaLabel }: { ariaLabel?: string }) => (
+    <div data-testid="fretboard" aria-label={ariaLabel} />
+  ),
+}));
+
+vi.mock("@/lib/guitar/components/Tab", () => ({
+  Tab: ({ ariaLabel }: { ariaLabel?: string }) => (
+    <div data-testid="tab" aria-label={ariaLabel} />
+  ),
+}));
+
+vi.mock("@/lib/piano/components/Keyboard", () => ({
+  Keyboard: ({ notes }: { notes?: string[] }) => (
+    <div data-testid="keyboard">{(notes ?? []).join(",")}</div>
+  ),
+}));
+
+// Mock TermVisual so we can control what the term visual renders without the
+// real guitar/piano components. Uses the same data-testids so assertions work.
+vi.mock("@/components/explain/TermVisual", () => {
+  return {
+    TermVisual: ({ entry }: { entry: { seeKind: string; title: string } }) => (
+      <div data-testid="term-visual" data-seekind={entry.seeKind}>
+        {entry.title}
+      </div>
+    ),
+    termHasVisual: (entry: { seeKind: string; seeText?: string }) => {
+      if (entry.seeKind === "text") return Boolean(entry.seeText);
+      return ["fretboard", "keyboard", "chord-diagram"].includes(entry.seeKind);
+    },
+  };
+});
+
+import { lookupTerm } from "@/lib/explain/glossary";
+const mockLookupTerm = lookupTerm as ReturnType<typeof vi.fn>;
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
+
+// ── Fixtures ────────────────────────────────────────────────────────────────
+
+const baseNode: SkillNode = {
+  id: "g-t1-power",
+  instrument: "guitar",
+  title: "Power Chords",
+  tier: 1,
+  category: "chords",
+  prereqs: [],
+  masteryDrill: "Slide a power chord up the neck.",
+  unlock: "Play the riff to almost any rock song.",
+  viz: "chord_diagram",
+  chordShape: [0, 2, -1, -1, -1, -1],
+};
+
+const noVizNode: SkillNode = {
+  id: "g-t1-palmmute",
+  instrument: "guitar",
+  title: "Palm Muting",
+  tier: 1,
+  category: "technique",
+  prereqs: [],
+  masteryDrill: "Mute the strings with your palm.",
+  unlock: "The chug sound.",
+};
+
+const emptyNode: SkillNode = {
+  id: "g-unknown-xyz",
+  instrument: "guitar",
+  title: "No Term",
+  tier: 0,
+  category: "technique",
+  prereqs: [],
+  masteryDrill: "Practice.",
+  unlock: "Something.",
+};
+
+// ── Tests ────────────────────────────────────────────────────────────────────
+
+describe("LessonMedia", () => {
+  describe("(a) chord_diagram viz node renders a chord diagram", () => {
+    beforeEach(() => {
+      // g-t1-power has a glossary term — supply it for audio.
+      mockLookupTerm.mockReturnValue(undefined); // audio not needed for this test
+    });
+
+    it("renders lesson-media and a chord diagram for a node with viz:chord_diagram", () => {
+      render(<LessonMedia node={baseNode} />);
+      expect(screen.getByTestId("lesson-media")).toBeTruthy();
+      expect(screen.getByTestId("chord-diagram")).toBeTruthy();
+    });
+
+    it("does NOT render lesson-media-hear when no term maps", () => {
+      mockLookupTerm.mockReturnValue(undefined);
+      render(<LessonMedia node={baseNode} />);
+      expect(screen.queryByTestId("lesson-media-hear")).toBeNull();
+    });
+  });
+
+  describe("(b) node with audio term renders Hear it button and calls hear() on click", () => {
+    it("renders a Hear it button when the node maps to a glossary term", async () => {
+      const hearSpy = vi.fn().mockResolvedValue(undefined);
+      mockLookupTerm.mockReturnValue({
+        id: "palm-muting",
+        title: "Palm Muting",
+        aliases: [],
+        what: "...",
+        why: "...",
+        hear: hearSpy,
+        seeKind: "text",
+        seeText: undefined,
+      });
+
+      render(<LessonMedia node={noVizNode} />);
+      const btn = screen.getByTestId("lesson-media-hear");
+      expect(btn).toBeTruthy();
+      expect(btn.textContent).toContain("Hear it");
+    });
+
+    it("clicking Hear it calls the term's hear() function", async () => {
+      const hearSpy = vi.fn().mockResolvedValue(undefined);
+      mockLookupTerm.mockReturnValue({
+        id: "palm-muting",
+        title: "Palm Muting",
+        aliases: [],
+        what: "...",
+        why: "...",
+        hear: hearSpy,
+        seeKind: "text",
+        seeText: undefined,
+      });
+
+      render(<LessonMedia node={noVizNode} />);
+      const btn = screen.getByTestId("lesson-media-hear");
+      await act(async () => {
+        fireEvent.click(btn);
+      });
+      expect(hearSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not throw if hear() rejects", async () => {
+      const hearSpy = vi.fn().mockRejectedValue(new Error("audio error"));
+      mockLookupTerm.mockReturnValue({
+        id: "palm-muting",
+        title: "Palm Muting",
+        aliases: [],
+        what: "...",
+        why: "...",
+        hear: hearSpy,
+        seeKind: "text",
+        seeText: undefined,
+      });
+
+      render(<LessonMedia node={noVizNode} />);
+      const btn = screen.getByTestId("lesson-media-hear");
+      // Should not throw
+      await act(async () => {
+        fireEvent.click(btn);
+      });
+      // Button is re-enabled after the error is swallowed
+      expect((btn as HTMLButtonElement).disabled).toBe(false);
+    });
+  });
+
+  describe("(c) node with neither viz nor term visual renders nothing", () => {
+    it("returns null (no lesson-media) when node has no viz and no glossary term", () => {
+      mockLookupTerm.mockReturnValue(undefined);
+      render(<LessonMedia node={emptyNode} />);
+      expect(screen.queryByTestId("lesson-media")).toBeNull();
+    });
+
+    it("returns null when node has no viz and its term has no visual and no audio", () => {
+      mockLookupTerm.mockReturnValue(undefined);
+      render(<LessonMedia node={{ ...emptyNode, viz: undefined }} />);
+      expect(screen.queryByTestId("lesson-media")).toBeNull();
+    });
+  });
+
+  describe("(d) node with a term with visual but no node.viz falls back to TermVisual", () => {
+    it("renders TermVisual when no node.viz but term has a visual", () => {
+      const entry = {
+        id: "palm-muting",
+        title: "Palm Muting",
+        aliases: [],
+        what: "...",
+        why: "...",
+        hear: vi.fn().mockResolvedValue(undefined),
+        seeKind: "fretboard",
+        seeNotes: ["A2"],
+      };
+      mockLookupTerm.mockReturnValue(entry);
+
+      render(<LessonMedia node={noVizNode} />);
+      expect(screen.getByTestId("lesson-media")).toBeTruthy();
+      expect(screen.getByTestId("term-visual")).toBeTruthy();
+    });
+  });
+
+  describe("(e) node with viz:chord_diagram AND a term renders both visual and audio", () => {
+    it("shows chord diagram AND Hear it when node has viz and a term with audio", () => {
+      const hearSpy = vi.fn().mockResolvedValue(undefined);
+      mockLookupTerm.mockReturnValue({
+        id: "power-chord",
+        title: "Power Chord",
+        aliases: [],
+        what: "...",
+        why: "...",
+        hear: hearSpy,
+        seeKind: "chord-diagram",
+        seeChordShape: [0, 2, -1, -1, -1, -1],
+      });
+
+      render(<LessonMedia node={baseNode} />);
+      expect(screen.getByTestId("chord-diagram")).toBeTruthy();
+      expect(screen.getByTestId("lesson-media-hear")).toBeTruthy();
+    });
+  });
+});

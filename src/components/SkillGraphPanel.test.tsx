@@ -112,7 +112,8 @@ describe("SkillGraphPanel", () => {
     expect(screen.getByText("✓ Learned")).toBeTruthy();
   });
 
-  it("renders the P4 viz extension slot keyed off node.viz, and omits it otherwise", () => {
+  it("renders LessonMedia for a node with viz, and renders nothing for a node with neither viz nor a mapped term", () => {
+    // guitarVizNode has viz:"chord_diagram" but no glossary term — LessonMedia renders.
     const { rerender } = render(
       <SkillGraphPanel
         node={guitarVizNode}
@@ -125,9 +126,11 @@ describe("SkillGraphPanel", () => {
         onMarkFluentAction={() => {}}
       />,
     );
-    const slot = screen.getByTestId("sg-viz-slot");
-    expect(slot.getAttribute("data-viz")).toBe("chord_diagram");
+    expect(screen.getByTestId("lesson-media")).toBeTruthy();
 
+    // node "n1" (piano, no viz, no NODE_TERM_IDS entry) → LessonMedia renders
+    // nothing (returns null). But the node also has no lesson, so the fallback
+    // block renders and LessonMedia is mounted — it just returns null internally.
     rerender(
       <SkillGraphPanel
         node={node}
@@ -140,7 +143,7 @@ describe("SkillGraphPanel", () => {
         onMarkFluentAction={() => {}}
       />,
     );
-    expect(screen.queryByTestId("sg-viz-slot")).toBeNull();
+    expect(screen.queryByTestId("lesson-media")).toBeNull();
   });
 
   it("shows the fluency check on a learned node with a fluencyTest and fires onMarkFluentAction", () => {

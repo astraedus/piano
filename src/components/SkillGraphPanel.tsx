@@ -11,12 +11,10 @@
 import type { ReactNode } from "react";
 import type { SkillNode, SkillNodeStatus } from "@/lib/types";
 import type { DifficultyVerdict } from "@/lib/skillTree";
-import { ChordDiagram } from "@/lib/guitar/components/ChordDiagram";
-import { Fretboard } from "@/lib/guitar/components/Fretboard";
-import { Tab } from "@/lib/guitar/components/Tab";
 import { TermChip, linkTerms } from "@/components/explain";
 import { nodeToTermId } from "@/lib/pathFilter";
 import { getLesson } from "@/lib/lessons";
+import { LessonMedia } from "@/components/LessonMedia";
 
 const STATUS_LABEL: Record<SkillNodeStatus, string> = {
   locked: "Locked",
@@ -149,6 +147,10 @@ export function SkillGraphPanel({
             </p>
           </Section>
 
+          {/* V5.1 — inline visual + audio. LessonMedia renders nothing if the node
+              has neither a viz nor a glossary term with an audible/visual entry. */}
+          <LessonMedia node={node} />
+
           <Section label="why it matters">
             <p className="text-sm text-[color:var(--ink-2)]">
               {linkTerms(lesson.why, "ly-")}
@@ -220,6 +222,9 @@ export function SkillGraphPanel({
         </div>
       ) : (
         <>
+          {/* V5.1 — inline visual + audio (fallback path, no authored lesson). */}
+          <LessonMedia node={node} />
+
           <Section label="the drill">
             <p data-testid="sg-panel-drill" className="text-sm text-[color:var(--ink-2)]">
               {linkTerms(node.masteryDrill)}
@@ -296,19 +301,8 @@ export function SkillGraphPanel({
         </Section>
       )}
 
-      {/* P4 EXTENSION POINT — guitar visuals, keyed off node.viz. Renders the real
-          ChordDiagram / Fretboard / Tab; keeps the sg-viz-slot testid + data-viz. */}
-      {node.viz && (
-        <Section label="visual">
-          <div
-            data-testid="sg-viz-slot"
-            data-viz={node.viz}
-            className="flex min-h-[88px] items-center justify-center rounded-lg border border-[color:var(--rule)] bg-[color:var(--surface-2)] p-2"
-          >
-            <NodeViz node={node} />
-          </div>
-        </Section>
-      )}
+      {/* Note: the old P4 viz extension slot (sg-viz-slot) has been superseded by
+          LessonMedia above, which renders the visual inline in the lesson. */}
 
       <div className="flex flex-wrap gap-2 pt-1">
         {!learned && (
@@ -343,34 +337,6 @@ export function SkillGraphPanel({
   );
 }
 
-// Renders the guitar visual for a node, keyed on node.viz:
-//   chord_diagram → ChordDiagram (node.chordShape / node.cagedShape)
-//   fretboard_map → Fretboard (scale/box map; default pentatonic box)
-//   tab           → Tab (default riff)
-//   animation     → graceful text placeholder (motion treatment is a later pass)
-function NodeViz({ node }: { node: SkillNode }) {
-  switch (node.viz) {
-    case "chord_diagram":
-      return (
-        <ChordDiagram
-          chordShape={node.chordShape}
-          cagedShape={node.cagedShape}
-          title={node.title}
-        />
-      );
-    case "fretboard_map":
-      return <Fretboard ariaLabel={`${node.title} fretboard map`} />;
-    case "tab":
-      return <Tab ariaLabel={`${node.title} tab`} />;
-    case "animation":
-    default:
-      return (
-        <span className="text-xs italic text-[color:var(--ink-3)]">
-          watch the motion: {node.title.toLowerCase()}
-        </span>
-      );
-  }
-}
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
