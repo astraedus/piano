@@ -64,6 +64,27 @@ export interface SkillNode {
   richUnlock?: ReactNode;
 }
 
+// ---- Teaching content (V5 "real content") ----
+// Every skill node gets a NodeLesson: the actual lesson, not a one-line drill
+// string. Stored as PLAIN STRINGS (JSON-serializable, so content can be generated
+// + fact-checked as data) keyed by node id in lib/<instrument>/lessons.ts. The
+// renderer auto-links any glossary term found in the prose via the existing term
+// scanner, so authors just write natural prose using real term words ("power
+// chord", "G major") and the chips appear. A node with no lesson degrades to the
+// old masteryDrill/unlock one-liners (never a blank panel).
+export interface LessonStep {
+  do: string;     // the concrete action to take, in plain language
+  feel?: string;  // the sensory cue / what to notice ("lightest pressure that rings clean")
+}
+export interface NodeLesson {
+  what: string;        // what this actually is, feeling-first, no unexplained jargon
+  why: string;         // why it matters — the real playing it unlocks
+  steps: LessonStep[]; // 3-6 ordered "do this, then this" steps — the actual HOW
+  goodWhen: string;    // the success check: what "you've got it" looks/sounds like
+  watchOut?: string;   // the #1 common mistake and how to fix it
+  song?: { name: string; note: string }; // a real song that uses this, for motivation
+}
+
 // ---- Per-skill mastery state (replaces the dead `requires` system) ----
 export interface SkillProgress {
   status: SkillNodeStatus;            // computed, but persisted snapshot allowed
