@@ -3,6 +3,8 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import type { ReactNode } from "react";
 import { STORAGE_KEY, defaultState, loadState, saveState } from "@/lib/storage";
 import { setRootAttrs } from "@/lib/domAttrs";
+import { advanceReview } from "@/lib/skillReview";
+import { markNodeFluent } from "@/lib/skillTree";
 import type { AppState, UnlockCard } from "@/lib/types";
 // Importing the piano module self-registers it into the instrument-registry sync
 // cache (registerInstrumentModule runs at import time). This warms the cache at
@@ -21,6 +23,10 @@ interface Ctx {
   dismissUnlock: (id: string) => void;
   dismissLevelUp: (level: number) => void;
   bumpRep: (id: string, opts?: { bpm?: number }) => void;
+  // R7 — mark a spaced-retrieval review done: advance that node's interval ladder.
+  reviewSkill: (nodeId: string) => void;
+  // R10 — mark a node fluent (passed its autonomous fluency test).
+  markFluent: (nodeId: string) => void;
 }
 
 const AppStateContext = createContext<Ctx | null>(null);
@@ -103,8 +109,31 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const reviewSkill = useCallback((nodeId: string) => {
+    // R7 — advance the node's review interval (1→3→7→14). No-op (returns the same
+    // map) when the node isn't queued, so this never creates a phantom schedule.
+    _setState((prev) => {
+      const skillReview = advanceReview(prev.skillReview ?? {}, nodeId, new Date().toISOString());
+      if (skillReview === (prev.skillReview ?? {})) return prev;
+      const next = { ...prev, skillReview };
+      saveState(next);
+      return next;
+    });
+  }, []);
+
+  const markFluent = useCallback((nodeId: string) => {
+    // R10 — record that the node's autonomous fluency test was passed. Does not
+    // touch DAG status; fluency is a second dimension alongside `learned`.
+    _setState((prev) => {
+      const skillProgress = markNodeFluent(prev.skillProgress ?? {}, nodeId, new Date().toISOString());
+      const next = { ...prev, skillProgress };
+      saveState(next);
+      return next;
+    });
+  }, []);
+
   return (
-    <AppStateContext.Provider value={{ state, ready, setState, patch, dismissUnlock, dismissLevelUp, bumpRep }}>
+    <AppStateContext.Provider value={{ state, ready, setState, patch, dismissUnlock, dismissLevelUp, bumpRep, reviewSkill, markFluent }}>
       {children}
     </AppStateContext.Provider>
   );
