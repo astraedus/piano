@@ -129,3 +129,69 @@ describe("buildLaidOutGraph (integration)", () => {
     expect(edges).toHaveLength(2); // root->mid, mid->leaf
   });
 });
+
+// ── V4 Soul-First — path/theory view filtering (pure layer) ─────────────────
+// chug (all paths) → cry (lead-only) → staff (theory). The default `view` arg is
+// SHOW_ALL, so every existing test above is unaffected.
+const pathFixture: SkillNode[] = [
+  { id: "chug", instrument: "guitar", title: "Power Chords", soulTitle: "The Rock Chug", keepTitle: "Power Chords", tier: 1, category: "chords", prereqs: [], masteryDrill: "d", unlock: "u", pathTags: ["just-play", "play-with-soul", "go-deep"] },
+  { id: "cry", instrument: "guitar", title: "String Bending", soulTitle: "Make a Note Cry", keepTitle: "String Bending", tier: 2, category: "expression", prereqs: ["chug"], masteryDrill: "d", unlock: "u", pathTags: ["play-with-soul", "go-deep"] },
+  { id: "staff", instrument: "guitar", title: "Reading the Staff", keepTitle: "Reading the Staff", tier: 3, category: "notation", prereqs: ["cry"], masteryDrill: "d", unlock: "u", pathTags: ["go-deep"], theory: true },
+];
+
+describe("buildGraphModel — path/theory view (V4)", () => {
+  it("default (SHOW_ALL) keeps every node and marks them all on-path", () => {
+    const { nodes } = buildGraphModel(pathFixture, {}, "guitar");
+    const byId = new Map(nodes.map((n) => [n.id, n.data]));
+    // SHOW_ALL has theoryEnabled true → staff is visible.
+    expect(nodes.map((n) => n.id).sort()).toEqual(["chug", "cry", "staff"]);
+    expect(byId.get("chug")!.pathTreatment).toBe("on-path");
+    expect(byId.get("staff")!.pathTreatment).toBe("on-path");
+  });
+
+  it("theory OFF drops theory nodes AND their edges from the model", () => {
+    const { nodes, edges } = buildGraphModel(pathFixture, {}, "guitar", 3, {
+      path: undefined,
+      theoryEnabled: false,
+    });
+    expect(nodes.map((n) => n.id).sort()).toEqual(["chug", "cry"]);
+    // the cry→staff edge must be gone (no dangling edge to a dropped node).
+    expect(edges.find((e) => e.id === "cry->staff")).toBeUndefined();
+    expect(edges.find((e) => e.id === "chug->cry")).toBeDefined();
+  });
+
+  it("Just Play dims the lead node (off-path) and still hides theory", () => {
+    const { nodes } = buildGraphModel(pathFixture, {}, "guitar", 3, {
+      path: "just-play",
+      theoryEnabled: false,
+    });
+    const byId = new Map(nodes.map((n) => [n.id, n.data]));
+    expect(byId.get("chug")!.pathTreatment).toBe("on-path");
+    expect(byId.get("cry")!.pathTreatment).toBe("off-path");
+    expect(byId.has("staff")).toBe(false);
+  });
+
+  it("Go Deep with theory on shows every node on-path", () => {
+    const { nodes } = buildGraphModel(pathFixture, {}, "guitar", 3, {
+      path: "go-deep",
+      theoryEnabled: true,
+    });
+    const byId = new Map(nodes.map((n) => [n.id, n.data]));
+    expect(byId.get("chug")!.pathTreatment).toBe("on-path");
+    expect(byId.get("cry")!.pathTreatment).toBe("on-path");
+    expect(byId.get("staff")!.pathTreatment).toBe("on-path");
+  });
+
+  it("off-path frontier still resolves status from the visible set", () => {
+    // With chug learned, cry becomes available/frontier; under Just Play it is
+    // off-path but still derives a real status (dimmed, not broken).
+    const progress: Record<string, SkillProgress> = { chug: learned("learned") };
+    const { nodes } = buildGraphModel(pathFixture, progress, "guitar", 3, {
+      path: "just-play",
+      theoryEnabled: false,
+    });
+    const cry = nodes.find((n) => n.id === "cry")!;
+    expect(cry.data.status).toBe("available");
+    expect(cry.data.pathTreatment).toBe("off-path");
+  });
+});

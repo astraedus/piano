@@ -11,8 +11,23 @@
 import dagre from "dagre";
 import type { Instrument, SkillNode, SkillNodeStatus, SkillProgress } from "./types";
 import { nextToLearn, resolveStatus } from "./skillTree";
+import { nodePathTreatment } from "./pathFilter";
+import type { LearningPath, PathTreatment } from "./pathFilter";
 
 export type GraphInstrumentFilter = Instrument; // "piano" | "guitar"
+
+/**
+ * V4 Soul-First — the path/theory view filter applied on top of the instrument
+ * filter. `path === undefined` shows every node (back-compat). `theoryEnabled`
+ * controls whether `theory: true` nodes appear at all. Defaulting to SHOW_ALL
+ * keeps callers that have not opted into a path (and the test fixtures) unchanged.
+ */
+export interface PathView {
+  path: LearningPath | undefined;
+  theoryEnabled: boolean;
+}
+
+const SHOW_ALL: PathView = { path: undefined, theoryEnabled: true };
 
 /** Data payload carried on each React-Flow node (consumed by the custom node). */
 export interface SkillGraphNodeData {
@@ -23,6 +38,12 @@ export interface SkillGraphNodeData {
   tierColor: string;
   /** R10 — node has passed its autonomous fluency test → gets the "Fluent" badge. */
   fluent: boolean;
+  /**
+   * V4 Soul-First — render treatment under the active path. Always "on-path" or
+   * "off-path" here ("theory-hidden" nodes are dropped from the graph entirely,
+   * so the dagre layout never sees them).
+   */
+  pathTreatment: Exclude<PathTreatment, "theory-hidden">;
   [key: string]: unknown; // React-Flow node data is an open record
 }
 
@@ -88,8 +109,24 @@ export function buildGraphModel(
   progress: Record<string, SkillProgress>,
   instrument: GraphInstrumentFilter,
   frontierLimit = 3,
+  view: PathView = SHOW_ALL,
 ): { nodes: Omit<FlowNode, "position">[]; edges: FlowEdge[] } {
-  const visible = nodesForInstrument(allNodes, instrument);
+  // Instrument filter first, then the V4 path/theory view filter. "theory-hidden"
+  // nodes are DROPPED here so dagre never lays them out and they grow no edges;
+  // "off-path" nodes stay (rendered dimmed) so the shape of the tree is preserved.
+  const forInstrument = nodesForInstrument(allNodes, instrument);
+  const treatmentById = new Map<string, Exclude<PathTreatment, "theory-hidden">>();
+  const visible: SkillNode[] = [];
+  for (const node of forInstrument) {
+    const treatment = nodePathTreatment(node, view.path, view.theoryEnabled);
+    if (treatment === "theory-hidden") continue;
+    treatmentById.set(node.id, treatment);
+    visible.push(node);
+  }
+
+  // Status/frontier resolve on the post-filter set so a dropped theory prereq does
+  // not wrongly lock its dependents in this view, and frontier never lands on a
+  // node the user cannot see.
   const status = resolveStatus(visible, progress);
   const frontierIds = new Set(
     nextToLearn(visible, progress, frontierLimit).map((n) => n.id),
@@ -105,6 +142,7 @@ export function buildGraphModel(
       isFrontier: frontierIds.has(node.id),
       tierColor: tierColorVar(node.tier),
       fluent: progress[node.id]?.fluent === true,
+      pathTreatment: treatmentById.get(node.id) ?? "on-path",
     },
   }));
 
@@ -171,7 +209,8 @@ export function buildLaidOutGraph(
   progress: Record<string, SkillProgress>,
   instrument: GraphInstrumentFilter,
   frontierLimit = 3,
+  view: PathView = SHOW_ALL,
 ): { nodes: FlowNode[]; edges: FlowEdge[] } {
-  const model = buildGraphModel(allNodes, progress, instrument, frontierLimit);
+  const model = buildGraphModel(allNodes, progress, instrument, frontierLimit, view);
   return { nodes: layout(model.nodes, model.edges), edges: model.edges };
 }

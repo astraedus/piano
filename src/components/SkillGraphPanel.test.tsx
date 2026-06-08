@@ -47,9 +47,10 @@ describe("SkillGraphPanel", () => {
         onMarkFluentAction={() => {}}
       />,
     );
-    expect(screen.getByText("Map the Keyboard")).toBeTruthy();
-    expect(screen.getByText("Touch any letter in under a second.")).toBeTruthy();
-    expect(screen.getByText("Find any note instantly.")).toBeTruthy();
+    expect(screen.getByTestId("sg-panel-title").textContent).toBe("Map the Keyboard");
+    // drill/unlock may have inline TermChips, so assert on the container text.
+    expect(screen.getByTestId("sg-panel-drill").textContent).toBe("Touch any letter in under a second.");
+    expect(screen.getByTestId("sg-panel-unlock").textContent).toBe("Find any note instantly.");
     expect(screen.getByTestId("sg-panel-status").textContent).toBe("Ready to start");
     // prereq chip renders by title
     expect(screen.getByText(/Posture/)).toBeTruthy();
@@ -247,5 +248,107 @@ describe("SkillGraphPanel", () => {
       />,
     );
     expect(container.firstChild).toBeNull();
+  });
+
+  // ── V4 Soul-First ──────────────────────────────────────────────────────────
+
+  // g-t1-power maps to glossary id "power-chord" via nodeToTermId, so the theory
+  // subtitle is a live (clickable) TermChip.
+  const soulNode: SkillNode = {
+    id: "g-t1-power",
+    instrument: "guitar",
+    title: "Power Chords",
+    soulTitle: "The Rock Chug",
+    keepTitle: "Power Chords",
+    tier: 1,
+    category: "chords",
+    prereqs: [],
+    masteryDrill: "Slide a power chord up the neck.",
+    unlock: "Play the riff to almost any rock song.",
+  };
+
+  it("leads with the soulTitle and shows the theory name as a clickable TermChip subtitle", () => {
+    render(
+      <SkillGraphPanel
+        node={soulNode}
+        status="available"
+        statusById={new Map([["g-t1-power", "available"]])}
+        titleById={new Map()}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    expect(screen.getByTestId("sg-panel-title").textContent).toBe("The Rock Chug");
+    const theory = screen.getByTestId("sg-panel-theory");
+    expect(theory.textContent).toBe("Power Chords");
+    // mapped term → a real chip (role=button with the Explain aria-label).
+    expect(theory.querySelector('[role="button"]')).toBeTruthy();
+    expect(theory.querySelector('[aria-label^="Explain:"]')).toBeTruthy();
+  });
+
+  it("surfaces a TermChip for a glossary term found in the drill text", () => {
+    render(
+      <SkillGraphPanel
+        node={soulNode}
+        status="available"
+        statusById={new Map([["g-t1-power", "available"]])}
+        titleById={new Map()}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    const drill = screen.getByTestId("sg-panel-drill");
+    // full sentence text preserved, with "power chord" wrapped as a chip.
+    expect(drill.textContent).toBe("Slide a power chord up the neck.");
+    expect(drill.querySelector('[role="button"]')).toBeTruthy();
+  });
+
+  it("renders the theory name as plain text (no chip) when the node has no mapped term", () => {
+    // p-t1-three-moods maps to "three-moods"; use an id with no NODE_TERM_IDS entry.
+    const unmapped: SkillNode = { ...soulNode, id: "g-no-term-here", keepTitle: "Some Theory Name" };
+    render(
+      <SkillGraphPanel
+        node={unmapped}
+        status="available"
+        statusById={new Map([["g-no-term-here", "available"]])}
+        titleById={new Map()}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    const theory = screen.getByTestId("sg-panel-theory");
+    expect(theory.textContent).toBe("Some Theory Name");
+    // no mapped term id → no chip affordance.
+    expect(theory.querySelector('[role="button"]')).toBeNull();
+  });
+
+  it("shows no theory subtitle for a theory-only node (no soulTitle)", () => {
+    const theoryNode: SkillNode = {
+      ...soulNode,
+      id: "p-t0-staff",
+      soulTitle: undefined,
+      keepTitle: "Reading the Staff",
+      title: "Reading the Staff",
+    };
+    render(
+      <SkillGraphPanel
+        node={theoryNode}
+        status="available"
+        statusById={new Map([["p-t0-staff", "available"]])}
+        titleById={new Map()}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    expect(screen.getByTestId("sg-panel-title").textContent).toBe("Reading the Staff");
+    expect(screen.queryByTestId("sg-panel-theory")).toBeNull();
   });
 });
