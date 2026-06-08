@@ -10,6 +10,8 @@ import type { Instrument } from "@/lib/types";
 import { XPBar } from "./XPBar";
 import { StreakFlame } from "./StreakFlame";
 import { emptyStreak } from "@/lib/progression";
+import { ProfileChip } from "./ProfileChip";
+import { CloudSyncManager } from "./CloudSyncManager";
 
 export function AppShell({ children, hideNav = false }: { children: ReactNode; hideNav?: boolean }) {
   const path = usePathname();
@@ -47,11 +49,14 @@ export function AppShell({ children, hideNav = false }: { children: ReactNode; h
                 <XPBar xp={state.xp ?? 0} compact />
                 <StreakFlame streak={state.streak ?? emptyStreak()} compact />
               </div>
+              <ProfileChip />
               <JustPlayButton />
             </div>
           </nav>
         </header>
       )}
+      {/* Invisible: keeps the signed-in account's save in sync with local state. */}
+      <CloudSyncManager />
       <main className="flex-1 shell-container w-full px-5 py-6">{children}</main>
     </div>
   );

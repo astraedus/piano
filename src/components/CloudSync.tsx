@@ -1,22 +1,20 @@
 "use client";
-// Opt-in cloud sync UI (Clerk auth + Neon store). Lives in Settings only.
+// Settings panel for cloud sync (Clerk account + Neon store).
 //
-// Defensive + additive: localStorage stays the source of truth. This panel just
-// lets a signed-in user PUSH this device's practice.state to the cloud or PULL the
-// cloud copy down. A user who never signs in sees a sign-in prompt and nothing
-// else changes.
+// With CloudSyncManager handling auto pull-on-signin and debounced auto-push, this
+// panel is mostly informational: it shows account status and offers manual
+// "Sync now" (force push) and "Restore from cloud" (force pull + reload) escape
+// hatches. localStorage stays the source of truth; signing in just makes the
+// account the durable home of your progress.
 //
-// Clerk v7 note: the Next adapter does NOT export <SignedIn>/<SignedOut>. We gate
-// with the useUser() hook and use the confirmed SignInButton / UserButton exports.
-// Same-origin fetch carries the Clerk session cookie, so /api/sync's auth() works
-// with no manual token.
+// Clerk v7 note: the Next adapter does NOT export <SignedIn>/<SignedOut>; we gate
+// with useUser() and use SignInButton / UserButton.
 
 import { useState } from "react";
 import { useUser, SignInButton, UserButton } from "@clerk/nextjs";
-import { STORAGE_KEY } from "@/lib/storage";
+import { cloudPull, cloudPush, readLocalRaw, writeLocalRaw } from "@/lib/cloudSync";
+import { useAppState } from "@/hooks/useAppState";
 
-// NEXT_PUBLIC vars are inlined at build. When absent, ClerkProvider is not mounted
-// (see layout.tsx), so the Clerk hooks/components must not render either.
 const CLERK_ENABLED = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 const btn =
@@ -35,6 +33,7 @@ export function CloudSync() {
 
 function CloudSyncInner() {
   const { isLoaded, isSignedIn } = useUser();
+  const { state } = useAppState();
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -46,79 +45,69 @@ function CloudSyncInner() {
     return (
       <div className="space-y-3">
         <p className="text-sm text-[color:var(--ink-2)]">
-          Sign in to sync your practice across devices. Your local progress stays exactly as it is.
+          You are practicing anonymously. Sign in to save your progress (XP, streak, skill tree, sessions) to your account and sync it across devices. Nothing local is lost when you sign in.
         </p>
         <SignInButton mode="modal">
           <button
             type="button"
             className="text-sm px-4 py-1.5 rounded-full border border-[color:var(--accent)] text-[color:var(--accent)] hover:bg-[color:var(--accent)]/10"
           >
-            Sign in to sync
+            Sign in to save my progress
           </button>
         </SignInButton>
       </div>
     );
   }
 
-  const push = async () => {
+  const syncNow = async () => {
     setBusy(true);
     setStatus(null);
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        setStatus("Nothing to sync yet. Do a session first.");
-        return;
-      }
-      const res = await fetch("/api/sync", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: raw,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-      setStatus(`Pushed to cloud at ${new Date(data.updated_at).toLocaleString()}.`);
-    } catch (e) {
-      setStatus(`Push failed: ${(e as Error).message}`);
-    } finally {
-      setBusy(false);
-    }
+    const res = await cloudPush(state);
+    setStatus(res.ok ? `Saved to your account at ${new Date(res.updatedAt).toLocaleTimeString()}.` : `Save failed: ${res.error}`);
+    setBusy(false);
   };
 
-  const pull = async () => {
+  const restore = async () => {
+    if (!confirm("Replace this device's progress with the copy saved in your account?")) return;
     setBusy(true);
     setStatus(null);
-    try {
-      const res = await fetch("/api/sync");
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-      if (!data.state) {
-        setStatus("No cloud save found yet. Push from one device first.");
-        return;
-      }
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data.state));
-      setStatus("Pulled from cloud. Reloading...");
-      setTimeout(() => window.location.reload(), 700);
-    } catch (e) {
-      setStatus(`Pull failed: ${(e as Error).message}`);
-    } finally {
+    const res = await cloudPull();
+    if (!res.ok) {
+      setStatus(`Restore failed: ${res.error}`);
       setBusy(false);
+      return;
     }
+    if (!res.state) {
+      setStatus("Nothing saved in your account yet.");
+      setBusy(false);
+      return;
+    }
+    if (JSON.stringify(res.state) === readLocalRaw()) {
+      setStatus("Already up to date with your account.");
+      setBusy(false);
+      return;
+    }
+    writeLocalRaw(res.state);
+    setStatus("Restored from your account. Reloading...");
+    setTimeout(() => window.location.reload(), 700);
   };
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3 flex-wrap">
-        <UserButton />
-        <button type="button" onClick={push} disabled={busy} className={btn}>
-          Push to cloud
-        </button>
-        <button type="button" onClick={pull} disabled={busy} className={btn}>
-          Pull from cloud
-        </button>
+        <span className="flex items-center gap-2">
+          <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
+          <UserButton />
+        </span>
+        <span className="text-sm text-[color:var(--ink-2)]">Signed in. Your progress saves automatically.</span>
+      </div>
+      <div className="flex items-center gap-3 flex-wrap">
+        <button type="button" onClick={syncNow} disabled={busy} className={btn}>Sync now</button>
+        <button type="button" onClick={restore} disabled={busy} className={btn}>Restore from cloud</button>
       </div>
       {status && <p className="text-xs text-[color:var(--ink-3)]" data-testid="cloud-sync-status">{status}</p>}
       <p className="text-xs text-[color:var(--ink-3)] italic">
-        Push saves this device's progress to the cloud. Pull replaces this device with the cloud copy.
+        Changes save to your account a moment after you make them. Restore pulls your account copy onto this device.
       </p>
     </div>
   );

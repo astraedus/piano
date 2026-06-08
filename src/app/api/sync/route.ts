@@ -17,6 +17,10 @@ import { getState, putState } from "@/lib/db";
 
 export const runtime = "nodejs";
 
+// Cap the stored blob so a signed-in user cannot abuse storage / push an enormous
+// payload. The real practice state is a few KB; 512KB is generous headroom.
+const MAX_BYTES = 512 * 1024;
+
 function dbUnavailable() {
   return NextResponse.json(
     { error: "Cloud sync is not configured (database unavailable)" },
@@ -61,6 +65,11 @@ export async function POST(req: Request) {
       { error: "Body must be a practice-state object" },
       { status: 400 },
     );
+  }
+
+  // Size cap (anti-abuse): reject blobs far larger than a real practice state.
+  if (Buffer.byteLength(JSON.stringify(body), "utf8") > MAX_BYTES) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
   }
 
   try {
