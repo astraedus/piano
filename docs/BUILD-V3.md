@@ -12,7 +12,7 @@ Dependency: **P1 core logic → P2 rep-engine UI → {P3a surfacing ∥ P3b fram
 | P2 | R2,R4,R5,R8 (UI) | Rep-engine: chain-drill + ear execution loop with micro-rest (10-15s) pauses, interleaved rep order, BPM laddering (+5 on 3 successes, metronome via Tone.js), per-rep immediate success feedback (<2s). | main | ⬜ |
 | P3a | R7,R10,R3 (UI) | Surfacing: spaced-retrieval "review" skills in free-play/ear; fluency-test milestone flow on skill nodes; success-rate "just right / too easy" indicator. | worktree | ⬜ |
 | P3b | R1,R9 (UI/copy) | Daily-practice framing (onboarding + stand: "15 min today > 2 hrs Sunday"); mental-practice card (rest day / missed day / pre-sleep). | worktree | ⬜ |
-| P4 | - | Merge-gate, verify, screenshots, telegram, push/deploy | main | ⬜ |
+| P4 | - | Verify, screenshots, telegram, push/deploy | main | ✅ DONE: 282 tests, deployed |
 
 Already-correct (confirmed by research, minimal/no change): warmup slot length+content (R6 — just decouple XP); forgiving streaks (R8 — keep).
 
