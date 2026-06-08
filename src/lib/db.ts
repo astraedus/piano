@@ -12,6 +12,9 @@
 // server-resolved value (never client-supplied). All SQL is parameterized via
 // the driver's `$1` placeholders — no string interpolation of user input.
 
+// Hard build-time guard: importing this module from a client component becomes a
+// compile error, so DATABASE_URL can never be pulled into the client bundle.
+import "server-only";
 import { neon } from "@neondatabase/serverless";
 
 /**

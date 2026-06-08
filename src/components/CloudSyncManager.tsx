@@ -28,14 +28,17 @@ export function CloudSyncManager() {
 
 function Inner() {
   const { isLoaded, isSignedIn } = useUser();
-  const { state } = useAppState();
+  // `ready` = AppState has finished hydrating from localStorage. Gating on it
+  // prevents seeding the cloud with the default empty state before a device's
+  // real local progress has loaded (which would later overwrite it on pull).
+  const { state, ready } = useAppState();
   const lastPushedRef = useRef<string | null>(null);
   const readyRef = useRef(false); // true once the initial pull/seed completed
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── 1. Initial pull / seed, once per browser session ──
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
+    if (!isLoaded || !isSignedIn || !ready) return;
     if (typeof window === "undefined") return;
     if (sessionStorage.getItem(PULLED_FLAG) === "1") {
       readyRef.current = true;
@@ -54,7 +57,11 @@ function Inner() {
       }
       sessionStorage.setItem(PULLED_FLAG, "1");
       const localRaw = readLocalRaw();
-      if (res.state) {
+      // Only adopt a well-formed object (defends against a corrupt/manually-edited
+      // cloud row being written raw into localStorage).
+      const validCloud =
+        res.state && typeof res.state === "object" && !Array.isArray(res.state);
+      if (validCloud) {
         const cloudRaw = JSON.stringify(res.state);
         if (cloudRaw !== localRaw) {
           // Adopt the account's save and re-init the app from it.
@@ -77,7 +84,7 @@ function Inner() {
     };
     // state intentionally excluded: this effect is the one-shot session pull.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, ready]);
 
   // ── 2. Debounced auto-push on change ──
   useEffect(() => {

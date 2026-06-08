@@ -77,8 +77,8 @@ function CloudSyncInner() {
       setBusy(false);
       return;
     }
-    if (!res.state) {
-      setStatus("Nothing saved in your account yet.");
+    if (!res.state || typeof res.state !== "object" || Array.isArray(res.state)) {
+      setStatus("Nothing valid saved in your account yet.");
       setBusy(false);
       return;
     }
