@@ -42,6 +42,10 @@ export interface SkillNode {
   chainDrillId?: string;              // completing this drill marks node in-progress/learned
   keyId?: KeyId;                      // for per-key nodes, ties to keyDepths
   unlockCardId?: string;             // UnlockCard.id earned when this node becomes `learned` (explicit, not title-matched)
+  // R10 — autonomous-stage check. When present, the node has a SECOND milestone
+  // ("fluent") beyond `learned`: pass this test (perform while doing something
+  // else) to prove the skill is automatic, not just recallable.
+  fluencyTest?: { prompt: string };
 }
 
 // ---- Per-skill mastery state (replaces the dead `requires` system) ----
@@ -51,6 +55,12 @@ export interface SkillProgress {
   maxBpm?: number;
   firstReachedAt?: string;
   learnedAt?: string;
+  // ── V3 quality signals (all optional, backward-compatible) ──
+  attempts?: number;                  // R3 — total rep attempts recorded
+  successes?: number;                 // R3 — successful reps (→ success rate)
+  bpmReached?: number;                // R5 — highest tempo cleared on the ladder
+  fluent?: boolean;                   // R10 — passed the autonomous fluency test
+  fluentAt?: string;                  // R10 — ISO when fluency was reached (distinct from learnedAt)
 }
 
 export type KeyMode = "major" | "minor";
@@ -69,7 +79,32 @@ export interface ChainStep {
   type: ChainStepType;
   durationSec: number;
   instruction: string;
+  // ── V3 motor-learning rep structure (all optional, backward-compatible) ──
+  // Per-step overrides; when absent the drill-level config (below) applies.
+  repBlocks?: RepBlockConfig;   // R2 micro-rest cadence for this step
+  bpmLadder?: BpmLadderConfig;  // R5 tempo ladder for this step
 }
+
+// R2 — micro-rest structure: do N reps, then rest, repeat. The rest between
+// short rep-blocks is where early motor consolidation happens (Bönstrup 2020).
+export interface RepBlockConfig {
+  repsPerBlock: number; // reps before a micro-rest (default 3)
+  restSec: number;      // seconds of enforced rest between blocks (default 12)
+}
+
+// R5 — tempo ladder: start slow, auto-advance +step BPM after a run of
+// consecutive successes, never exceeding targetBpm.
+export interface BpmLadderConfig {
+  startBpm: number;
+  targetBpm: number;
+  step: number;                 // BPM added per advance (default 5)
+  advanceAfterSuccesses: number; // consecutive successes to advance (default 3)
+}
+
+// Shared defaults so callers/UI can fill the gaps without hardcoding.
+export const DEFAULT_REP_BLOCKS: RepBlockConfig = { repsPerBlock: 3, restSec: 12 };
+export const DEFAULT_BPM_LADDER_STEP = 5;
+export const DEFAULT_BPM_ADVANCE_AFTER = 3;
 
 export interface ChainDrill {
   id: string;
@@ -81,6 +116,10 @@ export interface ChainDrill {
   pillar: Pillar;
   steps: ChainStep[];
   closingNote: string;
+  // ── V3 motor-learning config (all optional, backward-compatible) ──
+  repBlocks?: RepBlockConfig;  // R2 default micro-rest cadence for the drill
+  bpmLadder?: BpmLadderConfig; // R5 default tempo ladder for the drill
+  interleavable?: boolean;     // R4 — may participate in interleaved rep sequences
 }
 
 export type WarmupType =
@@ -174,6 +213,17 @@ export interface SessionSlotLog {
 export type SessionMode = "full" | "short" | "long" | "just-play" | "first-back";
 export type TodayMode = SessionMode;
 
+// R3/R8 — per-session drill quality capture. The rep-engine UI (P2) populates
+// this; the XP engine weights the drill award by it, and node completion gates
+// on the success rate. Absent → treated as a plain completion (back-compatible).
+export interface SessionQuality {
+  attempts?: number;     // total reps attempted in the chain-drill slot
+  successes?: number;    // reps cleared cleanly (→ success rate)
+  bpmReached?: number;   // highest BPM-ladder step cleared this session (R5)
+  metronomeOn?: boolean; // practiced with the metronome (R8 quality bonus)
+  interleaved?: boolean; // the chain-drill used an interleaved rep order (R4)
+}
+
 export interface SessionLog {
   id: string;                   // date + nanotime
   instrument?: Instrument;      // §7 hedge — tag sessions so per-instrument filtering is possible without a v3 migration
@@ -188,6 +238,7 @@ export interface SessionLog {
   journal?: string;             // free slot one-liner
   mode: SessionMode;
   slotsTouched: SessionSlotLog[];
+  quality?: SessionQuality;     // V3 — per-rep quality summary (optional)
 }
 
 // ------------ Arc events ------------
@@ -215,8 +266,15 @@ export interface StreakState {
   lastPracticeDate?: string; // "YYYY-MM-DD"
 }
 
+// R7 — spaced-retrieval queue entry for a learned skill node. `dueAt` is an ISO
+// timestamp; `intervalIndex` indexes the expanding ladder 1→3→7→14 days.
+export interface SkillReviewEntry {
+  dueAt: string;        // ISO — when this node is next due for review
+  intervalIndex: number; // position in REVIEW_INTERVALS_DAYS
+}
+
 export interface AppState {
-  version: 3;                   // v1→v2→v3 migrations in storage.ts
+  version: 4;                   // v1→v2→v3→v4 migrations in storage.ts
   instrument: Instrument;       // NEW — active instrument for this profile
   firstOpenedAt?: string;       // ISO
   name?: string;                // optional display name
@@ -245,6 +303,9 @@ export interface AppState {
   skillReps?: Record<string, { count: number; maxBpm?: number; lastAt?: string }>;
   // NEW — DAG skill-node mastery, keyed by SkillNode.id
   skillProgress?: Record<string, SkillProgress>;
+  // R7 (storage v4) — spaced-retrieval queue, keyed by SkillNode.id. Populated
+  // when a node becomes `learned`; each review advances the interval.
+  skillReview?: Record<string, SkillReviewEntry>;
   // ── V2 gamification (storage v3) — layered ON TOP of the progression model ──
   xp: number;                   // lifetime XP total
   level: number;                // derived from xp via progression.levelForXp (cached)

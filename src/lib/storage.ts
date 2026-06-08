@@ -5,7 +5,7 @@ import { emptyStreak } from "./progression";
 // and leave the old key in place as a backup (the owner's real practice history).
 export const STORAGE_KEY = "practice.state";
 export const LEGACY_STORAGE_KEY = "piano.state";
-const VERSION = 3 as const;
+const VERSION = 4 as const;
 
 export function defaultState(): AppState {
   return {
@@ -31,6 +31,8 @@ export function defaultState(): AppState {
     level: 1,
     streak: emptyStreak(),
     pendingLevelUps: [],
+    // V3 motor-learning defaults (storage v4).
+    skillReview: {},
   };
 }
 
@@ -71,15 +73,17 @@ export function loadState(): AppState {
 }
 
 /**
- * Run the full migration ladder (v1→v2→v3) for any pre-current blob. v2 blobs
- * skip the v1→v2 step (no piano-begins/instrument injection needed) but still
- * get the v2→v3 gamification defaults. Idempotent on already-current blobs.
+ * Run the full migration ladder (v1→v2→v3→v4) for any pre-current blob. Older
+ * blobs enter the ladder at the right rung: v1 (or missing) runs every step; v2
+ * skips v1→v2; v3 skips to v3→v4. Idempotent on already-current blobs.
  */
 export function migrateToCurrent(old: Record<string, unknown>): AppState {
   const version = Number((old as { version?: unknown }).version ?? 1);
-  // v1 (or missing/0) blobs need the v1→v2 pass first; v2 blobs are already v2.
+  // v1 (or missing/0) blobs need the v1→v2 pass first; v2+ blobs are already v2.
   const v2 = version >= 2 ? (old as unknown as AppState) : migrateV1toV2(old);
-  return migrateV2toV3(v2 as unknown as Record<string, unknown>);
+  // v3+ blobs are already v3-shaped; v2 blobs gain the gamification spine here.
+  const v3 = version >= 3 ? (v2 as unknown as AppState) : migrateV2toV3(v2 as unknown as Record<string, unknown>);
+  return migrateV3toV4(v3 as unknown as Record<string, unknown>);
 }
 
 /**
@@ -117,18 +121,35 @@ export function migrateV1toV2(old: Record<string, unknown>): AppState {
  * Real v2 → v3 migration. Injects the gamification spine (xp / level / streak /
  * pendingLevelUps) with safe defaults, preserving any values already present
  * (so re-running is non-destructive). All prior fields pass through untouched —
- * no practice history is dropped. Idempotent on a partial v3 blob.
+ * no practice history is dropped. Returns a v3-shaped blob; the v3→v4 step layers
+ * the spaced-review queue on top.
  */
 export function migrateV2toV3(old: Record<string, unknown>): AppState {
   const o = old as Partial<AppState>;
   return {
     ...defaultState(),
     ...o,
-    version: VERSION,
+    version: 3 as AppState["version"],
     xp: typeof o.xp === "number" ? o.xp : 0,
     level: typeof o.level === "number" ? o.level : 1,
     streak: o.streak ?? emptyStreak(),
     pendingLevelUps: o.pendingLevelUps ?? [],
+  } as AppState;
+}
+
+/**
+ * Real v3 → v4 migration. Injects the V3 motor-learning state (skillReview
+ * spaced-retrieval queue) with safe defaults, preserving any values already
+ * present. All prior fields (including the full practice history) pass through
+ * untouched. Idempotent on a partial v4 blob.
+ */
+export function migrateV3toV4(old: Record<string, unknown>): AppState {
+  const o = old as Partial<AppState>;
+  return {
+    ...defaultState(),
+    ...o,
+    version: VERSION,
+    skillReview: o.skillReview ?? {},
   } as AppState;
 }
 
