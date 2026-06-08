@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { generateGuitarEarRound, GUITAR_EAR_ROUNDS } from "./earRounds";
 import { GUITAR_GHOST_ROTATION } from "./curriculum";
+import { lookupTerm } from "../explain/glossary";
 import type { EarRound, KeyId } from "../types";
 
 // Every KeyId the ghost rotation can hand to the generator as a focus id.
@@ -97,6 +98,15 @@ describe("guitar ear rounds — well-formed", () => {
   it("level is preserved as a valid ear-ladder level", () => {
     everyRound((r, ctx) => {
       expect([1, 2, 3, 4, 5, 6, 7], ctx).toContain(r.level);
+    });
+  });
+
+  it("any choice termId resolves to a real glossary entry (no dead chips)", () => {
+    everyRound((r, ctx) => {
+      for (const c of r.choices) {
+        if (c.termId === undefined) continue;
+        expect(lookupTerm(c.termId), `${ctx} choice ${c.id} termId "${c.termId}"`).toBeDefined();
+      }
     });
   });
 });

@@ -1,6 +1,10 @@
 import type { EarRound, KeyId } from "./types";
 import { KEY_META, pitchMidi, midiToSpn, progressionChords, triad } from "./music";
 
+// V4: where an ear-round choice label is a glossary concept, tag it with a
+// `termId` so P-C can render it as a tappable TermChip. Only choices that map
+// cleanly to a real glossary entry are tagged (no dead chips).
+
 // Deterministic-enough RNG
 function rng() {
   return Math.random();
@@ -37,8 +41,8 @@ function majMinTriadRound(ghostKey: KeyId): EarRound {
     prompt: "Major or minor?",
     correctId: isMin ? "minor" : "major",
     choices: [
-      { label: "Major", id: "major" },
-      { label: "Minor", id: "minor" },
+      { label: "Major", id: "major", termId: "major-vs-minor" },
+      { label: "Minor", id: "minor", termId: "major-vs-minor" },
     ],
     audio: { kind: "triad", key: ghostKey, chords: [notes] },
   };
@@ -55,8 +59,8 @@ function chordQualityRound(ghostKey: KeyId): EarRound {
     prompt: "Which triad is this?",
     correctId: q,
     choices: [
-      { label: "Major", id: "maj" },
-      { label: "Minor", id: "min" },
+      { label: "Major", id: "maj", termId: "major-vs-minor" },
+      { label: "Minor", id: "min", termId: "major-vs-minor" },
       { label: "Diminished", id: "dim" },
       { label: "Augmented", id: "aug" },
     ],
@@ -131,7 +135,8 @@ function progressionRound(ghostKey: KeyId): EarRound {
     prompt: `Which progression is this? (in ${KEY_META[ghostKey].name})`,
     correctId,
     choices: [
-      { label: major ? "I–V–vi–IV (the pop one)" : "i–VII–VI–V (a descent)", id: id1 },
+      // V4: the major "pop one" choice maps to the pop-formula glossary entry.
+      { label: major ? "I–V–vi–IV (the pop one)" : "i–VII–VI–V (a descent)", id: id1, ...(major ? { termId: "pop-formula" } : {}) },
       { label: major ? "vi–IV–I–V" : "i–VI–III–VII", id: id2 },
       { label: major ? "ii–V–I" : "iv–V–i", id: id3 },
       { label: major ? "I–IV–V–I" : "i–iv–V–i", id: id4 },

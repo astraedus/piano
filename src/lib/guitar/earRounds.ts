@@ -74,8 +74,10 @@ function chordQualityRound(focusId: string): EarRound {
     prompt: "Major or minor chord?",
     correctId: isMinor ? "minor" : "major",
     choices: [
-      { label: "Major", id: "major" },
-      { label: "Minor", id: "minor" },
+      // V4: the Major/Minor choice is the bright-vs-dark distinction the
+      // major-vs-minor glossary entry explains, so a TermChip can make it tappable.
+      { label: "Major", id: "major", termId: "major-vs-minor" },
+      { label: "Minor", id: "minor", termId: "major-vs-minor" },
     ],
     audio: { kind: "triad", key: focusId as KeyId, chords: [notes] },
   };
@@ -96,7 +98,8 @@ function powerShapeRound(focusId: string): EarRound {
     prompt: "Power chord or octave shape?",
     correctId: isFifth ? "fifth" : "octave",
     choices: [
-      { label: "Power chord (root + 5th)", id: "fifth" },
+      // V4: the power-chord choice is tappable via the power-chord glossary entry.
+      { label: "Power chord (root + 5th)", id: "fifth", termId: "power-chord" },
       { label: "Octave (root + root)", id: "octave" },
     ],
     audio: { kind: "interval", key: focusId as KeyId, notes: [root, top] },
