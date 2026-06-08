@@ -25,17 +25,27 @@ const baseNode: SkillNode = {
   unlock: "u",
 };
 
-function renderNode(status: SkillNodeStatus, isFrontier = false, fluent = false) {
+function renderNode(
+  status: SkillNodeStatus,
+  isFrontier = false,
+  fluent = false,
+  opts: {
+    treatment?: SkillGraphNodeData["pathTreatment"];
+    node?: SkillNode;
+  } = {},
+) {
+  const node = opts.node ?? baseNode;
   const data: SkillGraphNodeData = {
-    node: baseNode,
+    node,
     status,
     isFrontier,
     tierColor: "var(--color-tier-2)",
     fluent,
+    pathTreatment: opts.treatment ?? "on-path",
   };
   // NodeProps has many required fields the component never reads; build a minimal
   // shape and cast through NodeProps so tsc stays happy without spreading.
-  const props = { id: "n1", data, selected: false } as unknown as NodeProps;
+  const props = { id: node.id, data, selected: false } as unknown as NodeProps;
   return render(<SkillGraphNode {...props} />);
 }
 
@@ -74,5 +84,43 @@ describe("SkillGraphNode", () => {
     cleanup();
     renderNode("learned", false, false);
     expect(screen.queryByTestId("sg-node-fluent-n1")).toBeNull();
+  });
+
+  // ── V4 Soul-First ──────────────────────────────────────────────────────────
+
+  it("leads with the soul label and shows the theory name as a subtitle", () => {
+    const soulNode: SkillNode = { ...baseNode, soulTitle: "The Rock Chug", keepTitle: "Power Chords" };
+    renderNode("available", false, false, { node: soulNode });
+    expect(screen.getByText("The Rock Chug")).toBeTruthy();
+    expect(screen.getByTestId(`sg-node-subtitle-${baseNode.id}`).textContent).toBe("Power Chords");
+  });
+
+  it("falls back to keepTitle then title when there is no soulTitle (theory node)", () => {
+    const theoryNode: SkillNode = { ...baseNode, soulTitle: undefined, keepTitle: "Reading the Staff" };
+    renderNode("available", false, false, { node: theoryNode });
+    expect(screen.getByText("Reading the Staff")).toBeTruthy();
+    // no soulTitle → no separate theory subtitle (the title IS the theory name).
+    expect(screen.queryByTestId(`sg-node-subtitle-${baseNode.id}`)).toBeNull();
+  });
+
+  it("does not show the theory subtitle on a locked node", () => {
+    const soulNode: SkillNode = { ...baseNode, soulTitle: "The Rock Chug", keepTitle: "Power Chords" };
+    renderNode("locked", false, false, { node: soulNode });
+    expect(screen.getByText("The Rock Chug")).toBeTruthy();
+    expect(screen.queryByTestId(`sg-node-subtitle-${baseNode.id}`)).toBeNull();
+  });
+
+  it("off-path node is dimmed (opacity-30 + grayscale), not pulsing, even on the frontier", () => {
+    const { container } = renderNode("available", true, false, { treatment: "off-path" });
+    expect(container.querySelector(".opacity-30")).toBeTruthy();
+    expect(container.querySelector(".grayscale")).toBeTruthy();
+    expect(container.querySelector(".sg-pulse")).toBeNull();
+    expect(screen.getByTestId("sg-node-n1").getAttribute("data-treatment")).toBe("off-path");
+  });
+
+  it("on-path frontier node still pulses", () => {
+    const { container } = renderNode("available", true, false, { treatment: "on-path" });
+    expect(container.querySelector(".sg-pulse")).toBeTruthy();
+    expect(container.querySelector(".opacity-30")).toBeNull();
   });
 });

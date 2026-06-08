@@ -28,6 +28,20 @@ export function SkillGraphNode({ data, selected }: NodeProps) {
   const learned = status === "learned";
   const locked = status === "locked";
   const inProgress = status === "in-progress";
+  // V4 Soul-First — off-path nodes are dimmed (greyed, no pulse) so the chosen
+  // intent reads as the live path. Defaults to on-path for callers/tests that
+  // predate the field.
+  const offPath = (d.pathTreatment ?? "on-path") === "off-path";
+
+  // V4 Soul-First — lead with the feeling/outcome label; the theory name is a
+  // small subtitle. Theory-only nodes (no soulTitle) fall back to keepTitle, then
+  // the plain title, so a node always has a label.
+  const primaryLabel = node.soulTitle ?? node.keepTitle ?? node.title;
+  // Only show the theory subtitle when the soul label actually differs from the
+  // theory name (i.e. soulTitle is present) and the node is not locked. Card
+  // subtitle is a visual affordance only — the real TermChip fires from the panel.
+  const theorySubtitle =
+    node.soulTitle && !locked ? node.keepTitle ?? node.title : null;
 
   // Fill: learned & available use the tier color (learned saturated, available
   // soft); locked & in-progress sit on surface with a colored border/ring.
@@ -44,10 +58,12 @@ export function SkillGraphNode({ data, selected }: NodeProps) {
       data-testid={`sg-node-${node.id}`}
       data-status={status}
       data-frontier={isFrontier ? "true" : "false"}
+      data-treatment={offPath ? "off-path" : "on-path"}
       className={
         "sg-node relative rounded-lg px-3 py-2 text-left transition-all duration-200 " +
-        (isFrontier && !learned ? "sg-pulse " : "") +
-        (locked ? "opacity-60 " : "") +
+        // off-path suppresses the pulse and dims the whole card.
+        (isFrontier && !learned && !offPath ? "sg-pulse " : "") +
+        (offPath ? "opacity-30 grayscale " : locked ? "opacity-60 " : "") +
         (selected ? "ring-2 ring-offset-2 " : "")
       }
       style={{
@@ -84,8 +100,17 @@ export function SkillGraphNode({ data, selected }: NodeProps) {
         className="mt-1 text-sm font-medium leading-snug"
         style={{ color: ink }}
       >
-        {node.title}
+        {primaryLabel}
       </p>
+      {theorySubtitle && (
+        <p
+          data-testid={`sg-node-subtitle-${node.id}`}
+          className="mt-0.5 text-[11px] leading-snug underline decoration-dotted underline-offset-2"
+          style={{ color: learned ? "rgba(251,246,238,0.78)" : "var(--ink-3)" }}
+        >
+          {theorySubtitle}
+        </p>
+      )}
       {fluent && (
         <span
           data-testid={`sg-node-fluent-${node.id}`}

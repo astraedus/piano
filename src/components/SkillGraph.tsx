@@ -30,7 +30,8 @@ import {
   buildLaidOutGraph,
   nodesForInstrument,
 } from "@/lib/skillGraphLayout";
-import type { GraphInstrumentFilter } from "@/lib/skillGraphLayout";
+import type { GraphInstrumentFilter, PathView } from "@/lib/skillGraphLayout";
+import type { LearningPath } from "@/lib/pathFilter";
 import type { Instrument } from "@/lib/types";
 import { SkillGraphNode } from "@/components/SkillGraphNode";
 import { SkillGraphPanel } from "@/components/SkillGraphPanel";
@@ -50,6 +51,16 @@ const FILTER_OPTIONS: { id: GraphInstrumentFilter; label: string }[] = [
   { id: "guitar", label: "Guitar" },
 ];
 
+// V4 Soul-First — path view pills. `id: null` is "All" (no path filter; shows
+// every node, theory still gated by the toggle). These are a LOCAL view filter
+// only, mirroring the instrument pills: they never persist to AppState.
+const PATH_OPTIONS: { id: LearningPath | null; label: string }[] = [
+  { id: null, label: "All" },
+  { id: "just-play", label: "Just Play" },
+  { id: "play-with-soul", label: "Play With Soul" },
+  { id: "go-deep", label: "Go Deep" },
+];
+
 export function SkillGraph() {
   return (
     <ReactFlowProvider>
@@ -62,6 +73,21 @@ function SkillGraphInner() {
   const { state, patch, markFluent } = useAppState();
   const [filter, setFilter] = useState<GraphInstrumentFilter>(state.instrument);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // V4 Soul-First — local path/theory view filters. Default to the user's saved
+  // intent (undefined path = "All", theory off) so the graph opens matching their
+  // chosen focus, but switching here does NOT persist (matches the instrument pill).
+  // Going to Go Deep implies theory on; leaving it does not force theory off.
+  const [pathFilter, setPathFilter] = useState<LearningPath | null>(
+    state.learningPath ?? null,
+  );
+  const [theoryEnabled, setTheoryEnabled] = useState<boolean>(
+    state.theoryEnabled ?? false,
+  );
+  const selectPath = useCallback((next: LearningPath | null) => {
+    setPathFilter(next);
+    if (next === "go-deep") setTheoryEnabled(true);
+  }, []);
 
   // Source nodes for the *filtered* instrument. We read the filtered module's
   // skillNodes (which already include shared nodes for that module's instrument).
@@ -76,11 +102,18 @@ function SkillGraphInner() {
   // Derive the React-Flow view-model + dagre layout. Memoized on the inputs that
   // actually affect it (filter, node set, progress) so we don't re-layout on
   // every render.
+  const view: PathView = useMemo(
+    () => ({ path: pathFilter ?? undefined, theoryEnabled }),
+    [pathFilter, theoryEnabled],
+  );
+
   const { flowNodes, flowEdges, statusById, titleById } = useMemo(() => {
     const prog = progress ?? {};
     const visible = nodesForInstrument(allNodes, filter);
-    const { nodes, edges } = buildLaidOutGraph(allNodes, prog, filter);
+    const { nodes, edges } = buildLaidOutGraph(allNodes, prog, filter, 3, view);
     const statusMap = resolveStatus(visible, prog);
+    // Prereq chips name nodes by their theory `title` (the precise term), so the
+    // map keeps plain titles regardless of the soul-label shown on the cards.
     const titleMap = new Map(visible.map((n) => [n.id, n.title]));
 
     const rfNodes: Node[] = nodes.map((n) => ({
@@ -112,7 +145,7 @@ function SkillGraphInner() {
       statusById: statusMap,
       titleById: titleMap,
     };
-  }, [allNodes, filter, progress, selectedId]);
+  }, [allNodes, filter, progress, selectedId, view]);
 
   const selectedNode = useMemo(
     () => allNodes.find((n) => n.id === selectedId) ?? null,
@@ -152,11 +185,19 @@ function SkillGraphInner() {
   return (
     <div className="space-y-4">
       <FilterPills active={filter} onSelectAction={setFilter} />
+      <PathPills
+        active={pathFilter}
+        theoryEnabled={theoryEnabled}
+        onSelectPathAction={selectPath}
+        onToggleTheoryAction={() => setTheoryEnabled((t) => !t)}
+      />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div
           data-testid="sg-canvas"
-          key={filter} // remount on filter change → crossfade + clean fit
+          // Remount on instrument OR path/theory change → crossfade + clean re-fit
+          // so the dimmed/hidden set settles smoothly instead of jumping.
+          key={`${filter}:${pathFilter ?? "all"}:${theoryEnabled ? "t" : "f"}`}
           className="sg-canvas h-[clamp(420px,60vh,640px)] overflow-hidden rounded-xl border border-[color:var(--rule)] bg-[color:var(--surface)]"
           style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)" }}
         >
@@ -237,6 +278,62 @@ function FilterPills({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+// V4 Soul-First — path view filters (Just Play / Play With Soul / Go Deep) plus a
+// theory toggle. LOCAL view filters only; never persisted. Switching re-derives
+// the graph (the canvas crossfades via its `key` + `sg-canvas` animation).
+function PathPills({
+  active,
+  theoryEnabled,
+  onSelectPathAction,
+  onToggleTheoryAction,
+}: {
+  active: LearningPath | null;
+  theoryEnabled: boolean;
+  onSelectPathAction: (id: LearningPath | null) => void;
+  onToggleTheoryAction: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="learning path filter">
+        {PATH_OPTIONS.map((opt) => {
+          const isActive = active === opt.id;
+          return (
+            <button
+              key={opt.id ?? "all"}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              data-testid={`sg-path-${opt.id ?? "all"}`}
+              onClick={() => onSelectPathAction(opt.id)}
+              className={
+                "rounded-full border px-3 py-1 text-xs transition-colors " +
+                (isActive
+                  ? "border-[color:var(--instrument-accent)] bg-[color:var(--instrument-accent-bg)] text-[color:var(--instrument-accent-deep)]"
+                  : "border-[color:var(--rule)] text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]")
+              }
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+      <label
+        className="ml-1 inline-flex cursor-pointer select-none items-center gap-1.5 rounded-full border border-[color:var(--rule)] px-3 py-1 text-xs text-[color:var(--ink-2)]"
+        data-testid="sg-theory-toggle"
+      >
+        <input
+          type="checkbox"
+          checked={theoryEnabled}
+          onChange={onToggleTheoryAction}
+          className="accent-[color:var(--instrument-accent)]"
+          aria-label="show music theory nodes"
+        />
+        Theory
+      </label>
     </div>
   );
 }
