@@ -5,6 +5,13 @@ import {
   prereqsMet,
   markNodeProgress,
   isAcyclic,
+  successRate,
+  difficultyVerdict,
+  meetsLearnSuccessRate,
+  markNodeFluent,
+  isFluent,
+  LEARN_SUCCESS_THRESHOLD,
+  MIN_ATTEMPTS_FOR_VERDICT,
 } from "./skillTree";
 import type { SkillNode, SkillProgress } from "./types";
 import { PIANO_NODES } from "./piano/skillNodes";
@@ -200,5 +207,97 @@ describe("PIANO_NODES shipped graph is a valid, fully-reachable DAG", () => {
     for (const n of PIANO_NODES) {
       expect(status.get(n.id)).toBe("learned");
     }
+  });
+});
+
+// ─────────────────── V3 R3: success-rate signals ───────────────────
+describe("successRate", () => {
+  it("returns null when no attempts logged (legacy data)", () => {
+    expect(successRate(undefined)).toBeNull();
+    expect(successRate({ status: "in-progress", reps: 2 })).toBeNull();
+  });
+  it("computes successes / attempts", () => {
+    expect(successRate({ status: "in-progress", reps: 5, attempts: 10, successes: 7 })).toBe(0.7);
+  });
+  it("clamps successes into [0, attempts]", () => {
+    expect(successRate({ status: "in-progress", reps: 5, attempts: 4, successes: 99 })).toBe(1);
+    expect(successRate({ status: "in-progress", reps: 5, attempts: 4, successes: -3 })).toBe(0);
+  });
+});
+
+describe("difficultyVerdict (R3 too-easy / just-right / too-hard)", () => {
+  const prog = (attempts: number, successes: number): SkillProgress => ({
+    status: "in-progress", reps: attempts, attempts, successes,
+  });
+  it("is unknown below the minimum attempt count", () => {
+    expect(difficultyVerdict(prog(2, 2))).toBe("unknown");
+    expect(MIN_ATTEMPTS_FOR_VERDICT).toBe(3);
+  });
+  it("is too-easy above 85%", () => {
+    expect(difficultyVerdict(prog(10, 9))).toBe("too-easy"); // 90%
+  });
+  it("is too-hard below 55%", () => {
+    expect(difficultyVerdict(prog(10, 5))).toBe("too-hard"); // 50%
+  });
+  it("is just-right in the 55-85% band", () => {
+    expect(difficultyVerdict(prog(10, 7))).toBe("just-right"); // 70%
+  });
+});
+
+describe("meetsLearnSuccessRate (R3 completion gate)", () => {
+  it("passes when there is no quality data (legacy callers not gated)", () => {
+    expect(meetsLearnSuccessRate({ status: "in-progress", reps: 3 })).toBe(true);
+  });
+  it("fails when too few attempts to judge", () => {
+    expect(meetsLearnSuccessRate({ status: "in-progress", reps: 2, attempts: 2, successes: 2 })).toBe(false);
+  });
+  it("gates below the ~70% threshold", () => {
+    expect(meetsLearnSuccessRate({ status: "in-progress", reps: 10, attempts: 10, successes: 6 })).toBe(false); // 60%
+  });
+  it("passes at or above the threshold", () => {
+    expect(meetsLearnSuccessRate({ status: "in-progress", reps: 10, attempts: 10, successes: 7 })).toBe(true); // 70%
+    expect(LEARN_SUCCESS_THRESHOLD).toBe(0.7);
+  });
+});
+
+describe("markNodeProgress quality accumulation", () => {
+  it("accumulates attempts/successes and tracks max bpmReached", () => {
+    let p = markNodeProgress({}, "n1", { now: "2026-01-01", attempts: 4, successes: 3, bpmReached: 80 });
+    expect(p.n1.attempts).toBe(4);
+    expect(p.n1.successes).toBe(3);
+    expect(p.n1.bpmReached).toBe(80);
+    p = markNodeProgress(p, "n1", { now: "2026-01-02", attempts: 6, successes: 5, bpmReached: 70 });
+    expect(p.n1.attempts).toBe(10); // 4 + 6
+    expect(p.n1.successes).toBe(8); // 3 + 5
+    expect(p.n1.bpmReached).toBe(80); // max(80, 70)
+  });
+  it("preserves fluency across progress updates", () => {
+    let p = markNodeFluent({ n1: { status: "learned", reps: 1 } }, "n1", "2026-01-01");
+    p = markNodeProgress(p, "n1", { attempts: 1, successes: 1 });
+    expect(p.n1.fluent).toBe(true);
+  });
+});
+
+// ─────────────────── V3 R10: fluency milestone ───────────────────
+describe("markNodeFluent / isFluent (R10 autonomous stage)", () => {
+  it("marks a node fluent with a timestamp", () => {
+    const p = markNodeFluent({ n1: { status: "learned", reps: 5 } }, "n1", "2026-06-08T00:00:00.000Z");
+    expect(p.n1.fluent).toBe(true);
+    expect(p.n1.fluentAt).toBe("2026-06-08T00:00:00.000Z");
+    expect(isFluent(p.n1)).toBe(true);
+  });
+  it("does NOT change DAG status (fluency is a second dimension)", () => {
+    const p = markNodeFluent({ n1: { status: "learned", reps: 5, learnedAt: "2026-01-01" } }, "n1", "2026-06-08");
+    expect(p.n1.status).toBe("learned"); // unchanged
+    expect(p.n1.learnedAt).toBe("2026-01-01"); // distinct from fluentAt
+  });
+  it("is idempotent on fluentAt", () => {
+    let p = markNodeFluent({ n1: { status: "learned", reps: 1 } }, "n1", "2026-06-08");
+    p = markNodeFluent(p, "n1", "2026-12-31");
+    expect(p.n1.fluentAt).toBe("2026-06-08"); // first timestamp kept
+  });
+  it("isFluent is false for non-fluent / missing nodes", () => {
+    expect(isFluent(undefined)).toBe(false);
+    expect(isFluent({ status: "learned", reps: 1 })).toBe(false);
   });
 });

@@ -75,7 +75,16 @@ export function nextToLearn(
 export function markNodeProgress(
   progress: ProgressMap,
   nodeId: string,
-  opts: { learned?: boolean; reps?: number; maxBpm?: number; now?: string } = {},
+  opts: {
+    learned?: boolean;
+    reps?: number;
+    maxBpm?: number;
+    now?: string;
+    // R3/R5 quality accumulators (added when the rep-engine reports them).
+    attempts?: number;
+    successes?: number;
+    bpmReached?: number;
+  } = {},
 ): ProgressMap {
   const now = opts.now ?? new Date().toISOString();
   const prev = progress[nodeId];
@@ -89,6 +98,17 @@ export function markNodeProgress(
       ? "in-progress"
       : "available";
 
+  // Accumulate quality signals when supplied; otherwise carry the prior values.
+  const attempts = opts.attempts != null
+    ? (prev?.attempts ?? 0) + Math.max(0, opts.attempts)
+    : prev?.attempts;
+  const successes = opts.successes != null
+    ? (prev?.successes ?? 0) + Math.max(0, opts.successes)
+    : prev?.successes;
+  const bpmReached = opts.bpmReached != null
+    ? Math.max(prev?.bpmReached ?? 0, opts.bpmReached)
+    : prev?.bpmReached;
+
   const next: SkillProgress = {
     status,
     reps,
@@ -97,9 +117,91 @@ export function markNodeProgress(
       : prev?.maxBpm,
     firstReachedAt: prev?.firstReachedAt ?? now,
     learnedAt: learned ? (prev?.learnedAt ?? now) : prev?.learnedAt,
+    attempts,
+    successes,
+    bpmReached,
+    // Preserve fluency (set via markNodeFluent, a separate dimension).
+    fluent: prev?.fluent,
+    fluentAt: prev?.fluentAt,
   };
 
   return { ...progress, [nodeId]: next };
+}
+
+// ─────────────────────── R3: success-rate signals ───────────────────────
+//
+// A node should only be considered solidly learned when recent practice clears
+// it most of the time, not merely "the drill was played." successRate() turns
+// the persisted attempts/successes into a 0..1 fraction; difficultyVerdict()
+// buckets it for the self-assessment UI (P3).
+
+/** Minimum success rate to count a node as solidly learned (R3 ~70%). */
+export const LEARN_SUCCESS_THRESHOLD = 0.7;
+/** Above this, the drill is too easy (R3 ~85%). */
+export const TOO_EASY_THRESHOLD = 0.85;
+/** Below this, the drill is too hard (R3 ~55%). */
+export const TOO_HARD_THRESHOLD = 0.55;
+/** Minimum attempts before a verdict/threshold is meaningful (avoid 1/1 = 100%). */
+export const MIN_ATTEMPTS_FOR_VERDICT = 3;
+
+export type DifficultyVerdict = "too-easy" | "just-right" | "too-hard" | "unknown";
+
+/** Success rate (0..1) from a progress snapshot, or null if no attempts logged. */
+export function successRate(progress: SkillProgress | undefined): number | null {
+  const attempts = progress?.attempts ?? 0;
+  if (attempts <= 0) return null;
+  const successes = Math.max(0, Math.min(attempts, progress?.successes ?? 0));
+  return successes / attempts;
+}
+
+/** Bucket the success rate for the self-assessment UI (R3). `unknown` until
+ *  there are enough attempts to judge. */
+export function difficultyVerdict(progress: SkillProgress | undefined): DifficultyVerdict {
+  const attempts = progress?.attempts ?? 0;
+  const rate = successRate(progress);
+  if (rate === null || attempts < MIN_ATTEMPTS_FOR_VERDICT) return "unknown";
+  if (rate > TOO_EASY_THRESHOLD) return "too-easy";
+  if (rate < TOO_HARD_THRESHOLD) return "too-hard";
+  return "just-right";
+}
+
+/** True iff recent success rate is solidly high enough to count as learned (R3).
+ *  When no quality data is recorded at all we DON'T block (back-compat: callers
+ *  that never report attempts behave as before). When data IS present it gates. */
+export function meetsLearnSuccessRate(progress: SkillProgress | undefined): boolean {
+  const rate = successRate(progress);
+  if (rate === null) return true; // no quality data → don't gate (legacy callers)
+  if ((progress?.attempts ?? 0) < MIN_ATTEMPTS_FOR_VERDICT) return false;
+  return rate >= LEARN_SUCCESS_THRESHOLD;
+}
+
+// ─────────────────────── R10: fluency milestone ───────────────────────
+//
+// A SECOND dimension beyond `learned` (autonomous stage). It does NOT change a
+// node's DAG status — resolveStatus/nextToLearn are untouched — it just records
+// that the node's fluencyTest was passed.
+
+/** Mark a node `fluent` (R10). Idempotent on the timestamp. Only meaningful for
+ *  already-learned nodes, but the caller (UI action) owns that policy. Pure. */
+export function markNodeFluent(
+  progress: ProgressMap,
+  nodeId: string,
+  now: string = new Date().toISOString(),
+): ProgressMap {
+  const prev = progress[nodeId];
+  return {
+    ...progress,
+    [nodeId]: {
+      ...(prev ?? { status: "available", reps: 0 }),
+      fluent: true,
+      fluentAt: prev?.fluentAt ?? now,
+    },
+  };
+}
+
+/** True iff the node has passed its fluency test (R10). */
+export function isFluent(progress: SkillProgress | undefined): boolean {
+  return progress?.fluent === true;
 }
 
 /**
