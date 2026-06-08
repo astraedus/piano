@@ -14,10 +14,10 @@ import { Fretboard } from "@/lib/guitar/components/Fretboard";
 import { Tab } from "@/lib/guitar/components/Tab";
 
 const STATUS_LABEL: Record<SkillNodeStatus, string> = {
-  locked: "locked",
-  available: "ready to start",
-  "in-progress": "in progress",
-  learned: "learned",
+  locked: "Locked",
+  available: "Ready to start",
+  "in-progress": "In progress",
+  learned: "Learned",
 };
 
 export interface SkillGraphPanelProps {
@@ -130,7 +130,7 @@ export function SkillGraphPanel({
             className="rounded-lg border px-3 py-1.5 text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ borderColor: "var(--instrument-accent)", color: "var(--instrument-accent-deep)" }}
           >
-            add to today
+            Add to Today
           </button>
         )}
         {!learned && (
@@ -142,11 +142,11 @@ export function SkillGraphPanel({
             className="rounded-lg px-3 py-1.5 text-sm text-[color:var(--bg-base)] transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: "var(--instrument-accent)" }}
           >
-            mark learned
+            Mark Learned
           </button>
         )}
         {learned && (
-          <p className="text-sm text-[color:var(--instrument-accent-deep)]">✓ learned</p>
+          <p className="text-sm text-[color:var(--instrument-accent-deep)]">✓ Learned</p>
         )}
       </div>
     </aside>

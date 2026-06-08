@@ -34,11 +34,11 @@ function majMinTriadRound(ghostKey: KeyId): EarRound {
     id: id("maj-min"),
     type: "maj-min",
     level: 1,
-    prompt: "major or minor?",
+    prompt: "Major or minor?",
     correctId: isMin ? "minor" : "major",
     choices: [
-      { label: "major", id: "major" },
-      { label: "minor", id: "minor" },
+      { label: "Major", id: "major" },
+      { label: "Minor", id: "minor" },
     ],
     audio: { kind: "triad", key: ghostKey, chords: [notes] },
   };
@@ -52,13 +52,13 @@ function chordQualityRound(ghostKey: KeyId): EarRound {
     id: id("quality"),
     type: "quality",
     level: 3,
-    prompt: "which triad is this?",
+    prompt: "Which triad is this?",
     correctId: q,
     choices: [
-      { label: "major", id: "maj" },
-      { label: "minor", id: "min" },
-      { label: "diminished", id: "dim" },
-      { label: "augmented", id: "aug" },
+      { label: "Major", id: "maj" },
+      { label: "Minor", id: "min" },
+      { label: "Diminished", id: "dim" },
+      { label: "Augmented", id: "aug" },
     ],
     audio: { kind: "triad", key: ghostKey, chords: [notes] },
   };
@@ -76,9 +76,9 @@ function scaleDegreeRound(ghostKey: KeyId, maxDegree: number): EarRound {
     id: id("degree"),
     type: "scale-degree",
     level: 2,
-    prompt: "after the tonic, which scale degree is this?",
+    prompt: "After the tonic, which scale degree is this?",
     correctId: String(deg),
-    choices: ["1","2","3","4","5"].slice(0, maxDegree).map((d) => ({ id: d, label: `the ${ord(+d)}` })),
+    choices: ["1","2","3","4","5"].slice(0, maxDegree).map((d) => ({ id: d, label: `The ${ord(+d)}` })),
     audio: {
       kind: "scale-degree",
       key: ghostKey,
@@ -99,7 +99,7 @@ function cadenceRound(ghostKey: KeyId): EarRound {
     id: id("cadence"),
     type: "cadence",
     level: 4,
-    prompt: "which cadence is this?",
+    prompt: "Which cadence is this?",
     correctId: kind,
     choices: [
       { label: "V → I", id: "V-I" },
@@ -128,7 +128,7 @@ function progressionRound(ghostKey: KeyId): EarRound {
     id: id("prog"),
     type: "progression",
     level: 5,
-    prompt: `which progression is this? (in ${KEY_META[ghostKey].name})`,
+    prompt: `Which progression is this? (in ${KEY_META[ghostKey].name})`,
     correctId,
     choices: [
       { label: major ? "I–V–vi–IV (the pop one)" : "i–VII–VI–V (a descent)", id: id1 },

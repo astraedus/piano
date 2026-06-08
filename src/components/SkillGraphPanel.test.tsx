@@ -49,7 +49,7 @@ describe("SkillGraphPanel", () => {
     expect(screen.getByText("Map the Keyboard")).toBeTruthy();
     expect(screen.getByText("Touch any letter in under a second.")).toBeTruthy();
     expect(screen.getByText("Find any note instantly.")).toBeTruthy();
-    expect(screen.getByTestId("sg-panel-status").textContent).toBe("ready to start");
+    expect(screen.getByTestId("sg-panel-status").textContent).toBe("Ready to start");
     // prereq chip renders by title
     expect(screen.getByText(/Posture/)).toBeTruthy();
   });
@@ -104,7 +104,7 @@ describe("SkillGraphPanel", () => {
     );
     expect(screen.queryByTestId("sg-add-today")).toBeNull();
     expect(screen.queryByTestId("sg-mark-learned")).toBeNull();
-    expect(screen.getByText("✓ learned")).toBeTruthy();
+    expect(screen.getByText("✓ Learned")).toBeTruthy();
   });
 
   it("renders the P4 viz extension slot keyed off node.viz, and omits it otherwise", () => {

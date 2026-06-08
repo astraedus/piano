@@ -64,7 +64,7 @@ export function Metronome({ defaultBpm = 80, onBpmChangeAction }: { defaultBpm?:
             : "border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-[color:var(--accent-soft)]")
         }
       >
-        {running ? "stop" : "metronome"}
+        {running ? "Stop" : "Metronome"}
       </button>
       <input
         type="range"
@@ -74,7 +74,7 @@ export function Metronome({ defaultBpm = 80, onBpmChangeAction }: { defaultBpm?:
         className="w-24 accent-[color:var(--accent)]"
         aria-label="bpm"
       />
-      <span className="tabular-nums text-[color:var(--ink-2)]">{bpm} <span className="text-[color:var(--ink-3)]">bpm</span></span>
+      <span className="tabular-nums text-[color:var(--ink-2)]">{bpm} <span className="text-[color:var(--ink-3)]">BPM</span></span>
     </div>
   );
 }

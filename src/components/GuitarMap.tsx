@@ -23,14 +23,14 @@ import { Fretboard, type FretPosition } from "@/lib/guitar/components/Fretboard"
 // Category display order + label + the neck "region" each occupies. Order follows
 // the curriculum arc: orientation → fretting hand → vocabulary → lead.
 const CATEGORY_ORDER: { id: SkillCategory; label: string; hint: string }[] = [
-  { id: "setup", label: "Setup & Orientation", hint: "tuning, anatomy, reading tab" },
-  { id: "technique", label: "Fretting & Picking", hint: "the hands — clean notes, attack, legato, bends" },
-  { id: "chords", label: "Chords", hint: "open shapes, power chords, barre chords" },
-  { id: "rhythm", label: "Rhythm", hint: "strumming, palm muting, syncopation" },
-  { id: "scales", label: "Scales & Boxes", hint: "pentatonic territory across the neck" },
-  { id: "notation", label: "Reading", hint: "tab and rhythm" },
-  { id: "repertoire", label: "Repertoire", hint: "songs and forms you can play" },
-  { id: "expression", label: "Expression", hint: "phrasing — making solos sing" },
+  { id: "setup", label: "Setup & Orientation", hint: "Tuning, anatomy, reading tab." },
+  { id: "technique", label: "Fretting & Picking", hint: "The hands: clean notes, attack, legato, bends." },
+  { id: "chords", label: "Chords", hint: "Open shapes, power chords, barre chords." },
+  { id: "rhythm", label: "Rhythm", hint: "Strumming, palm muting, syncopation." },
+  { id: "scales", label: "Scales & Boxes", hint: "Pentatonic territory across the neck." },
+  { id: "notation", label: "Reading", hint: "Tab and rhythm." },
+  { id: "repertoire", label: "Repertoire", hint: "Songs and forms you can play." },
+  { id: "expression", label: "Expression", hint: "Phrasing: making solos sing." },
 ];
 
 export function GuitarMap() {
@@ -79,8 +79,8 @@ export function GuitarMap() {
         </div>
         <p className="text-xs text-[color:var(--ink-muted)] italic mt-3 text-center">
           {learnedCount === 0
-            ? "nothing charted yet. learn a node and the neck warms."
-            : `${learnedCount} of ${total} charted so far. it only grows.`}
+            ? "Nothing charted yet. Learn a node and the neck warms up."
+            : `${learnedCount} of ${total} charted so far. It only grows.`}
         </p>
       </div>
 
@@ -146,7 +146,7 @@ function CategoryRegion({
             return (
               <li
                 key={node.id}
-                title={learned ? `${node.title} — covered` : `${node.title} — not yet`}
+                title={learned ? `${node.title}: covered` : `${node.title}: not yet`}
                 className="text-xs px-2 py-1 rounded-full border transition-colors"
                 style={
                   learned
@@ -182,7 +182,7 @@ function NeckBackdrop({ dots }: { dots: FretPosition[] }) {
         className="font-serif italic text-center text-[color:var(--ink-2)]"
         style={{ fontSize: "13px" }}
       >
-        the neck you&apos;re charting
+        The neck you&apos;re charting
       </p>
       <Fretboard
         positions={dots.length > 0 ? dots : []}

@@ -22,7 +22,7 @@ import { StreakFlame } from "./StreakFlame";
 import { Horizons } from "./Horizons";
 import { GhostPicker } from "./GhostPicker";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
-import { emptyStreak } from "@/lib/progression";
+import { emptyStreak, levelForXp, titleForLevel } from "@/lib/progression";
 
 export function PracticeStand() {
   const router = useRouter();
@@ -65,7 +65,7 @@ export function PracticeStand() {
   const [journal, setJournal] = useState("");
 
   if (!ready || !plan) {
-    return <div className="text-[color:var(--ink-3)] font-serif italic">sitting down…</div>;
+    return <div className="text-[color:var(--ink-3)] font-serif italic">Loading…</div>;
   }
 
   // First-opened redirect handled in page.tsx
@@ -94,9 +94,31 @@ export function PracticeStand() {
         { slot: "free" as const, touched: true },
       ],
     };
+    const prevXp = state.xp ?? 0;
+    const prevLevel = state.level ?? 1;
+    const prevNodes = Object.values(state.skillProgress ?? {}).filter((p) => p?.learnedAt).length;
     const { state: next, newUnlocks } = endSession(state, logBase, new Date());
     setState(next);
-    setSessionLine(doneLineFor({ minutes: logBase.minutes, ghostKeyName: ghost.name, pieceTitle: piece?.title }));
+
+    // Compute the real reward deltas so the session-end line celebrates actual
+    // numbers (XP gained, streak, level/skill progress) instead of vague copy.
+    const xpEarned = (next.xp ?? 0) - prevXp;
+    const leveledUp = (next.level ?? 1) > prevLevel;
+    const newLevel = next.level ?? 1;
+    const nodesLearned = Object.values(next.skillProgress ?? {}).filter((p) => p?.learnedAt).length - prevNodes;
+    const info = levelForXp(next.xp ?? 0);
+    setSessionLine(doneLineFor({
+      minutes: logBase.minutes,
+      ghostKeyName: ghost.name,
+      pieceTitle: piece?.title,
+      xpEarned,
+      streakDays: next.streak?.current ?? 0,
+      leveledUpTo: leveledUp ? newLevel : undefined,
+      newLevelTitle: leveledUp ? titleForLevel(newLevel) : undefined,
+      nodesLearned: Math.max(0, nodesLearned),
+      xpToNext: info.xpToNextLevel > 0 ? info.xpToNextLevel : undefined,
+      nextTitle: titleForLevel(info.level + 1) !== info.title ? titleForLevel(info.level + 1) : undefined,
+    }));
     if (newUnlocks.length > 0) setUnlocksQueue(newUnlocks.map((u) => u.id));
     // Redirect to home cleared; the session line + unlock modal show over
   };
@@ -170,7 +192,7 @@ function Header({ ghostName, ghostKey, instrumentLabel, mode, firstBackMessage, 
   // "chord of the week". The headline uses the module's own focusLabel so the
   // current focus reads in the instrument's terms (a key name vs a chord/riff
   // label). Falls back to the piano wording + the plan's ghost name if no module.
-  const focusEyebrow = module?.focusKind === "chord" ? "chord of the week" : "tonight's ghost";
+  const focusEyebrow = module?.focusKind === "chord" ? "Chord of the Week" : "Key of the Week";
   const focusName = module ? module.focusLabel(ghostKey) : ghostName;
   return (
     <header className="pb-5 border-b border-[color:var(--bg-rule)]">
@@ -188,7 +210,7 @@ function Header({ ghostName, ghostKey, instrumentLabel, mode, firstBackMessage, 
         <p className="text-sm text-[color:var(--ink-2)] italic mt-2 fade-in">{firstBackMessage}</p>
       )}
       {mode === "just-play" && (
-        <p className="text-sm text-[color:var(--ink-2)] italic mt-2">just play. nothing else tonight.</p>
+        <p className="text-sm text-[color:var(--ink-2)] italic mt-2">Free play. Anything you want.</p>
       )}
     </header>
   );
@@ -212,9 +234,9 @@ function Footer({ onDone, onPrint, sessionLine, miniShelfLine, northStarNudge }:
         <div className="card-rise space-y-3">
           <p className="font-serif text-[length:var(--text-2xl)] text-[color:var(--ink)] tracking-[-0.025em]" style={{ fontVariationSettings: "'opsz' 30, 'SOFT' 40" }}>{sessionLine}</p>
           <p className="text-sm text-[color:var(--ink-3)]">
-            <Link href="/" className="hover:text-[color:var(--ink-2)]">back to the stand</Link>
+            <Link href="/" className="hover:text-[color:var(--ink-2)]">Back to the Stand</Link>
             <span className="mx-2">·</span>
-            <Link href="/timeline" className="hover:text-[color:var(--ink-2)]">timeline</Link>
+            <Link href="/timeline" className="hover:text-[color:var(--ink-2)]">Timeline</Link>
           </p>
         </div>
       ) : (
@@ -224,14 +246,14 @@ function Footer({ onDone, onPrint, sessionLine, miniShelfLine, northStarNudge }:
             onClick={onDone}
             className="cta-pill text-sm font-semibold tracking-[0.04em] px-6 py-2.5"
           >
-            done for tonight
+            Done for Tonight
           </button>
           <button
             type="button"
             onClick={onPrint}
             className="text-sm text-[color:var(--ink-3)] hover:text-[color:var(--ink)] transition-colors"
           >
-            print
+            Print
           </button>
           {miniShelfLine && (
             <div className="ml-auto text-xs text-[color:var(--ink-muted)] italic max-w-[50%] text-right">

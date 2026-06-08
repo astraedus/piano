@@ -40,16 +40,16 @@ export function PieceSlot({ module: _module, piece, printAlways }: { module?: In
       {piece.section ? ` · ${piece.section}` : ""}
     </>
   ) : (
-    <span className="text-[color:var(--ink-3)]">pick a piece to keep with you.</span>
+    <span className="text-[color:var(--ink-3)]">Pick a piece to work on.</span>
   );
 
   return (
-    <Slot index={2} title="The piece" pillar="repertoire" status={piece ? "active" : null} summary={summary} printAlways={printAlways}>
+    <Slot index={2} title="The Piece" pillar="repertoire" status={piece ? "active" : null} summary={summary} printAlways={printAlways}>
       {!editing && piece && (
         <div className="space-y-3 text-sm">
           <div className="text-[color:var(--ink-2)]">
             <span className="font-serif text-lg text-[color:var(--ink)]">{piece.title}</span>
-            {piece.composer && <span className="text-[color:var(--ink-3)]"> — {piece.composer}</span>}
+            {piece.composer && <span className="text-[color:var(--ink-3)]"> · {piece.composer}</span>}
             {piece.section && <span className="text-[color:var(--ink-3)]"> · {piece.section}</span>}
           </div>
           {piece.notes && (
@@ -69,10 +69,10 @@ export function PieceSlot({ module: _module, piece, printAlways }: { module?: In
           )}
           <div className="flex gap-4 flex-wrap no-print">
             {piece.sheetUrl && (
-              <a href={piece.sheetUrl} target="_blank" rel="noreferrer" className="text-[color:var(--accent)] hover:underline">sheet</a>
+              <a href={piece.sheetUrl} target="_blank" rel="noreferrer" className="text-[color:var(--accent)] hover:underline">Sheet music</a>
             )}
             {piece.referenceUrl && !youtubeIdFrom(piece.referenceUrl) && (
-              <a href={piece.referenceUrl} target="_blank" rel="noreferrer" className="text-[color:var(--accent)] hover:underline">reference recording</a>
+              <a href={piece.referenceUrl} target="_blank" rel="noreferrer" className="text-[color:var(--accent)] hover:underline">Reference recording</a>
             )}
             {!piece.referenceUrl && !piece.sheetUrl && (
               <a
@@ -81,10 +81,10 @@ export function PieceSlot({ module: _module, piece, printAlways }: { module?: In
                 rel="noreferrer"
                 className="text-[color:var(--accent)] hover:underline"
               >
-                find a recording →
+                Find a Recording →
               </a>
             )}
-            <button type="button" onClick={() => setEditing(true)} className="text-[color:var(--ink-3)] hover:text-[color:var(--ink)]">edit</button>
+            <button type="button" onClick={() => setEditing(true)} className="text-[color:var(--ink-3)] hover:text-[color:var(--ink)]">Edit</button>
           </div>
         </div>
       )}
@@ -93,27 +93,27 @@ export function PieceSlot({ module: _module, piece, printAlways }: { module?: In
           onSubmit={(e) => { e.preventDefault(); save(); }}
           className="space-y-2 text-sm"
         >
-          <Field label="title"><input className={fieldCls} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Tickery Tockery" /></Field>
-          <Field label="composer"><input className={fieldCls} value={composer} onChange={(e) => setComposer(e.target.value)} placeholder="Charlton" /></Field>
-          <Field label="key">
+          <Field label="Title"><input className={fieldCls} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Tickery Tockery" /></Field>
+          <Field label="Composer"><input className={fieldCls} value={composer} onChange={(e) => setComposer(e.target.value)} placeholder="Charlton" /></Field>
+          <Field label="Key">
             <select className={fieldCls} value={keyId} onChange={(e) => setKeyId(e.target.value as KeyId | "")}>
-              <option value="">— unset —</option>
-              <optgroup label="major">
+              <option value="">Not set</option>
+              <optgroup label="Major">
                 {CIRCLE_MAJORS.map((k) => (<option key={k} value={k}>{KEY_META[k].name}</option>))}
               </optgroup>
-              <optgroup label="minor">
+              <optgroup label="Minor">
                 {CIRCLE_MINORS.map((k) => (<option key={k} value={k}>{KEY_META[k].name}</option>))}
               </optgroup>
             </select>
           </Field>
-          <Field label="section"><input className={fieldCls} value={section} onChange={(e) => setSection(e.target.value)} placeholder="bars 9–16" /></Field>
-          <Field label="sheet url"><input className={fieldCls} value={sheetUrl} onChange={(e) => setSheetUrl(e.target.value)} placeholder="musescore / pdf / flat link" /></Field>
-          <Field label="reference"><input className={fieldCls} value={referenceUrl} onChange={(e) => setReferenceUrl(e.target.value)} placeholder="youtube / soundcloud url" /></Field>
-          <Field label="notes"><textarea className={fieldCls + " min-h-[90px]"} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="fingerings, rough spots, the bit you always lose focus in…" /></Field>
+          <Field label="Section"><input className={fieldCls} value={section} onChange={(e) => setSection(e.target.value)} placeholder="Bars 9-16" /></Field>
+          <Field label="Sheet music link"><input className={fieldCls} value={sheetUrl} onChange={(e) => setSheetUrl(e.target.value)} placeholder="MuseScore, PDF, or Flat link" /></Field>
+          <Field label="Reference recording"><input className={fieldCls} value={referenceUrl} onChange={(e) => setReferenceUrl(e.target.value)} placeholder="YouTube or SoundCloud link" /></Field>
+          <Field label="Notes"><textarea className={fieldCls + " min-h-[90px]"} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Fingerings, rough spots, the bit you always lose focus in." /></Field>
           <div className="flex gap-3 pt-1 no-print">
-            <button type="submit" className="cta-pill text-xs px-4 py-1.5 font-semibold">keep</button>
+            <button type="submit" className="cta-pill text-xs px-4 py-1.5 font-semibold">Save</button>
             {piece && (
-              <button type="button" onClick={() => setEditing(false)} className="text-xs text-[color:var(--ink-3)]">cancel</button>
+              <button type="button" onClick={() => setEditing(false)} className="text-xs text-[color:var(--ink-3)]">Cancel</button>
             )}
           </div>
         </form>
@@ -125,7 +125,7 @@ export function PieceSlot({ module: _module, piece, printAlways }: { module?: In
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-xs text-[color:var(--ink-3)] mb-1 lowercase tracking-wide">{label}</span>
+      <span className="block text-xs text-[color:var(--ink-3)] mb-1 tracking-wide">{label}</span>
       {children}
     </label>
   );

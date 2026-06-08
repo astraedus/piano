@@ -5,6 +5,19 @@ import type { Piece, PieceStatus } from "@/lib/types";
 
 const STATUSES: PieceStatus[] = ["learning", "shelved", "yours", "known"];
 
+const STATUS_LABEL: Record<PieceStatus, string> = {
+  learning: "Learning",
+  shelved: "Shelved",
+  yours: "Yours",
+  known: "Known",
+};
+
+const FILTER_LABEL: Record<"all" | "yours" | "learning", string> = {
+  all: "All",
+  yours: "Yours",
+  learning: "Learning",
+};
+
 export function SongShelf() {
   const { state, patch } = useAppState();
   const [filter, setFilter] = useState<"all" | "yours" | "learning">("all");
@@ -30,7 +43,7 @@ export function SongShelf() {
     <div className="space-y-6">
       <div className="text-sm text-[color:var(--ink-tertiary)]">
         {pieceCount === 0 ? (
-          <span className="italic text-[color:var(--ink-muted)]">nothing on the shelf yet. add your first piece from the stand.</span>
+          <span className="italic text-[color:var(--ink-muted)]">Nothing on the shelf yet. Add your first piece from the stand.</span>
         ) : (
           <>
             <span className="living-number">{pieceCount}</span> piece{pieceCount === 1 ? "" : "s"} on the shelf.{" "}
@@ -41,7 +54,7 @@ export function SongShelf() {
       </div>
       {firstPiece && (
         <div className="text-xs text-[color:var(--ink-3)]">
-          first: <span className="text-[color:var(--ink-2)]">{firstPiece.title}</span> — {new Date(firstPiece.startedAt).toLocaleDateString()}
+          First: <span className="text-[color:var(--ink-2)]">{firstPiece.title}</span> · {new Date(firstPiece.startedAt).toLocaleDateString()}
         </div>
       )}
       <div className="flex gap-2 no-print">
@@ -56,12 +69,12 @@ export function SongShelf() {
                 : "border-[color:var(--rule)] text-[color:var(--ink-3)] hover:border-[color:var(--accent-soft)]")
             }
           >
-            {f}
+            {FILTER_LABEL[f]}
           </button>
         ))}
       </div>
       {pieces.length === 0 ? (
-        <div className="text-[color:var(--ink-3)] italic font-serif">nothing to show with this filter.</div>
+        <div className="text-[color:var(--ink-3)] italic font-serif">Nothing to show with this filter.</div>
       ) : (
         <ul className="grid md:grid-cols-2 gap-3">
           {pieces.map((p) => (
@@ -85,14 +98,14 @@ function PieceCard({ piece, onPromoteAction }: { piece: Piece; onPromoteAction: 
     <li className="warm-card p-4 pb-5 relative overflow-hidden">
       <div className="flex items-baseline justify-between gap-2">
         <h4 className="font-serif text-lg text-[color:var(--ink)] tracking-[-0.01em]">{piece.title}</h4>
-        <span className="text-[10px] uppercase tracking-wider text-[color:var(--instrument-accent-deep)] font-medium">{piece.status}</span>
+        <span className="text-[10px] uppercase tracking-wider text-[color:var(--instrument-accent-deep)] font-medium">{STATUS_LABEL[piece.status]}</span>
       </div>
       <p className="text-xs text-[color:var(--ink-3)] mt-0.5">
         {piece.composer ?? "—"}{piece.grade ? " · " + piece.grade : ""}
       </p>
       <dl className="text-xs text-[color:var(--ink-3)] mt-3 space-y-0.5">
-        <div className="flex gap-2"><dt>started:</dt><dd className="text-[color:var(--ink-2)]">{new Date(piece.startedAt).toLocaleDateString()}</dd></div>
-        <div className="flex gap-2"><dt>time:</dt><dd className="text-[color:var(--ink-2)]">{fmtMinutes(piece.minutes)}</dd></div>
+        <div className="flex gap-2"><dt>Started:</dt><dd className="text-[color:var(--ink-2)]">{new Date(piece.startedAt).toLocaleDateString()}</dd></div>
+        <div className="flex gap-2"><dt>Time:</dt><dd className="text-[color:var(--ink-2)]">{fmtMinutes(piece.minutes)}</dd></div>
       </dl>
       <div className="flex gap-1.5 flex-wrap pt-3 no-print">
         {STATUSES.filter((s) => s !== piece.status).map((s) => (
@@ -101,7 +114,7 @@ function PieceCard({ piece, onPromoteAction }: { piece: Piece; onPromoteAction: 
             onClick={() => onPromoteAction(s)}
             className="chip text-[10px] px-2 py-0.5"
           >
-            → {s}
+            → {STATUS_LABEL[s]}
           </button>
         ))}
       </div>

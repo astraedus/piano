@@ -68,13 +68,13 @@ export function KeyMap() {
               />
             ))}
             {/* center label */}
-            <text textAnchor="middle" y={6} className="fill-[color:var(--ink-2)]" style={{ fontSize: "13px", fontFamily: "var(--font-serif)", fontStyle: "italic" }}>the territory</text>
+            <text textAnchor="middle" y={6} className="fill-[color:var(--ink-2)]" style={{ fontSize: "13px", fontFamily: "var(--font-serif)", fontStyle: "italic" }}>The Keys</text>
           </svg>
         </div>
         <p className="text-xs text-[color:var(--ink-muted)] italic mt-3 text-center">
           {touched === 0
-            ? "majors outside, minors inside. play a key and it warms."
-            : `${touched} key${touched === 1 ? "" : "s"} charted so far. it only grows.`}
+            ? "Majors outside, minors inside. Play a key and it warms up."
+            : `${touched} key${touched === 1 ? "" : "s"} charted so far. It only grows.`}
         </p>
       </div>
       {sel && selected && <KeyDetailPanel keyId={selected} depth={(depths[selected] ?? 0) as KeyDepth} />}
@@ -176,7 +176,7 @@ function KeyDetailPanel({ keyId, depth }: { keyId: KeyId; depth: KeyDepth }) {
       <header>
         <h3 className="font-serif text-[length:var(--text-2xl)] text-[color:var(--ink)] tracking-[-0.025em]" style={{ fontVariationSettings: "'opsz' 30, 'SOFT' 30" }}>{meta.name}</h3>
         <p className="text-[color:var(--ink-3)] mt-0.5 text-xs">
-          <span className="font-medium text-[color:var(--instrument-accent-deep)]">{DEPTH_NAMES[depth]}</span> — {DEPTH_MEANINGS[depth]}
+          <span className="font-medium text-[color:var(--instrument-accent-deep)]">{DEPTH_NAMES[depth]}</span> · {DEPTH_MEANINGS[depth]}
         </p>
       </header>
 

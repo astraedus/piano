@@ -12,7 +12,7 @@ export function ChainDrillSlot({ module, drill, printAlways }: { module?: Instru
   const summary = drill ? (
     <>{drill.name} · {drill.minutes} min</>
   ) : (
-    <span className="text-[color:var(--ink-3)]">today's chain is quiet — just the piece tonight.</span>
+    <span className="text-[color:var(--ink-3)]">No chain drill tonight. Just the piece.</span>
   );
 
   if (!drill) {
@@ -57,14 +57,14 @@ export function ChainDrillSlot({ module, drill, printAlways }: { module?: Instru
                 onClick={async () => { await ensureAudio(); await playProgression(prog); }}
                 className="chip text-xs px-3 py-1"
               >
-                hear the loop
+                Hear the Loop
               </button>
               <button
                 type="button"
                 onClick={async () => { await ensureAudio(); await playSequence(pentatonicNotes); }}
                 className="chip text-xs px-3 py-1"
               >
-                hear pentatonic
+                Hear Pentatonic
               </button>
             </div>
           </div>
@@ -76,11 +76,11 @@ export function ChainDrillSlot({ module, drill, printAlways }: { module?: Instru
             onClick={() => bumpRep(drillRepId(drill.id))}
             className="chip chip-accent text-xs px-3 py-1"
           >
-            tried it
+            Tried It
           </button>
           {rep && (
             <span className="text-xs text-[color:var(--ink-3)] italic">
-              {rep.count === 1 ? "first time" : `${rep.count} times so far`}
+              {rep.count === 1 ? "First time" : `${rep.count} times so far`}
             </span>
           )}
           <span className="text-[color:var(--ink-3)] italic text-sm ml-auto">↑ {drill.closingNote}</span>

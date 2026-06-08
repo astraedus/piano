@@ -25,35 +25,35 @@ export function FreeSlot({
   return (
     <Slot
       index={5}
-      title="Free slot"
+      title="Free Play"
       pillar="expression"
-      summary={<>play anything. you&apos;re home.</>}
+      summary={<>Free play. Anything you want.</>}
       defaultOpen={expanded}
       printAlways={printAlways}
     >
       <div className="space-y-3 text-sm">
         <ul className="text-[color:var(--ink-2)] leading-relaxed space-y-1 font-serif text-base">
-          <li>→ play anything.</li>
-          <li>→ pop back into your piece.</li>
-          <li>→ pick up something you heard today.</li>
+          <li>→ Play anything.</li>
+          <li>→ Jump back into your piece.</li>
+          <li>→ Pick up something you heard today.</li>
         </ul>
         <div className="pt-2 space-y-2 no-print">
           <label className="block">
-            <span className="block text-xs text-[color:var(--ink-3)] mb-1 lowercase tracking-wide">a url you keep coming back to</span>
+            <span className="block text-xs text-[color:var(--ink-3)] mb-1 tracking-wide">A link you keep coming back to</span>
             <input
               className="w-full bg-[color:var(--bg-surface-2)] border border-[color:var(--rule)] rounded-sm px-3 py-1.5 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)]"
               value={url}
               onChange={(e) => { setUrl(e.target.value); onUrlChange?.(e.target.value); patch({ freeSlotUrl: e.target.value }); }}
-              placeholder="musescore / youtube / anything"
+              placeholder="MuseScore, YouTube, anything"
             />
           </label>
           <label className="block">
-            <span className="block text-xs text-[color:var(--ink-3)] mb-1 lowercase tracking-wide">what happened tonight?</span>
+            <span className="block text-xs text-[color:var(--ink-3)] mb-1 tracking-wide">What happened tonight?</span>
             <input
               className="w-full bg-[color:var(--bg-surface-2)] border border-[color:var(--rule)] rounded-sm px-3 py-1.5 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)]"
               value={journal}
               onChange={(e) => { setJournal(e.target.value); onJournalChange?.(e.target.value); }}
-              placeholder="optional. your voice."
+              placeholder="Optional. A line in your own words."
             />
           </label>
         </div>

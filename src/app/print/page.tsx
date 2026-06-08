@@ -30,14 +30,17 @@ function PrintSheet() {
   }, [ready]);
 
   const plan = useMemo(() => ready ? computeTodayPlan(state, new Date()) : null, [state, ready]);
-  if (!ready || !plan) return <div className="p-8 text-[color:var(--ink-3)]">preparing…</div>;
+  if (!ready || !plan) return <div className="p-8 text-[color:var(--ink-3)]">Loading…</div>;
 
   // Allow overrides from query params so print matches the stand exactly.
   const moduleDrills = getModuleSync(state.instrument)?.chainDrills ?? [];
   const overriddenDrill = drillOverrideId ? moduleDrills.find((d) => d.id === drillOverrideId) : undefined;
   const effectiveDrill: ChainDrill | null = overriddenDrill ?? plan.chainDrill ?? null;
   const effectiveGhost = ghostOverride ?? plan.ghostKey;
+  const mod = getModuleSync(state.instrument);
   const ghost = KEY_META[effectiveGhost];
+  const focusEyebrow = mod?.focusKind === "chord" ? "Chord of the Week" : "Key of the Week";
+  const instrumentLabel = mod?.displayName ?? "Piano";
   const piece = state.pieces.find((p) => p.id === state.currentPieceId);
   const dateLine = new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
@@ -54,56 +57,56 @@ function PrintSheet() {
     <div className="min-h-screen bg-white text-black p-10 print:p-0 font-serif">
       <div className="max-w-[700px] mx-auto">
         <header className="pb-4 border-b border-black/40">
-          <p className="uppercase tracking-[0.2em] text-[11px] text-black/60">piano stand · {dateLine.toLowerCase()}</p>
-          <h1 className="text-3xl mt-1">tonight's ghost — <span className="italic">{ghost.name}</span></h1>
+          <p className="uppercase tracking-[0.2em] text-[11px] text-black/60">{instrumentLabel} Stand · {dateLine}</p>
+          <h1 className="text-3xl mt-1">{focusEyebrow}: <span className="italic">{ghost.name}</span></h1>
         </header>
 
         <ol className="divide-y divide-black/30">
-          <Item index={1} title="warmup" duration="90 seconds">
+          <Item index={1} title="Warmup" duration="90 seconds">
             <p className="italic text-black/70 mb-1">{plan.warmup?.postureLine}</p>
             <ul className="list-none space-y-1">
               {(plan.warmup?.lines ?? []).map((l, i) => <li key={i}>→ {l}</li>)}
             </ul>
           </Item>
 
-          <Item index={2} title="the piece">
+          <Item index={2} title="The Piece">
             {piece ? (
               <>
-                <p>{piece.title}{piece.composer ? ` — ${piece.composer}` : ""}{piece.section ? ` · ${piece.section}` : ""}</p>
+                <p>{piece.title}{piece.composer ? `, ${piece.composer}` : ""}{piece.section ? ` · ${piece.section}` : ""}</p>
                 {piece.notes && <p className="italic text-black/70 whitespace-pre-wrap mt-1">{piece.notes}</p>}
               </>
             ) : (
-              <p className="italic text-black/60">pick something you want to keep with you.</p>
+              <p className="italic text-black/60">Pick a piece to work on.</p>
             )}
           </Item>
 
-          <Item index={3} title="chain drill" duration={effectiveDrill ? `${effectiveDrill.minutes} min` : undefined}>
+          <Item index={3} title="Chain Drill" duration={effectiveDrill ? `${effectiveDrill.minutes} min` : undefined}>
             {effectiveDrill ? (
               <>
                 <ol className="space-y-1">
                   {effectiveDrill.steps.map((s, i) => (
-                    <li key={i}>{i + 1}) {s.instruction} — <span className="text-black/60">{s.durationSec}s</span></li>
+                    <li key={i}>{i + 1}) {s.instruction} · <span className="text-black/60">{s.durationSec}s</span></li>
                   ))}
                 </ol>
                 <p className="italic text-black/70 mt-2">↑ {effectiveDrill.closingNote}</p>
               </>
             ) : (
-              <p className="italic text-black/60">quiet tonight. just the piece.</p>
+              <p className="italic text-black/60">No chain drill tonight. Just the piece.</p>
             )}
           </Item>
 
-          <Item index={4} title="ear" duration="60 seconds">
-            <p className="italic text-black/60">do this on the app afterward.</p>
+          <Item index={4} title="Ear" duration="60 seconds">
+            <p className="italic text-black/60">Do this in the app afterward.</p>
           </Item>
 
-          <Item index={5} title="free">
-            <p>play something you love.</p>
+          <Item index={5} title="Free Play">
+            <p>Play something you love.</p>
           </Item>
         </ol>
 
         <footer className="pt-5 mt-5 border-t border-black/40 flex items-baseline justify-between text-xs text-black/60">
-          <span>sessions this week: <span className="tracking-widest">{todayDots.join(" ")}</span></span>
-          <span className="italic">tape it to the piano.</span>
+          <span>Sessions this week: <span className="tracking-widest">{todayDots.join(" ")}</span></span>
+          <span className="italic">Tape it to the piano.</span>
         </footer>
       </div>
     </div>

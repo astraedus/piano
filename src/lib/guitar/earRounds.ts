@@ -50,11 +50,11 @@ function thirdQualityRound(focusId: string): EarRound {
     id: rid("g-third"),
     type: "interval",
     level: 1,
-    prompt: "which interval? minor 3rd or major 3rd",
+    prompt: "Which interval? Minor 3rd or major 3rd?",
     correctId: isMinor ? "min3" : "maj3",
     choices: [
-      { label: "minor 3rd (bluesy)", id: "min3" },
-      { label: "major 3rd (bright)", id: "maj3" },
+      { label: "Minor 3rd (bluesy)", id: "min3" },
+      { label: "Major 3rd (bright)", id: "maj3" },
     ],
     audio: { kind: "interval", key: focusId as KeyId, notes: [root, top] },
   };
@@ -71,11 +71,11 @@ function chordQualityRound(focusId: string): EarRound {
     id: rid("g-quality"),
     type: "maj-min",
     level: 2,
-    prompt: "major or minor chord?",
+    prompt: "Major or minor chord?",
     correctId: isMinor ? "minor" : "major",
     choices: [
-      { label: "major", id: "major" },
-      { label: "minor", id: "minor" },
+      { label: "Major", id: "major" },
+      { label: "Minor", id: "minor" },
     ],
     audio: { kind: "triad", key: focusId as KeyId, chords: [notes] },
   };
@@ -93,11 +93,11 @@ function powerShapeRound(focusId: string): EarRound {
     id: rid("g-power"),
     type: "interval",
     level: 4,
-    prompt: "power chord or octave shape?",
+    prompt: "Power chord or octave shape?",
     correctId: isFifth ? "fifth" : "octave",
     choices: [
-      { label: "power chord (root + 5th)", id: "fifth" },
-      { label: "octave (root + root)", id: "octave" },
+      { label: "Power chord (root + 5th)", id: "fifth" },
+      { label: "Octave (root + root)", id: "octave" },
     ],
     audio: { kind: "interval", key: focusId as KeyId, notes: [root, top] },
   };
@@ -115,11 +115,11 @@ function intervalDirectionRound(focusId: string): EarRound {
     id: rid("g-dir"),
     type: "updown",
     level: 1,
-    prompt: "did the second note go up or down?",
+    prompt: "Did the second note go up or down?",
     correctId: goesUp ? "up" : "down",
     choices: [
-      { label: "up", id: "up" },
-      { label: "down", id: "down" },
+      { label: "Up", id: "up" },
+      { label: "Down", id: "down" },
     ],
     audio: { kind: "interval", key: focusId as KeyId, notes: [root, second] },
   };

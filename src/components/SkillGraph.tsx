@@ -224,7 +224,7 @@ function FilterPills({
             }
           >
             {opt.label}
-            {!registered && <span className="ml-1 text-[10px]">soon</span>}
+            {!registered && <span className="ml-1 text-[10px]">Soon</span>}
           </button>
         );
       })}
@@ -235,9 +235,9 @@ function FilterPills({
 function EmptyState({ filter }: { filter: GraphInstrumentFilter }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-2 p-8 text-center">
-      <p className="font-serif text-lg text-[color:var(--ink)]">no skills here yet</p>
+      <p className="font-serif text-lg text-[color:var(--ink)]">No skills here yet</p>
       <p className="text-sm text-[color:var(--ink-3)]">
-        the {filter} tree hasn&apos;t been planted yet. it&apos;s coming.
+        The {filter} tree hasn&apos;t been planted yet. It&apos;s coming.
       </p>
     </div>
   );
@@ -247,7 +247,7 @@ function PanelHint({ empty }: { empty: boolean }) {
   if (empty) return null;
   return (
     <div className="hidden rounded-xl border border-dashed border-[color:var(--rule)] bg-[color:var(--surface)] p-5 text-sm text-[color:var(--ink-3)] lg:block">
-      <p>tap a node to see its drill, what it unlocks, and add it to today.</p>
+      <p>Tap a node to see its drill, what it unlocks, and add it to today.</p>
     </div>
   );
 }

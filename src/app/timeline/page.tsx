@@ -27,12 +27,12 @@ function Timeline() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">timeline</p>
-        <h1 className="font-serif text-3xl text-[color:var(--ink)]">what's been here.</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">Timeline</p>
+        <h1 className="font-serif text-3xl text-[color:var(--ink)]">What's Been Here</h1>
         <p className="text-sm text-[color:var(--ink-3)] italic mt-1">{timeStr} total · {sessions.length} sessions.</p>
       </header>
       {sessions.length === 0 ? (
-        <p className="text-[color:var(--ink-3)] font-serif italic">nothing yet. the first session writes the first line.</p>
+        <p className="text-[color:var(--ink-3)] font-serif italic">Nothing yet. Your first session writes the first line.</p>
       ) : (
         <ul className="divide-y divide-[color:var(--rule)]">
           {rows.map((r, i) => (
@@ -43,7 +43,7 @@ function Timeline() {
                   <span className="text-[color:var(--ink)] tabular-nums text-sm">{r.session.minutes} min</span>
                   <span className="text-[color:var(--ink-3)] text-sm">{KEY_META[r.session.ghostKey]?.name ?? r.session.ghostKey}</span>
                   {r.session.journal && (
-                    <span className="text-[color:var(--ink-2)] italic text-sm">— {r.session.journal}</span>
+                    <span className="text-[color:var(--ink-2)] italic text-sm">· {r.session.journal}</span>
                   )}
                   {r.session.mode !== "full" && r.session.mode !== "short" && r.session.mode !== "long" && (
                     <span className="text-[10px] uppercase tracking-wider text-[color:var(--ink-3)]">{r.session.mode}</span>
@@ -99,7 +99,7 @@ function formatDayLabel(d: Date) {
   const isToday = d.toDateString() === now.toDateString();
   const yest = new Date(now); yest.setDate(now.getDate() - 1);
   const isYest = d.toDateString() === yest.toDateString();
-  if (isToday) return "today";
-  if (isYest) return "yesterday";
-  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }).toLowerCase();
+  if (isToday) return "Today";
+  if (isYest) return "Yesterday";
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }

@@ -39,19 +39,19 @@ function TreeShell() {
   const sessions = (state.sessions ?? []).length;
   const pieces = (state.pieces ?? []).length;
   const mapLabel =
-    getModuleSync(state.instrument)?.progressMapKind === "fretboard" ? "the neck map" : "the key map";
+    getModuleSync(state.instrument)?.progressMapKind === "fretboard" ? "Neck Map" : "Key Map";
   return (
     <div className="space-y-8">
       <header className="space-y-1">
-        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">the tree</p>
-        <h1 className="font-serif text-3xl text-[color:var(--ink)]" style={{ fontVariationSettings: "'opsz' 40, 'SOFT' 50" }}>what you've built.</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-3)]">The Tree</p>
+        <h1 className="font-serif text-3xl text-[color:var(--ink)]" style={{ fontVariationSettings: "'opsz' 40, 'SOFT' 50" }}>What You've Built</h1>
         <p className="text-sm text-[color:var(--ink-3)] italic">{timeStr} · {sessions} session{sessions === 1 ? "" : "s"} · {pieces} piece{pieces === 1 ? "" : "s"} on the shelf.</p>
       </header>
       <div className="flex gap-2 border-b border-[color:var(--rule)]">
         <TabButton active={tab === "map"}   onClickAction={() => setTab("map")}>{mapLabel}</TabButton>
-        <TabButton active={tab === "graph"} onClickAction={() => setTab("graph")}>skill graph</TabButton>
-        <TabButton active={tab === "shelf"} onClickAction={() => setTab("shelf")}>the song shelf</TabButton>
-        <TabButton active={tab === "arc"}   onClickAction={() => setTab("arc")}>your arc</TabButton>
+        <TabButton active={tab === "graph"} onClickAction={() => setTab("graph")}>Skill Graph</TabButton>
+        <TabButton active={tab === "shelf"} onClickAction={() => setTab("shelf")}>Song Shelf</TabButton>
+        <TabButton active={tab === "arc"}   onClickAction={() => setTab("arc")}>Your Arc</TabButton>
       </div>
       <div className="pt-2">
         {tab === "map" && <ProgressMap />}

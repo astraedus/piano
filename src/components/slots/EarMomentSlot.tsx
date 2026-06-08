@@ -23,14 +23,14 @@ export function EarMomentSlot({
 
   if (muted) {
     return (
-      <Slot index={4} title="Ear moment" pillar="ear" summary={<span className="text-[color:var(--ink-3)]">muted for this session.</span>} muted mutedLine="muted tonight. back next session." printAlways={printAlways} />
+      <Slot index={4} title="Ear Moment" pillar="ear" summary={<span className="text-[color:var(--ink-3)]">Muted for this session.</span>} muted mutedLine="Muted tonight. Back next session." printAlways={printAlways} />
     );
   }
 
   if (!round) {
     return (
-      <Slot index={4} title="Ear moment" pillar="ear" duration="60s" status="done" summary={<>that's enough listening for now.</>} printAlways={printAlways}>
-        <p className="text-sm text-[color:var(--ink-2)]">three rounds done. ears open.</p>
+      <Slot index={4} title="Ear Moment" pillar="ear" duration="60s" status="done" summary={<>All rounds done for tonight.</>} printAlways={printAlways}>
+        <p className="text-sm text-[color:var(--ink-2)]">Three rounds done. Nice listening.</p>
       </Slot>
     );
   }
@@ -61,11 +61,11 @@ export function EarMomentSlot({
   };
 
   return (
-    <Slot index={4} title="Ear moment" pillar="ear" duration={`round ${i + 1} of ${rounds.length}`} summary={<>{round.prompt}</>} printAlways={printAlways}>
+    <Slot index={4} title="Ear Moment" pillar="ear" duration={`Round ${i + 1} of ${rounds.length}`} summary={<>{round.prompt}</>} printAlways={printAlways}>
       <div className="space-y-3 text-sm">
         <div className="flex items-center gap-3 no-print">
-          <button type="button" onClick={play} className="chip chip-accent text-xs px-3 py-1">play</button>
-          <span className="text-xs text-[color:var(--ink-3)]">you'll hear it twice.</span>
+          <button type="button" onClick={play} className="chip chip-accent text-xs px-3 py-1">Play</button>
+          <span className="text-xs text-[color:var(--ink-3)]">You'll hear it twice.</span>
         </div>
         <div className="grid grid-cols-2 gap-2 no-print">
           {round.choices.map((c) => {
@@ -92,7 +92,7 @@ export function EarMomentSlot({
         </div>
         {picked && (
           <p className="text-xs text-[color:var(--ink-3)] italic fade-in">
-            {picked === round.correctId ? "yes — " + round.choices.find((c) => c.id === round.correctId)?.label.toLowerCase() + "." : "nope — it was " + round.choices.find((c) => c.id === round.correctId)?.label.toLowerCase() + ". next one."}
+            {picked === round.correctId ? "Correct. " + round.choices.find((c) => c.id === round.correctId)?.label + "." : "Not quite. It was " + round.choices.find((c) => c.id === round.correctId)?.label + ". Next one."}
           </p>
         )}
       </div>

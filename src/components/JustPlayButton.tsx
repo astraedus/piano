@@ -16,10 +16,10 @@ export function JustPlayButton({ compact = false }: { compact?: boolean }) {
         "cta-pill inline-flex items-center gap-1.5 font-semibold tracking-[0.03em] " +
         (compact ? "text-xs px-3 py-1" : "text-sm px-4 py-1.5")
       }
-      aria-label="Just play — skip the structure and drop into the free slot."
+      aria-label="Just play. Skip the structure and drop into free play."
     >
       <PlayGlyph />
-      just play
+      Just Play
     </button>
   );
 }

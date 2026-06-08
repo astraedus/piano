@@ -16,7 +16,7 @@ export function YourArc() {
   if (combined.length === 0) {
     return (
       <div className="text-[color:var(--ink-3)] font-serif italic">
-        your arc starts with the first session. come back after playing.
+        Your arc starts with your first session. Come back after you play.
       </div>
     );
   }
@@ -46,7 +46,7 @@ export function YourArc() {
           </li>
         );
       })}
-      {last >= 0 && <li className="text-xs text-[color:var(--ink-muted)] italic pl-28">the arc only grows from here.</li>}
+      {last >= 0 && <li className="text-xs text-[color:var(--ink-muted)] italic pl-28">Your arc only grows from here.</li>}
     </ol>
   );
 }

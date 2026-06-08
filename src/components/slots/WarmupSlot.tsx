@@ -76,21 +76,21 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways }:
                 }}
                 className="chip text-xs px-3 py-1"
               >
-                hear the scale
+                Hear the Scale
               </button>
               <button
                 type="button"
                 onClick={() => bumpRep(repId, { bpm })}
                 className="chip chip-accent text-xs px-3 py-1"
               >
-                I played it
+                I Played It
               </button>
               <Metronome defaultBpm={80} onBpmChangeAction={setBpm} />
             </div>
             {reps && (
               <p className="text-xs text-[color:var(--ink-3)] italic mt-2">
                 {reps.count} rep{reps.count === 1 ? "" : "s"} of this scale
-                {reps.maxBpm ? ` · best ${reps.maxBpm} bpm` : ""}.
+                {reps.maxBpm ? ` · best ${reps.maxBpm} BPM` : ""}.
               </p>
             )}
           </div>
@@ -101,13 +101,13 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways }:
             onClick={() => setRunning((r) => !r)}
             className="chip text-xs px-3 py-1"
           >
-            {running ? "pause" : "start"} the minute
+            {running ? "Pause" : "Start"} the Minute
           </button>
           <span className="text-xs tabular-nums text-[color:var(--ink-3)]">
             {fmtSec(elapsed)}
           </span>
           <span className="text-xs text-[color:var(--ink-3)]">
-            · no bell. just a little nudge.
+            · No bell. Just a gentle timer.
           </span>
         </div>
       </div>

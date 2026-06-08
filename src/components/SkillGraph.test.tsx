@@ -147,6 +147,6 @@ describe("SkillGraph", () => {
   it("shows an empty state when the instrument has no nodes", () => {
     (registry.getModuleSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ skillNodes: [] });
     renderGraph();
-    expect(screen.getByText("no skills here yet")).toBeTruthy();
+    expect(screen.getByText("No skills here yet")).toBeTruthy();
   });
 });

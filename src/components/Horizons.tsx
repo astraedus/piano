@@ -7,11 +7,11 @@ import { nextToLearn } from "@/lib/skillTree";
 import type { Warmup, KeyId, Phase } from "@/lib/types";
 
 const PHASE_NAMES: Record<Phase, string> = {
-  1: "the keyboard becomes a map",
-  2: "the hands cooperate",
-  3: "the ear leads",
-  4: "the voice emerges",
-  5: "free",
+  1: "Learn the Layout",
+  2: "Coordinate Both Hands",
+  3: "Train Your Ear",
+  4: "Find Your Voice",
+  5: "Play Freely",
 };
 
 export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmup }) {
@@ -41,32 +41,32 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
 
   return (
     <section className="border-t border-[color:var(--rule)] pt-8 mt-10 space-y-8">
-      <h2 className="text-xs uppercase tracking-[0.22em] text-[color:var(--ink-3)]">where you are</h2>
+      <h2 className="text-xs uppercase tracking-[0.22em] text-[color:var(--ink-3)]">Where You Are</h2>
 
-      <Row label="this week">
+      <Row label="This week">
         <div className="space-y-1">
           <p>
-            <span className="text-[color:var(--ink)]">ghost · {KEY_META[ghostKey].name}</span>
+            <span className="text-[color:var(--ink)]">Key · {KEY_META[ghostKey].name}</span>
             <span className="text-[color:var(--ink-3)]">   ·   </span>
-            <span className="text-[color:var(--ink-2)]">warmup · {warmup?.label ?? "—"}</span>
+            <span className="text-[color:var(--ink-2)]">Warmup · {warmup?.label ?? "—"}</span>
           </p>
           <p className="text-xs text-[color:var(--ink-3)] italic">
-            one key, seven days. the week picks it. you don't have to.
+            One key, seven days. The week picks it, so you don't have to.
           </p>
         </div>
       </Row>
 
-      <Row label="this phase">
+      <Row label="This phase">
         <div className="space-y-1">
-          <p className="font-serif text-lg text-[color:var(--ink)]">phase {state.phase} — {PHASE_NAMES[state.phase]}</p>
+          <p className="font-serif text-lg text-[color:var(--ink)]">Phase {state.phase} · {PHASE_NAMES[state.phase]}</p>
           <p className="text-sm text-[color:var(--ink-3)]">
-            {phaseUnlockEarned} of {phaseUnlockCount} capabilities shown{remaining > 0 ? `. ${remaining} to go.` : "."}
+            {phaseUnlockEarned} of {phaseUnlockCount} skills unlocked{remaining > 0 ? `. ${remaining} to go.` : "."}
           </p>
         </div>
       </Row>
 
       {nextUnlock && (
-        <Row label="next to learn">
+        <Row label="Next to learn">
           <div
             className="rounded-md border-l-[3px] pl-4 pr-4 py-3"
             style={{
@@ -81,21 +81,21 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
       )}
 
       {state.northStar && (
-        <Row label="the star">
+        <Row label="Your goal">
           <p className="font-serif italic text-[color:var(--ink)]">{state.northStar}</p>
         </Row>
       )}
 
-      <Row label="only-grows">
+      <Row label="Totals">
         <div className="flex gap-5 flex-wrap text-sm text-[color:var(--ink-2)]">
-          <Stat k="time" v={timeStr} />
-          <Stat k="sessions" v={String(state.sessions?.length ?? 0)} />
-          <Stat k="pieces" v={pieces === 0 ? "—" : `${pieces}${piecesYours ? ` · ${piecesYours} yours` : ""}`} />
-          <Stat k={keysTouched === 1 ? "key" : "keys"} v={`${keysTouched} / 24`} />
-          <Stat k="unlocks" v={String(state.unlocks?.length ?? 0)} />
+          <Stat k="Time" v={timeStr} />
+          <Stat k="Sessions" v={String(state.sessions?.length ?? 0)} />
+          <Stat k="Pieces" v={pieces === 0 ? "—" : `${pieces}${piecesYours ? ` · ${piecesYours} yours` : ""}`} />
+          <Stat k={keysTouched === 1 ? "Key" : "Keys"} v={`${keysTouched} / 24`} />
+          <Stat k="Unlocks" v={String(state.unlocks?.length ?? 0)} />
         </div>
         <p className="text-xs text-[color:var(--ink-3)] italic mt-2">
-          <Link href="/tree" className="hover:text-[color:var(--ink-2)]">visit the tree →</Link>
+          <Link href="/tree" className="hover:text-[color:var(--ink-2)]">Visit the Tree →</Link>
         </p>
       </Row>
     </section>

@@ -34,11 +34,11 @@ export function GhostPicker({ current, onDoneAction }: { current: KeyId; onDoneA
         className="text-xs text-[color:var(--ink-3)] hover:text-[color:var(--ink)]"
         aria-expanded={open}
       >
-        change
+        Change
       </button>
       {open && (
         <div className="absolute left-0 mt-1 z-20 warm-card p-4 w-[min(360px,90vw)]">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--ink-3)] mb-2">this week's keys</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--ink-3)] mb-2">This Week's Keys</p>
           <div className="flex flex-wrap gap-1.5 mb-3">
             {phaseKeys.map((k) => (
               <KeyChip
@@ -54,7 +54,7 @@ export function GhostPicker({ current, onDoneAction }: { current: KeyId; onDoneA
             ))}
           </div>
           <details>
-            <summary className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--ink-3)] cursor-pointer">all keys</summary>
+            <summary className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--ink-3)] cursor-pointer">All Keys</summary>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {allKeys.map((k) => (
                 <KeyChip
@@ -70,7 +70,7 @@ export function GhostPicker({ current, onDoneAction }: { current: KeyId; onDoneA
               ))}
             </div>
           </details>
-          <p className="text-[10px] text-[color:var(--ink-3)] italic mt-3">just this week. the rotation comes back next week.</p>
+          <p className="text-[10px] text-[color:var(--ink-3)] italic mt-3">Just this week. The rotation comes back next week.</p>
         </div>
       )}
     </div>

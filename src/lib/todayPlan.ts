@@ -70,7 +70,7 @@ export function computeTodayPlan(state: AppState, date: Date, overrideMode?: Tod
     const withinFirst30 = daysSinceFirst <= 30;
     const due = now >= showAfter && now >= hiddenUntil;
     if (withinFirst30 || due) {
-      northStarNudge = `you said: ${state.northStar}. keep going.`;
+      northStarNudge = `Your goal: ${state.northStar} Keep going.`;
     }
   }
 

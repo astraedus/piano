@@ -15,7 +15,7 @@ export function HomeGate() {
   }, [ready, state.firstOpenedAt, router]);
 
   if (!ready) {
-    return <div className="text-[color:var(--ink-3)] font-serif italic">opening the file…</div>;
+    return <div className="text-[color:var(--ink-3)] font-serif italic">Loading…</div>;
   }
   if (!state.firstOpenedAt) return null;
   return <PracticeStand />;
