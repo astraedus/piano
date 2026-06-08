@@ -16,6 +16,7 @@ import { Fretboard } from "@/lib/guitar/components/Fretboard";
 import { Tab } from "@/lib/guitar/components/Tab";
 import { TermChip, linkTerms } from "@/components/explain";
 import { nodeToTermId } from "@/lib/pathFilter";
+import { getLesson } from "@/lib/lessons";
 
 const STATUS_LABEL: Record<SkillNodeStatus, string> = {
   locked: "Locked",
@@ -67,6 +68,13 @@ export function SkillGraphPanel({
   const locked = status === "locked";
   const difficultyMeta =
     difficulty && difficulty !== "unknown" ? DIFFICULTY_META[difficulty] : null;
+
+  // V5 — teaching content. getLesson returns undefined for shared nodes or any
+  // node whose lesson hasn't been authored yet. Degrade gracefully to the
+  // existing drill/unlock one-liners when undefined.
+  const lesson = node.instrument !== "shared"
+    ? getLesson(node.instrument, node.id)
+    : undefined;
 
   // V4 Soul-First — lead with the feeling/outcome label. The theory name becomes a
   // tappable subtitle when a soulTitle exists (theory-only nodes have none, so the
@@ -132,17 +140,99 @@ export function SkillGraphPanel({
         </button>
       </div>
 
-      <Section label="the drill">
-        <p data-testid="sg-panel-drill" className="text-sm text-[color:var(--ink-2)]">
-          {linkTerms(node.masteryDrill)}
-        </p>
-      </Section>
+      {/* V5 — full teaching lesson when authored; fallback to drill/unlock one-liners. */}
+      {lesson ? (
+        <div data-testid="sg-lesson" className="flex flex-col gap-4">
+          <Section label="what this is">
+            <p data-testid="sg-lesson-what" className="text-sm text-[color:var(--ink-2)]">
+              {linkTerms(lesson.what, "lw-")}
+            </p>
+          </Section>
 
-      <Section label="what it unlocks">
-        <p data-testid="sg-panel-unlock" className="text-sm text-[color:var(--ink-2)] italic">
-          {linkTerms(node.unlock)}
-        </p>
-      </Section>
+          <Section label="why it matters">
+            <p className="text-sm text-[color:var(--ink-2)]">
+              {linkTerms(lesson.why, "ly-")}
+            </p>
+          </Section>
+
+          <Section label="how to do it">
+            <ol data-testid="sg-lesson-steps" className="flex flex-col gap-2">
+              {lesson.steps.map((step, i) => (
+                <li key={i} className="flex gap-2 text-sm">
+                  <span
+                    className="mt-0.5 flex-shrink-0 font-semibold tabular-nums"
+                    style={{ color: "var(--instrument-accent-deep)" }}
+                  >
+                    {i + 1}.
+                  </span>
+                  <span className="flex flex-col gap-0.5">
+                    <span className="text-[color:var(--ink-2)]">
+                      {linkTerms(step.do, `ls${i}d-`)}
+                    </span>
+                    {step.feel && (
+                      <span className="text-xs italic text-[color:var(--ink-3)]">
+                        {linkTerms(step.feel, `ls${i}f-`)}
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </Section>
+
+          <Section label="you've got it when">
+            <p data-testid="sg-lesson-good" className="text-sm text-[color:var(--ink-2)]">
+              {linkTerms(lesson.goodWhen, "lg-")}
+            </p>
+          </Section>
+
+          {lesson.watchOut && (
+            <Section label="watch out">
+              <p data-testid="sg-lesson-watch" className="text-sm text-[color:var(--ink-2)]">
+                {linkTerms(lesson.watchOut, "lwo-")}
+              </p>
+            </Section>
+          )}
+
+          {lesson.song && (
+            <Section label="try it on">
+              <p data-testid="sg-lesson-song" className="text-sm text-[color:var(--ink-2)]">
+                <em className="font-medium not-italic" style={{ color: "var(--instrument-accent-deep)" }}>
+                  {lesson.song.name}
+                </em>
+                {" — "}
+                {lesson.song.note}
+              </p>
+            </Section>
+          )}
+
+          <Section label="tonight's target">
+            <p data-testid="sg-panel-drill" className="text-sm text-[color:var(--ink-2)]">
+              {linkTerms(node.masteryDrill, "td-")}
+            </p>
+          </Section>
+
+          <Section label="what it unlocks">
+            <p data-testid="sg-panel-unlock" className="text-sm text-[color:var(--ink-2)] italic">
+              {linkTerms(node.unlock, "tu-")}
+            </p>
+          </Section>
+        </div>
+      ) : (
+        <>
+          <Section label="the drill">
+            <p data-testid="sg-panel-drill" className="text-sm text-[color:var(--ink-2)]">
+              {linkTerms(node.masteryDrill)}
+            </p>
+          </Section>
+
+          <Section label="what it unlocks">
+            <p data-testid="sg-panel-unlock" className="text-sm text-[color:var(--ink-2)] italic">
+              {linkTerms(node.unlock)}
+            </p>
+          </Section>
+        </>
+      )}
 
       {/* R3 — difficulty self-assessment from the recorded success rate. Only shown
           once there are enough attempts to judge (verdict !== unknown). */}
