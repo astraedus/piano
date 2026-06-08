@@ -33,6 +33,7 @@ import {
   type RepSessionSnapshot,
   type SlotKey,
 } from "./slots/repResume";
+import { resolveStatus } from "@/lib/skillTree";
 
 export function PracticeStand() {
   const router = useRouter();
@@ -85,6 +86,16 @@ export function PracticeStand() {
   const ghost = KEY_META[plan.ghostKey];
   const piece = state.pieces.find((p) => p.id === state.currentPieceId);
   const printing = false;
+
+  // V5 Start-Here card — show when any tier-0 setup node for the active instrument
+  // is not yet learned. This fires for brand-new users who haven't touched Setup &
+  // Orientation, nudging them to /tree rather than dropping them into warmup + drills
+  // with zero context. Disappears once all setup nodes are learned (never nags again).
+  const allNodes = module?.skillNodes ?? [];
+  const setupNodes = allNodes.filter((n) => n.tier === 0 && n.category === "setup");
+  const nodeStatus = resolveStatus(allNodes, state.skillProgress ?? {});
+  const showStartHere = setupNodes.some((n) => nodeStatus.get(n.id) !== "learned");
+  const instrumentDisplayName = module?.displayName ?? state.instrument;
 
   // ── V4 resume UX: derive per-slot done-state, the current "NOW" slot, and any
   // in-flight chain-drill rep session to resume. Done-state comes from the
@@ -217,6 +228,9 @@ export function PracticeStand() {
           </aside>
 
           <div>
+            {showStartHere && (
+              <StartHereCard instrument={instrumentDisplayName} />
+            )}
             <MentalPracticeCard firstBack={plan.mode === "first-back"} pieceTitle={piece?.title} />
             <div className="mt-5">
               <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} isNow={nowSlot === "warmup"} status={slotStatus("warmup")} />
@@ -467,4 +481,38 @@ function UnlockQueue({ queue, onClose, unlocks }: { queue: string[]; onClose: ()
   const u = unlocks.find((x) => x.id === id);
   if (!u) return null;
   return <UnlockCardModal unlock={u} onCloseAction={onClose} />;
+}
+
+/** V5 Start-Here card. Shown when the active instrument's tier-0 setup nodes are
+ *  not yet learned (brand-new user, or someone who skipped orientation). Links to
+ *  /tree (Your Path) where the setup nodes live. Disappears once all setup nodes
+ *  are learned — never nags a returning user. */
+function StartHereCard({ instrument }: { instrument: string }) {
+  const isGuitar = instrument.toLowerCase().includes("guitar");
+  const hint = isGuitar
+    ? "New to this? Start with tuning and holding the guitar."
+    : "New to this? Start with finding notes and setting your posture.";
+  return (
+    <div
+      data-testid="start-here-card"
+      className="mt-4 mb-1 rounded-xl border-2 border-[color:var(--accent-soft)] bg-[color:var(--accent)]/6 px-5 py-4 fade-in"
+    >
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 space-y-1.5">
+          <p className="font-serif text-base font-medium text-[color:var(--ink)]">
+            Welcome. Start here.
+          </p>
+          <p className="text-sm text-[color:var(--ink-2)] leading-relaxed">
+            {hint}
+          </p>
+          <Link
+            href="/tree"
+            className="inline-block mt-1.5 text-sm font-medium text-[color:var(--accent-deep)] underline decoration-1 underline-offset-2 hover:opacity-80 transition-opacity"
+          >
+            Open Your Path
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -2,8 +2,8 @@
 import { useRef } from "react";
 import { Slot } from "../Slot";
 import { Disclosure } from "./Disclosure";
-import { TermChip } from "../explain";
-import type { ChainDrill, SessionQuality } from "@/lib/types";
+import { TermChip, linkTerms } from "../explain";
+import type { ChainDrill, SessionQuality, SkillNode } from "@/lib/types";
 import { drillRepId } from "@/lib/types";
 import { KEY_META, midiToSpn, pitchMidi, progressionChords } from "@/lib/music";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
@@ -12,6 +12,7 @@ import { useAppState } from "@/hooks/useAppState";
 import { RepEngine } from "../RepEngine";
 import { buildRepItems, type RepEngineConfig } from "@/lib/repEngine";
 import type { InterleavePlan } from "@/lib/chainDrillPicker";
+import { getLesson } from "@/lib/lessons";
 
 export function ChainDrillSlot({
   module,
@@ -34,6 +35,17 @@ export function ChainDrillSlot({
   /** R8 — bubble the rep-engine's captured quality up to the session log. */
   onQualityChangeAction?: (quality: SessionQuality) => void;
 }) {
+  // V5 — build a chainDrillId -> node lookup once so we can find which skill node
+  // this drill trains, then surface the authored lesson's "what" + "why" block.
+  // Module skill nodes are available when the instrument has registered (always true
+  // in practice — the module self-registers at app init). Lookup is O(n) and
+  // cached inside the render; n <= ~30 nodes per instrument.
+  const drillNode: SkillNode | undefined = drill?.id
+    ? (module?.skillNodes ?? []).find((n) => n.chainDrillId === drill.id)
+    : undefined;
+  const drillLesson = drillNode && drill
+    ? getLesson(drill.instrument, drillNode.id)
+    : undefined;
   const { state, bumpRep } = useAppState();
   // Fire the legacy "tried it" rep counter exactly once per drill session.
   const bumpedRef = useRef(false);
@@ -107,6 +119,32 @@ export function ChainDrillSlot({
           progression/keyboard (reference) collapse behind "Show steps" / "Hear
           it" toggles. */}
       <div className="space-y-4 text-sm">
+        {/* V5 — "Tonight:" lesson block. Surfaces the authored what/why for the
+            skill node this drill trains. Shows when a lesson exists; skips
+            gracefully when none is authored yet (no regression). */}
+        {drillLesson && (
+          <div
+            data-testid="chain-lesson-block"
+            className="rounded-lg bg-[color:var(--bg-surface-2)] border border-[color:var(--rule)] px-4 py-3 space-y-1.5"
+          >
+            <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)]">Tonight</p>
+            <p className="font-serif text-base text-[color:var(--ink)] leading-snug">
+              {linkTerms(drillLesson.what, "cw")}
+            </p>
+            <p className="text-xs text-[color:var(--ink-2)] leading-relaxed">
+              {linkTerms(drillLesson.why, "cy")}
+            </p>
+            {drillLesson.steps.length > 0 && (
+              <p className="text-xs text-[color:var(--ink-3)] italic pt-0.5">
+                Step 1: {drillLesson.steps[0].do}
+                {drillLesson.steps[0].feel && (
+                  <span className="not-italic"> ({drillLesson.steps[0].feel})</span>
+                )}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* The interactive rep-engine (R2/R4/R5/R8) — pinned at the top. */}
         <div className="no-print">
           <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-2">
