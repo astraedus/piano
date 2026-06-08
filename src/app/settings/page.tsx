@@ -10,6 +10,7 @@ import { exportStateJson, importStateJson, clearState } from "@/lib/storage";
 import { weekIdOf } from "@/lib/ghostKey";
 import { setRootAttrs } from "@/lib/domAttrs";
 import type { Instrument } from "@/lib/types";
+import { learningPathPatch, PATH_OPTIONS } from "@/components/Onboarding";
 
 const INSTRUMENTS: { id: Instrument; label: string }[] = [
   { id: "piano", label: "Piano" },
@@ -145,6 +146,44 @@ function Settings() {
             </button>
           ))}
         </div>
+      </Section>
+
+      <Section title="Your Learning Path">
+        <p className="text-xs text-[color:var(--ink-3)] mb-3">What you want to do shapes which skills the tree leads with. Change it anytime.</p>
+        <div className="flex gap-2 flex-wrap" data-testid="settings-path-pills">
+          {PATH_OPTIONS.map((o) => (
+            <button
+              key={o.tag}
+              type="button"
+              data-path-choice={o.tag}
+              aria-pressed={state.learningPath === o.tag}
+              onClick={() => patch(learningPathPatch(o.tag, state.theoryEnabled))}
+              className={
+                "text-sm px-4 py-1.5 rounded-full border transition-colors " +
+                (state.learningPath === o.tag
+                  ? "border-[color:var(--accent)] bg-[color:var(--accent)]/10 text-[color:var(--ink)]"
+                  : "border-[color:var(--rule)] text-[color:var(--ink-2)] hover:border-[color:var(--accent-soft)]")
+              }
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+        <label className="flex items-start gap-3 cursor-pointer mt-4">
+          <input
+            type="checkbox"
+            checked={!!state.theoryEnabled}
+            onChange={(e) => patch({ theoryEnabled: e.target.checked })}
+            className="accent-[color:var(--accent)] mt-0.5"
+            data-testid="settings-theory-toggle"
+          />
+          <span className="text-sm text-[color:var(--ink-2)]">
+            Show the theory, the why behind what you're playing.
+            <span className="block text-xs text-[color:var(--ink-3)] italic mt-0.5">
+              Off by default. Go Deep turns it on; turn it off here anytime.
+            </span>
+          </span>
+        </label>
       </Section>
 
       <Section title="Profile">
