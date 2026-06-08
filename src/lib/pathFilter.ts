@@ -89,6 +89,9 @@ export function ghostKeyToTermId(key: KeyId): string {
 // the caller renders the plain title (no dead chip).
 const NODE_TERM_IDS: Record<string, string> = {
   // guitar
+  // Tier-0 setup: the "your guitar's names" lesson IS the open-string concept —
+  // the named-string fretboard + the open-string audio land exactly on subject.
+  "g-t0-anatomy": "open-string",
   "g-t1-power": "power-chord",
   "g-t1-palmmute": "palm-muting",
   "g-t1-strum": "strumming",

@@ -4,18 +4,21 @@
 // Renders a compact media strip directly inside a lesson, so the chord diagram /
 // fretboard / tab and the "Hear it" button are visible without a separate tap.
 //
-// Visual priority:
-//   1. node.viz is set → render the matching guitar component (ChordDiagram /
-//      Fretboard / Tab / animation placeholder) — same logic as the old NodeViz
-//      inside SkillGraphPanel, centralised here.
-//   2. node.viz absent → look up the node's glossary term via nodeToTermId and
-//      render its TermVisual (fretboard / keyboard / chord-diagram) if it has one.
-//   3. Neither present → render nothing (no empty box).
+// A lesson ALWAYS gets a relevant visual — for a guitar app, "pure text with no
+// diagram" is the #1 complaint. Exactly ONE visual renders, chosen by priority:
+//   1. node.viz "chord_diagram" | "fretboard_map" | "tab" → the matching guitar
+//      component (ChordDiagram / Fretboard / Tab).
+//   2. node.viz "animation" → a sensible STATIC fallback: a chord diagram if the
+//      node carries a chordShape/cagedShape, else the instrument's default neck
+//      (guitar) / keyboard (piano). Static is fine — we replace "nothing" with a
+//      real, on-system visual.
+//   3. node maps to a glossary term WITH a visual → that term's TermVisual.
+//   4. None of the above → an instrument-appropriate DEFAULT so the strip is
+//      never empty: guitar → labeled Fretboard (its named strings double as the
+//      "your guitar's names" / anatomy visual); piano → labeled Keyboard.
 //
 // Audio: the node's glossary term (via nodeToTermId) drives the "Hear it" button.
 //   If no term maps, the button is omitted gracefully.
-//
-// Returns null when there is nothing to render (no visual AND no audio term).
 
 import { useState, useCallback } from "react";
 import type { SkillNode } from "@/lib/types";
@@ -24,6 +27,7 @@ import { lookupTerm } from "@/lib/explain/glossary";
 import { ChordDiagram } from "@/lib/guitar/components/ChordDiagram";
 import { Fretboard } from "@/lib/guitar/components/Fretboard";
 import { Tab } from "@/lib/guitar/components/Tab";
+import { Keyboard } from "@/lib/piano/components/Keyboard";
 import { TermVisual, termHasVisual } from "@/components/explain/TermVisual";
 
 export interface LessonMediaProps {
@@ -33,7 +37,7 @@ export interface LessonMediaProps {
 export function LessonMedia({ node }: LessonMediaProps) {
   const [playing, setPlaying] = useState(false);
 
-  // Resolve the glossary term for this node (used for both audio and fallback visual).
+  // Resolve the glossary term for this node (used for both audio and a fallback visual).
   const termId = nodeToTermId(node.id);
   const termEntry = termId ? lookupTerm(termId) : undefined;
 
@@ -49,29 +53,18 @@ export function LessonMedia({ node }: LessonMediaProps) {
     }
   }, [termEntry, playing]);
 
-  // Determine what visual to show.
-  const hasNodeViz = Boolean(node.viz && node.viz !== "animation");
-  const hasTermVisual = Boolean(termEntry && termHasVisual(termEntry));
-  const hasAnyVisual = hasNodeViz || hasTermVisual;
   const hasAudio = Boolean(termEntry);
-
-  // Nothing to render.
-  if (!hasAnyVisual && !hasAudio) return null;
+  const termHasVis = Boolean(termEntry && termHasVisual(termEntry));
 
   return (
     <div
       data-testid="lesson-media"
       className="rounded-lg border border-[color:var(--rule)] bg-[color:var(--surface-2)] p-3 space-y-2"
     >
-      {/* Visual */}
-      {hasAnyVisual && (
-        <div className="flex items-center justify-center min-h-[72px]">
-          <NodeVizInline node={node} />
-          {!hasNodeViz && termEntry && hasTermVisual && (
-            <TermVisual entry={termEntry} />
-          )}
-        </div>
-      )}
+      {/* Visual — exactly one renders, chosen by priority. */}
+      <div className="flex items-center justify-center min-h-[72px]">
+        <LessonVisual node={node} termHasVis={termHasVis} termEntry={termEntry} />
+      </div>
 
       {/* "Hear it" button */}
       {hasAudio && (
@@ -91,11 +84,19 @@ export function LessonMedia({ node }: LessonMediaProps) {
 }
 
 /**
- * Renders the node's own visual (node.viz).
- * Returns null when node.viz is absent or is the "animation" placeholder.
- * The animation case falls through to the term visual path in the parent.
+ * Picks and renders exactly ONE visual for a lesson, guaranteeing the strip is
+ * never empty (see priority order in the file header).
  */
-function NodeVizInline({ node }: { node: SkillNode }) {
+function LessonVisual({
+  node,
+  termHasVis,
+  termEntry,
+}: {
+  node: SkillNode;
+  termHasVis: boolean;
+  termEntry: ReturnType<typeof lookupTerm>;
+}) {
+  // 1. Concrete node.viz.
   switch (node.viz) {
     case "chord_diagram":
       return (
@@ -109,7 +110,38 @@ function NodeVizInline({ node }: { node: SkillNode }) {
       return <Fretboard ariaLabel={`${node.title} fretboard map`} />;
     case "tab":
       return <Tab ariaLabel={`${node.title} tab`} />;
-    default:
-      return null;
+    case "animation":
+      // 2. "animation" has no renderer — fall back to a static visual. Prefer a
+      // chord diagram when the node carries a shape, else the instrument default.
+      if (node.chordShape || node.cagedShape) {
+        return (
+          <ChordDiagram
+            chordShape={node.chordShape}
+            cagedShape={node.cagedShape}
+            title={node.title}
+          />
+        );
+      }
+      return <InstrumentDefault node={node} />;
   }
+
+  // 3. A mapped glossary term with a visual.
+  if (termEntry && termHasVis) {
+    return <TermVisual entry={termEntry} />;
+  }
+
+  // 4. Instrument-appropriate default — the strip is never empty for a lesson.
+  return <InstrumentDefault node={node} />;
+}
+
+/**
+ * The instrument's default visual: a labeled guitar neck (its string names
+ * double as the "anatomy / your guitar's names" visual) or a labeled keyboard.
+ * Instrument comes from node.instrument; "shared" nodes default to guitar.
+ */
+function InstrumentDefault({ node }: { node: SkillNode }) {
+  if (node.instrument === "piano") {
+    return <Keyboard notes={[]} labelNotes height={96} />;
+  }
+  return <Fretboard ariaLabel={`${node.title} on the fretboard`} />;
 }

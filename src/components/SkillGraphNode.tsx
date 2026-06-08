@@ -60,7 +60,10 @@ export function SkillGraphNode({ data, selected }: NodeProps) {
       data-frontier={isFrontier ? "true" : "false"}
       data-treatment={offPath ? "off-path" : "on-path"}
       className={
-        "sg-node relative rounded-lg px-3 py-2 text-left transition-all duration-200 " +
+        "sg-node relative cursor-pointer rounded-lg px-3 py-2 text-left transition-all duration-200 " +
+        // hover affordance — a subtle lift + accent ring so the cards read as
+        // tappable. Suppressed for off-path cards (they're intentionally inert).
+        (offPath ? "" : "hover:-translate-y-px ") +
         // off-path suppresses the pulse and dims the whole card.
         (isFrontier && !learned && !offPath ? "sg-pulse " : "") +
         (offPath ? "opacity-30 grayscale " : locked ? "opacity-60 " : "") +

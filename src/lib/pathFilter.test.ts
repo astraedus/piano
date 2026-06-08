@@ -131,6 +131,10 @@ describe("nodeToTermId", () => {
     expect(nodeToTermId("p-key-C")).toBe("c-major");
   });
 
+  it("maps the tier-0 anatomy setup node to the open-string term (visual + audio)", () => {
+    expect(nodeToTermId("g-t0-anatomy")).toBe("open-string");
+  });
+
   it("returns undefined for nodes with no direct concept map", () => {
     expect(nodeToTermId("g-t0-posture")).toBeUndefined();
     expect(nodeToTermId("p-key-D")).toBeUndefined();

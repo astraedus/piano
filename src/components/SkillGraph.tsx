@@ -12,12 +12,13 @@
 // you can inspect the guitar tree without switching your active profile. It
 // defaults to the active instrument. (plan §2.3 left this to implementer's call.)
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Background,
   Controls,
   ReactFlow,
   ReactFlowProvider,
+  useReactFlow,
 } from "@xyflow/react";
 import type { Edge, Node, NodeMouseHandler } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -71,6 +72,9 @@ export function SkillGraph() {
 
 function SkillGraphInner() {
   const { state, patch, markFluent } = useAppState();
+  // Imperative React-Flow API — used to re-fit the viewport after a layout change.
+  // Valid here because SkillGraphInner is a descendant of <ReactFlowProvider>.
+  const { fitView } = useReactFlow();
   const [filter, setFilter] = useState<GraphInstrumentFilter>(state.instrument);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -146,6 +150,47 @@ function SkillGraphInner() {
       titleById: titleMap,
     };
   }, [allNodes, filter, progress, selectedId, view]);
+
+  // Layout signature — a fingerprint of the rendered graph (node set + positions
+  // + per-node status). It changes whenever a progress mutation re-derives the
+  // graph (statuses flip, the node set or its positions shift) or a filter/path
+  // change swaps the node set, but NOT when only `selectedId` changes — selection
+  // is deliberately excluded so a node tap never re-fits. We use it to re-fit the
+  // viewport so the freshly-laid-out nodes don't drift off-screen (the `fitView`
+  // prop only fits on the initial mount, never on subsequent re-layouts).
+  const layoutSignature = useMemo(
+    () =>
+      `${flowNodes.length}|` +
+      flowNodes
+        .map(
+          (n) =>
+            `${n.id}@${Math.round(n.position.x)},${Math.round(n.position.y)}:${
+              statusById.get(n.id) ?? ""
+            }`,
+        )
+        .join("|"),
+    [flowNodes, statusById],
+  );
+
+  // Re-fit on every layout change EXCEPT the very first (the `fitView` prop
+  // already handles the initial mount, so refitting again would be a redundant
+  // double-fit). Guarded by the signature ref so selection-only re-renders, which
+  // leave the signature unchanged, never trigger a refit.
+  const lastLayoutRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (lastLayoutRef.current === null) {
+      // First settled layout — defer to the initial `fitView` prop.
+      lastLayoutRef.current = layoutSignature;
+      return;
+    }
+    if (lastLayoutRef.current === layoutSignature) return;
+    lastLayoutRef.current = layoutSignature;
+    // Fit on the next frame so React Flow has applied the new node positions.
+    const raf = requestAnimationFrame(() => {
+      fitView({ padding: 0.2, duration: 300 });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [layoutSignature, fitView]);
 
   const selectedNode = useMemo(
     () => allNodes.find((n) => n.id === selectedId) ?? null,

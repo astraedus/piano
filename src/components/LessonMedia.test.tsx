@@ -98,6 +98,45 @@ const emptyNode: SkillNode = {
   unlock: "Something.",
 };
 
+// viz:"animation" with no chord shape — must fall back to a static visual.
+const animationNode: SkillNode = {
+  id: "g-t0-posture",
+  instrument: "guitar",
+  title: "Holding & Pick Grip",
+  tier: 0,
+  category: "technique",
+  prereqs: [],
+  masteryDrill: "Wrist relaxed, thumb behind neck.",
+  unlock: "Foundation posture.",
+  viz: "animation",
+};
+
+// viz:"animation" carrying a chord shape — must draw a chord diagram.
+const animationChordNode: SkillNode = {
+  id: "g-t1-bendshape",
+  instrument: "guitar",
+  title: "Shaped Animation",
+  tier: 1,
+  category: "technique",
+  prereqs: [],
+  masteryDrill: "Bend it.",
+  unlock: "Expression.",
+  viz: "animation",
+  chordShape: [0, 2, 2, -1, -1, -1],
+};
+
+// A piano lesson with no viz and no term — default must be the keyboard.
+const pianoBareNode: SkillNode = {
+  id: "p-unknown-xyz",
+  instrument: "piano",
+  title: "Some Piano Thing",
+  tier: 0,
+  category: "technique",
+  prereqs: [],
+  masteryDrill: "Play.",
+  unlock: "Something.",
+};
+
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe("LessonMedia", () => {
@@ -185,17 +224,21 @@ describe("LessonMedia", () => {
     });
   });
 
-  describe("(c) node with neither viz nor term visual renders nothing", () => {
-    it("returns null (no lesson-media) when node has no viz and no glossary term", () => {
+  describe("(c) bare setup node with no viz and no term still renders a default visual", () => {
+    it("renders the guitar default (Fretboard) for a bare guitar node — never empty", () => {
       mockLookupTerm.mockReturnValue(undefined);
       render(<LessonMedia node={emptyNode} />);
-      expect(screen.queryByTestId("lesson-media")).toBeNull();
+      expect(screen.getByTestId("lesson-media")).toBeTruthy();
+      expect(screen.getByTestId("fretboard")).toBeTruthy();
+      // No term → no audio button.
+      expect(screen.queryByTestId("lesson-media-hear")).toBeNull();
     });
 
-    it("returns null when node has no viz and its term has no visual and no audio", () => {
+    it("renders the piano default (Keyboard) for a bare piano node", () => {
       mockLookupTerm.mockReturnValue(undefined);
-      render(<LessonMedia node={{ ...emptyNode, viz: undefined }} />);
-      expect(screen.queryByTestId("lesson-media")).toBeNull();
+      render(<LessonMedia node={pianoBareNode} />);
+      expect(screen.getByTestId("lesson-media")).toBeTruthy();
+      expect(screen.getByTestId("keyboard")).toBeTruthy();
     });
   });
 
@@ -236,6 +279,42 @@ describe("LessonMedia", () => {
       render(<LessonMedia node={baseNode} />);
       expect(screen.getByTestId("chord-diagram")).toBeTruthy();
       expect(screen.getByTestId("lesson-media-hear")).toBeTruthy();
+    });
+  });
+
+  describe("(f) viz:animation falls back to a static visual instead of nothing", () => {
+    it("renders the instrument default (Fretboard) for an animation node with no shape", () => {
+      mockLookupTerm.mockReturnValue(undefined);
+      render(<LessonMedia node={animationNode} />);
+      expect(screen.getByTestId("lesson-media")).toBeTruthy();
+      expect(screen.getByTestId("fretboard")).toBeTruthy();
+    });
+
+    it("renders a chord diagram for an animation node that carries a chord shape", () => {
+      mockLookupTerm.mockReturnValue(undefined);
+      render(<LessonMedia node={animationChordNode} />);
+      expect(screen.getByTestId("chord-diagram")).toBeTruthy();
+      // Falls back to the chord shape, not the bare neck.
+      expect(screen.queryByTestId("fretboard")).toBeNull();
+    });
+  });
+
+  describe("(g) exactly one visual renders (no double-render)", () => {
+    it("renders ONLY the node viz, not also the term visual, when both exist", () => {
+      mockLookupTerm.mockReturnValue({
+        id: "power-chord",
+        title: "Power Chord",
+        aliases: [],
+        what: "...",
+        why: "...",
+        hear: vi.fn().mockResolvedValue(undefined),
+        seeKind: "chord-diagram",
+        seeChordShape: [0, 2, -1, -1, -1, -1],
+      });
+      render(<LessonMedia node={baseNode} />);
+      // node.viz wins; TermVisual must not also render.
+      expect(screen.getByTestId("chord-diagram")).toBeTruthy();
+      expect(screen.queryByTestId("term-visual")).toBeNull();
     });
   });
 });

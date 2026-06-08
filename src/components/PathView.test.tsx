@@ -124,6 +124,7 @@ beforeAll(() => {
 function mockState(
   instrument: "guitar" | "piano",
   skillProgress: Record<string, SkillProgress> = {},
+  overrides: { patch?: ReturnType<typeof vi.fn>; markFluent?: ReturnType<typeof vi.fn> } = {},
 ): void {
   (useAppState as ReturnType<typeof vi.fn>).mockReturnValue({
     state: {
@@ -134,12 +135,12 @@ function mockState(
     } as Partial<AppState>,
     ready: true,
     setState: vi.fn(),
-    patch: vi.fn(),
+    patch: overrides.patch ?? vi.fn(),
     dismissUnlock: vi.fn(),
     dismissLevelUp: vi.fn(),
     bumpRep: vi.fn(),
     reviewSkill: vi.fn(),
-    markFluent: vi.fn(),
+    markFluent: overrides.markFluent ?? vi.fn(),
   });
 }
 
@@ -298,6 +299,146 @@ describe("PathView — fallback when no lesson authored", () => {
     // No full lesson elements
     expect(within(panel).queryByTestId("lesson-what")).toBeNull();
     expect(within(panel).queryByTestId("lesson-steps")).toBeNull();
+  });
+});
+
+describe("PathView — progression controls", () => {
+  it("an available node's expanded panel shows Add to Today and Mark Learned", () => {
+    mockState("guitar", {});
+    render(<PathView />);
+
+    // t0Node is available (no prereqs). Expand it.
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${t0Node.id}`));
+
+    expect(screen.getByTestId(`path-add-today-${t0Node.id}`)).toBeTruthy();
+    expect(screen.getByTestId(`path-mark-learned-${t0Node.id}`)).toBeTruthy();
+    // Not yet learned → no Mark Fluent control.
+    expect(screen.queryByTestId(`path-mark-fluent-${t0Node.id}`)).toBeNull();
+  });
+
+  it("Mark Learned writes learned progress through patch()", () => {
+    const patch = vi.fn();
+    mockState("guitar", {}, { patch });
+    render(<PathView />);
+
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${t0Node.id}`));
+    fireEvent.click(screen.getByTestId(`path-mark-learned-${t0Node.id}`));
+
+    expect(patch).toHaveBeenCalledTimes(1);
+    const arg = patch.mock.calls[0][0] as { skillProgress: Record<string, SkillProgress> };
+    expect(arg.skillProgress[t0Node.id].status).toBe("learned");
+  });
+
+  it("Add to Today bumps a rep through patch()", () => {
+    const patch = vi.fn();
+    mockState("guitar", {}, { patch });
+    render(<PathView />);
+
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${t0Node.id}`));
+    fireEvent.click(screen.getByTestId(`path-add-today-${t0Node.id}`));
+
+    expect(patch).toHaveBeenCalledTimes(1);
+    const arg = patch.mock.calls[0][0] as { skillProgress: Record<string, SkillProgress> };
+    expect(arg.skillProgress[t0Node.id].reps).toBe(1);
+    expect(arg.skillProgress[t0Node.id].status).toBe("in-progress");
+  });
+
+  it("a learned node shows ✓ Learned + a Mark Fluent button that calls markFluent", () => {
+    const markFluent = vi.fn();
+    const progress: Record<string, SkillProgress> = {
+      [t0Node.id]: { status: "learned", reps: 5 },
+    };
+    mockState("guitar", progress, { markFluent });
+    render(<PathView />);
+
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${t0Node.id}`));
+
+    // No add/learn buttons once learned.
+    expect(screen.queryByTestId(`path-add-today-${t0Node.id}`)).toBeNull();
+    expect(screen.queryByTestId(`path-mark-learned-${t0Node.id}`)).toBeNull();
+
+    const fluentBtn = screen.getByTestId(`path-mark-fluent-${t0Node.id}`);
+    fireEvent.click(fluentBtn);
+    expect(markFluent).toHaveBeenCalledWith(t0Node.id);
+  });
+
+  it("a fluent node shows the Fluent badge, not the Mark Fluent button", () => {
+    const progress: Record<string, SkillProgress> = {
+      [t0Node.id]: { status: "learned", reps: 5, fluent: true },
+    };
+    mockState("guitar", progress);
+    render(<PathView />);
+
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${t0Node.id}`));
+    expect(screen.getByTestId(`path-fluent-${t0Node.id}`)).toBeTruthy();
+    expect(screen.queryByTestId(`path-mark-fluent-${t0Node.id}`)).toBeNull();
+  });
+});
+
+describe("PathView — reward moment", () => {
+  it("Mark Learned surfaces the UnlockCardModal", () => {
+    mockState("guitar", {});
+    render(<PathView />);
+
+    // No modal initially.
+    expect(screen.queryByText("New Skill Unlocked")).toBeNull();
+
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${t0Node.id}`));
+    fireEvent.click(screen.getByTestId(`path-mark-learned-${t0Node.id}`));
+
+    // The modal's signature heading appears. Scope content assertions to the
+    // modal subtree (the soulTitle also appears as the card headline behind it).
+    const modalHeading = screen.getByText("New Skill Unlocked");
+    const modal = modalHeading.closest("div")!;
+    // Fallback card (no unlockCardId on the test node): title is the soulTitle and
+    // the tryLine is the node's unlock copy.
+    expect(within(modal).getByText(t0Node.soulTitle!)).toBeTruthy();
+    expect(within(modal).getByText(t0Node.unlock)).toBeTruthy();
+  });
+
+  it("dismissing the reward modal removes it", () => {
+    mockState("guitar", {});
+    render(<PathView />);
+
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${t0Node.id}`));
+    fireEvent.click(screen.getByTestId(`path-mark-learned-${t0Node.id}`));
+    expect(screen.getByText("New Skill Unlocked")).toBeTruthy();
+
+    fireEvent.click(screen.getByText("Nice"));
+    expect(screen.queryByText("New Skill Unlocked")).toBeNull();
+  });
+});
+
+describe("PathView — locked card feedback", () => {
+  it("clicking a locked card shows the locked-reason line naming the unmet prereq", () => {
+    // Empty progress → t1NodeA (prereq g-t0-anatomy) is locked.
+    mockState("guitar", {});
+    render(<PathView />);
+
+    // No reason shown until clicked.
+    expect(screen.queryByTestId(`path-locked-reason-${t1NodeA.id}`)).toBeNull();
+    // The lesson panel must NOT open for a locked card.
+    expect(screen.queryByTestId(`path-lesson-${t1NodeA.id}`)).toBeNull();
+
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${t1NodeA.id}`));
+
+    const reason = screen.getByTestId(`path-locked-reason-${t1NodeA.id}`);
+    expect(reason.textContent).toContain(t0Node.title);
+    expect(reason.textContent).toContain("Locked");
+    // Still no lesson panel — locked nodes are not runnable.
+    expect(screen.queryByTestId(`path-lesson-${t1NodeA.id}`)).toBeNull();
+  });
+
+  it("clicking the locked card again hides the reason", () => {
+    mockState("guitar", {});
+    render(<PathView />);
+
+    const toggle = screen.getByTestId(`path-step-toggle-${t1NodeA.id}`);
+    fireEvent.click(toggle);
+    expect(screen.getByTestId(`path-locked-reason-${t1NodeA.id}`)).toBeTruthy();
+
+    fireEvent.click(toggle);
+    expect(screen.queryByTestId(`path-locked-reason-${t1NodeA.id}`)).toBeNull();
   });
 });
 

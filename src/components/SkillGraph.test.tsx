@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, within, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 
 // --- Mock next/navigation (per plan §5 P4: component tests mock it) ---
@@ -13,6 +13,9 @@ vi.mock("next/navigation", () => ({
 // We render each node's title + a click hook so we can test node-set derivation
 // and selection without the canvas. The custom node component itself is unit-safe
 // but we shallow-render the canvas here per the plan's guidance.
+// Spy for the imperative fitView so tests can assert auto-refit-on-layout-change.
+const fitViewSpy = vi.fn();
+
 vi.mock("@xyflow/react", () => {
   type RFNode = {
     id: string;
@@ -57,6 +60,7 @@ vi.mock("@xyflow/react", () => {
     MarkerType: { ArrowClosed: "arrowclosed" },
     useNodesState: () => [[], vi.fn(), vi.fn()],
     useEdgesState: () => [[], vi.fn(), vi.fn()],
+    useReactFlow: () => ({ fitView: fitViewSpy }),
   };
 });
 
@@ -121,6 +125,7 @@ const PATH_FIXTURE: SkillNode[] = [
 
 beforeEach(() => {
   localStorage.clear();
+  fitViewSpy.mockClear();
   // Stub the registry so the graph reads our fixtures, and both pills are enabled.
   vi.spyOn(registry, "getModuleSync").mockImplementation((id) =>
     ({ skillNodes: id === "guitar" ? GUITAR_FIXTURE : PIANO_FIXTURE } as never),
@@ -203,6 +208,36 @@ describe("SkillGraph", () => {
     (registry.getModuleSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ skillNodes: [] });
     renderGraph();
     expect(screen.getByText("No skills here yet")).toBeTruthy();
+  });
+
+  // ── Viewport auto-refit after a layout-changing mutation ───────────────────
+
+  describe("viewport refit", () => {
+    it("re-fits the viewport after a progress mutation re-lays-out the graph", async () => {
+      renderGraph();
+      fireEvent.click(screen.getByTestId("rf-node-p-root"));
+      // Selecting a node must NOT refit (it doesn't change the layout).
+      expect(fitViewSpy).not.toHaveBeenCalled();
+
+      // Mark learned → p-root becomes learned, p-mid unlocks → dagre re-lays-out
+      // (the node set's statuses/positions change), so the viewport must re-fit.
+      fireEvent.click(screen.getByTestId("sg-mark-learned"));
+      await waitFor(() => expect(fitViewSpy).toHaveBeenCalledTimes(1));
+      expect(fitViewSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ padding: 0.2 }),
+      );
+    });
+
+    it("does NOT refit when only the selection changes", async () => {
+      renderGraph();
+      // Select, deselect, re-select — pure selection churn, no layout change.
+      fireEvent.click(screen.getByTestId("rf-node-p-root"));
+      fireEvent.click(screen.getByTestId("rf-node-p-root")); // toggle off
+      fireEvent.click(screen.getByTestId("rf-node-p-mid"));
+      // Give any deferred RAF a chance to run; the spy must stay untouched.
+      await new Promise((r) => requestAnimationFrame(() => r(null)));
+      expect(fitViewSpy).not.toHaveBeenCalled();
+    });
   });
 
   // ── V4 Soul-First — path filtering + theory toggle ─────────────────────────

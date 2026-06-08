@@ -12,14 +12,18 @@
 // - Decoupled from graph selection state — self-contained expand state
 // - Falls back gracefully when a node has no authored lesson
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
-import { resolveStatus, nextToLearn } from "@/lib/skillTree";
+import { resolveStatus, nextToLearn, markNodeProgress, isFluent } from "@/lib/skillTree";
 import { getLesson } from "@/lib/lessons";
 import { linkTerms } from "@/components/explain";
 import { LessonMedia } from "@/components/LessonMedia";
+import { UnlockCardModal } from "@/components/UnlockCardModal";
 import type { NodeLesson, SkillNode, SkillNodeStatus } from "@/lib/types";
+
+// Local shape for the reward modal — matches UnlockCardModal's `unlock` prop.
+type RewardCard = { id: string; title: string; tryLine: string };
 
 // ── Tier section names ──────────────────────────────────────────────────────
 
@@ -118,16 +122,38 @@ interface StepCardProps {
   isYouAreHere: boolean;
   instrument: "piano" | "guitar";
   expanded: boolean;
+  fluent: boolean;
+  /** Titles of prereqs not yet learned, for the locked-card explanation. */
+  unmetPrereqTitles: string[];
   onToggle: () => void;
+  onAddToday: (id: string) => void;
+  onMarkLearned: (node: SkillNode) => void;
+  onMarkFluent: (id: string) => void;
 }
 
-function StepCard({ node, status, isYouAreHere, instrument, expanded, onToggle }: StepCardProps) {
+function StepCard({
+  node,
+  status,
+  isYouAreHere,
+  instrument,
+  expanded,
+  fluent,
+  unmetPrereqTitles,
+  onToggle,
+  onAddToday,
+  onMarkLearned,
+  onMarkFluent,
+}: StepCardProps) {
   const lesson = getLesson(instrument, node.id);
   const headline = node.soulTitle ?? node.keepTitle ?? node.title;
   const theoryName = node.keepTitle ?? node.title;
   const hasSubtitle = Boolean(node.soulTitle);
   const isLearned = status === "learned";
   const isLocked = status === "locked";
+
+  // Locked cards no longer dead-click silently: clicking reveals an inline
+  // explanation naming the unmet prerequisite(s). Non-locked cards expand.
+  const [showLockedReason, setShowLockedReason] = useState(false);
 
   // First sentence of what, for the card preview line
   const whatPreview = lesson?.what ? lesson.what.split(/[.!?]/)[0] + "." : null;
@@ -145,14 +171,14 @@ function StepCard({ node, status, isYouAreHere, instrument, expanded, onToggle }
         opacity: isLocked ? 0.6 : 1,
       }}
     >
-      {/* Card header — always visible */}
+      {/* Card header — always visible. Locked cards toggle an inline reason
+          instead of expanding (no silent dead-click). */}
       <button
         type="button"
         data-testid={`path-step-toggle-${node.id}`}
-        onClick={onToggle}
-        disabled={isLocked}
-        className="w-full text-left p-4 flex items-start gap-3 disabled:cursor-not-allowed"
-        aria-expanded={expanded}
+        onClick={isLocked ? () => setShowLockedReason((v) => !v) : onToggle}
+        className="w-full text-left p-4 flex items-start gap-3"
+        aria-expanded={isLocked ? showLockedReason : expanded}
       >
         {/* Status dot */}
         <span
@@ -211,6 +237,22 @@ function StepCard({ node, status, isYouAreHere, instrument, expanded, onToggle }
         )}
       </button>
 
+      {/* Locked card explanation — why this step isn't open yet. Shown when a
+          locked card is clicked. Names the unmet prerequisite(s) by title. */}
+      {isLocked && showLockedReason && (
+        <div
+          data-testid={`path-locked-reason-${node.id}`}
+          className="border-t px-4 pb-4 pt-3"
+          style={{ borderColor: "var(--rule)" }}
+        >
+          <p className="text-xs leading-relaxed text-[color:var(--ink-3)]">
+            {unmetPrereqTitles.length > 0
+              ? `Locked — finish ${unmetPrereqTitles.join(", ")} first.`
+              : "Locked — finish the earlier steps first."}
+          </p>
+        </div>
+      )}
+
       {/* Expanded lesson panel */}
       {expanded && !isLocked && (
         <div
@@ -223,7 +265,96 @@ function StepCard({ node, status, isYouAreHere, instrument, expanded, onToggle }
           ) : (
             <FallbackContent node={node} />
           )}
+
+          {/* Progression controls — mirrors the SkillGraph panel so a user can
+              progress without leaving Your Path. */}
+          <ProgressFooter
+            node={node}
+            status={status}
+            fluent={fluent}
+            onAddToday={onAddToday}
+            onMarkLearned={onMarkLearned}
+            onMarkFluent={onMarkFluent}
+          />
         </div>
+      )}
+    </div>
+  );
+}
+
+// ── Progression footer ───────────────────────────────────────────────────────
+// The action row inside an expanded, non-locked step. Mirrors SkillGraphPanel's
+// affordances (Add to Today / Mark Learned / Mark Fluent) so the two surfaces
+// drive the same progression.
+
+function ProgressFooter({
+  node,
+  status,
+  fluent,
+  onAddToday,
+  onMarkLearned,
+  onMarkFluent,
+}: {
+  node: SkillNode;
+  status: SkillNodeStatus;
+  fluent: boolean;
+  onAddToday: (id: string) => void;
+  onMarkLearned: (node: SkillNode) => void;
+  onMarkFluent: (id: string) => void;
+}) {
+  const learned = status === "learned";
+
+  return (
+    <div
+      data-testid={`path-actions-${node.id}`}
+      className="flex flex-wrap items-center gap-2 border-t pt-4"
+      style={{ borderColor: "var(--rule)" }}
+    >
+      {!learned && (
+        <>
+          <button
+            type="button"
+            data-testid={`path-add-today-${node.id}`}
+            onClick={() => onAddToday(node.id)}
+            className="rounded-lg border px-3 py-1.5 text-sm transition-colors"
+            style={{ borderColor: "var(--instrument-accent)", color: "var(--instrument-accent-deep)" }}
+          >
+            Add to Today
+          </button>
+          <button
+            type="button"
+            data-testid={`path-mark-learned-${node.id}`}
+            onClick={() => onMarkLearned(node)}
+            className="rounded-lg px-3 py-1.5 text-sm text-[color:var(--bg-base)] transition-opacity hover:opacity-90"
+            style={{ background: "var(--instrument-accent)" }}
+          >
+            Mark Learned
+          </button>
+        </>
+      )}
+      {learned && (
+        <>
+          <p className="text-sm text-[color:var(--instrument-accent-deep)]">✓ Learned</p>
+          {!fluent && (
+            <button
+              type="button"
+              data-testid={`path-mark-fluent-${node.id}`}
+              onClick={() => onMarkFluent(node.id)}
+              className="rounded-lg border px-3 py-1.5 text-sm transition-colors"
+              style={{ borderColor: "var(--instrument-accent)", color: "var(--instrument-accent-deep)" }}
+            >
+              Mark Fluent
+            </button>
+          )}
+          {fluent && (
+            <span
+              data-testid={`path-fluent-${node.id}`}
+              className="inline-flex items-center gap-1 rounded-full bg-[color:var(--instrument-accent-bg)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--instrument-accent-deep)]"
+            >
+              ✦ Fluent
+            </span>
+          )}
+        </>
       )}
     </div>
   );
@@ -351,8 +482,11 @@ function Section({ label, children }: { label: string; children: React.ReactNode
 // ── Main PathView ────────────────────────────────────────────────────────────
 
 export function PathView() {
-  const { state } = useAppState();
+  const { state, patch, markFluent } = useAppState();
   const [expanded, setExpanded] = useState<string | null>(null);
+  // The reward moment shown when a node is marked learned from Your Path. Local
+  // state only — we do NOT touch the global pendingUnlocks queue.
+  const [reward, setReward] = useState<RewardCard | null>(null);
 
   const module = getModuleSync(state.instrument);
   const nodes = module?.skillNodes ?? [];
@@ -362,6 +496,44 @@ export function PathView() {
   const statusMap = useMemo(() => resolveStatus(nodes, progress), [nodes, progress]);
   const frontier = useMemo(() => nextToLearn(nodes, progress, 1), [nodes, progress]);
   const youAreHereId = frontier[0]?.id ?? null;
+
+  // Title lookup for naming prereqs (used by the locked-card explanation).
+  const titleById = useMemo(
+    () => new Map(nodes.map((n) => [n.id, n.title])),
+    [nodes],
+  );
+
+  // ── Progression handlers — IDENTICAL to SkillGraph's addToToday / markLearned,
+  //    writing through patch() so resolveStatus re-derives on the next render. ──
+  const addToToday = useCallback(
+    (id: string) => {
+      patch({ skillProgress: markNodeProgress(state.skillProgress ?? {}, id) });
+    },
+    [patch, state.skillProgress],
+  );
+
+  const markLearned = useCallback(
+    (node: SkillNode) => {
+      patch({
+        skillProgress: markNodeProgress(state.skillProgress ?? {}, node.id, { learned: true }),
+      });
+      // Reward moment: resolve the node's unlock card from the active module's
+      // library, falling back to a synthesized card from the node's own copy.
+      const card = node.unlockCardId
+        ? module?.unlockLibrary.find((u) => u.id === node.unlockCardId)
+        : undefined;
+      setReward(
+        card
+          ? { id: card.id, title: card.title, tryLine: card.tryLine }
+          : {
+              id: node.id,
+              title: node.soulTitle ?? node.keepTitle ?? node.title,
+              tryLine: node.unlock,
+            },
+      );
+    },
+    [patch, state.skillProgress, module],
+  );
 
   // Group nodes by tier, topologically sorted within each tier
   const tiers = useMemo(() => {
@@ -410,6 +582,10 @@ export function PathView() {
               {tierNodes.map((node) => {
                 const status = statusMap.get(node.id) ?? "locked";
                 const isYouAreHere = node.id === youAreHereId;
+                // Prereqs not yet learned, named for the locked-card explanation.
+                const unmetPrereqTitles = node.prereqs
+                  .filter((pid) => progress[pid]?.status !== "learned")
+                  .map((pid) => titleById.get(pid) ?? pid);
                 return (
                   <StepCard
                     key={node.id}
@@ -418,7 +594,12 @@ export function PathView() {
                     isYouAreHere={isYouAreHere}
                     instrument={state.instrument}
                     expanded={expanded === node.id}
+                    fluent={isFluent(progress[node.id])}
+                    unmetPrereqTitles={unmetPrereqTitles}
                     onToggle={() => toggle(node.id)}
+                    onAddToday={addToToday}
+                    onMarkLearned={markLearned}
+                    onMarkFluent={markFluent}
                   />
                 );
               })}
@@ -431,6 +612,12 @@ export function PathView() {
         <p className="text-sm text-[color:var(--ink-3)] italic">
           No skill data loaded yet. Start a session to see your path.
         </p>
+      )}
+
+      {/* Reward moment — the unlock card shown right after Mark Learned. Honors
+          reduced-motion (UnlockCardModal handles it). Local state only. */}
+      {reward && (
+        <UnlockCardModal unlock={reward} onCloseAction={() => setReward(null)} />
       )}
     </div>
   );
