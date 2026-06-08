@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { ExplainProvider } from "@/components/explain";
 
@@ -32,7 +33,7 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
+  const body = (
     <html lang="en" data-phase="1" data-instrument="piano" className={`${fraunces.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="min-h-screen antialiased">
         {/* Inline script: read localStorage before paint to set phase/instrument/theme.
@@ -48,4 +49,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </body>
     </html>
   );
+
+  // Cloud sync is OPT-IN and defensive: only mount ClerkProvider when a
+  // publishable key is configured. A deploy missing the Clerk env vars renders
+  // the app exactly as before (localStorage-only) instead of crashing at boot.
+  if (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+    return <ClerkProvider>{body}</ClerkProvider>;
+  }
+  return body;
 }

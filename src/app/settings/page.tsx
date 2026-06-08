@@ -11,6 +11,7 @@ import { weekIdOf } from "@/lib/ghostKey";
 import { setRootAttrs } from "@/lib/domAttrs";
 import type { Instrument } from "@/lib/types";
 import { learningPathPatch, PATH_OPTIONS } from "@/components/Onboarding";
+import { CloudSync } from "@/components/CloudSync";
 
 const INSTRUMENTS: { id: Instrument; label: string }[] = [
   { id: "piano", label: "Piano" },
@@ -276,6 +277,11 @@ function Settings() {
           ))}
         </div>
         <p className="text-xs text-[color:var(--ink-3)] italic mt-1">The studio is warm and light by default. Dark is here for late nights.</p>
+      </Section>
+
+      <Section title="Cloud Sync (experimental)">
+        <p className="text-xs text-[color:var(--ink-3)] mb-3">Optional. Sign in to back up and sync your practice across devices. Local-only stays the default.</p>
+        <CloudSync />
       </Section>
 
       <Section title="Your Data">
