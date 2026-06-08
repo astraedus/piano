@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { Slot } from "../Slot";
+import { TermChip } from "../explain";
 import type { EarRound } from "@/lib/types";
 import { ensureAudio, playEarRound } from "@/lib/audio";
 import { clsx } from "clsx";
@@ -11,11 +12,13 @@ import { clsx } from "clsx";
 const EAR_REST_SEC = 8;
 
 export function EarMomentSlot({
-  rounds, muted, printAlways, onResultAction,
+  rounds, muted, printAlways, isNow, status, onResultAction,
 }: {
   rounds: EarRound[];
   muted?: boolean;
   printAlways?: boolean;
+  isNow?: boolean;
+  status?: "done" | "active" | null;
   onResultAction?: (correctIds: string[], wrongIds: string[]) => void;
 }) {
   const reduce = useReducedMotion();
@@ -30,13 +33,13 @@ export function EarMomentSlot({
 
   if (muted) {
     return (
-      <Slot index={4} title="Ear Moment" pillar="ear" summary={<span className="text-[color:var(--ink-3)]">Muted for this session.</span>} muted mutedLine="Muted tonight. Back next session." printAlways={printAlways} />
+      <Slot index={4} title="Ear Moment" pillar="ear" summary={<span className="text-[color:var(--ink-3)]">Muted for this session.</span>} muted mutedLine="Muted tonight. Back next session." printAlways={printAlways} status={status} />
     );
   }
 
   if (!round) {
     return (
-      <Slot index={4} title="Ear Moment" pillar="ear" duration="60s" status="done" summary={<>All rounds done for tonight.</>} printAlways={printAlways}>
+      <Slot index={4} title="Ear Moment" pillar="ear" duration="60s" status={status ?? "done"} summary={<>All rounds done for tonight.</>} printAlways={printAlways}>
         <p className="text-sm text-[color:var(--ink-2)]">Three rounds done. Nice listening.</p>
       </Slot>
     );
@@ -73,7 +76,7 @@ export function EarMomentSlot({
 
   if (resting) {
     return (
-      <Slot index={4} title="Ear Moment" pillar="ear" duration={`Round ${i + 1} of ${rounds.length}`} summary={<>A beat to let it settle.</>} printAlways={printAlways}>
+      <Slot index={4} title="Ear Moment" pillar="ear" duration={`Round ${i + 1} of ${rounds.length}`} summary={<>A beat to let it settle.</>} printAlways={printAlways} isNow={isNow} status={status}>
         <EarRest
           reduce={!!reduce}
           onDoneAction={() => { setResting(false); setI((v) => v + 1); }}
@@ -82,8 +85,14 @@ export function EarMomentSlot({
     );
   }
 
+  // V4 — ear-choice labels that map to a glossary term get an always-tappable
+  // TermChip explainer beneath the choices. The pick buttons stay plain (a
+  // TermChip is itself interactive, so nesting it inside the choice button would
+  // be invalid + steal the tap); the explainer row is the "one tap away" path.
+  const termChoices = round.choices.filter((c) => c.termId);
+
   return (
-    <Slot index={4} title="Ear Moment" pillar="ear" duration={`Round ${i + 1} of ${rounds.length}`} summary={<>{round.prompt}</>} printAlways={printAlways}>
+    <Slot index={4} title="Ear Moment" pillar="ear" duration={`Round ${i + 1} of ${rounds.length}`} summary={<>{round.prompt}</>} printAlways={printAlways} isNow={isNow} status={status}>
       <div className="space-y-3 text-sm">
         <div className="flex items-center gap-3 no-print">
           <button type="button" onClick={play} className="chip chip-accent text-xs px-3 py-1">Play</button>
@@ -112,6 +121,14 @@ export function EarMomentSlot({
             );
           })}
         </div>
+        {termChoices.length > 0 && (
+          <p className="text-xs text-[color:var(--ink-3)] flex flex-wrap items-baseline gap-x-2 gap-y-1 no-print">
+            <span>New to these?</span>
+            {termChoices.map((c) => (
+              <TermChip key={c.id} term={c.termId!} label={c.label} variant="subtitle" />
+            ))}
+          </p>
+        )}
         {picked && (
           <p className="text-xs text-[color:var(--ink-3)] italic fade-in">
             {picked === round.correctId ? "Correct. " + round.choices.find((c) => c.id === round.correctId)?.label + "." : "Not quite. It was " + round.choices.find((c) => c.id === round.correctId)?.label + ". Next one."}

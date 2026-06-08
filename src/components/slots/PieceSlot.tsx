@@ -9,7 +9,7 @@ import { useAppState } from "@/hooks/useAppState";
 // `module` is threaded for parity with the other slots (P4-ready). The piece slot
 // renders no instrument visual today — it's a form/recording surface — so it does
 // not consume module.InstrumentVisual; passing it keeps the slot API uniform.
-export function PieceSlot({ module: _module, piece, printAlways }: { module?: InstrumentModule; piece?: Piece; printAlways?: boolean }) {
+export function PieceSlot({ module: _module, piece, printAlways, isNow, status }: { module?: InstrumentModule; piece?: Piece; printAlways?: boolean; isNow?: boolean; status?: "done" | "active" | null }) {
   const { patch, state } = useAppState();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(piece?.title ?? "");
@@ -44,7 +44,7 @@ export function PieceSlot({ module: _module, piece, printAlways }: { module?: In
   );
 
   return (
-    <Slot index={2} title="The Piece" pillar="repertoire" status={piece ? "active" : null} summary={summary} printAlways={printAlways}>
+    <Slot index={2} title="The Piece" pillar="repertoire" status={status ?? null} summary={summary} printAlways={printAlways} isNow={isNow}>
       {!editing && piece && (
         <div className="space-y-3 text-sm">
           <div className="text-[color:var(--ink-2)]">

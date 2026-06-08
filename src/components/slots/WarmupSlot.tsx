@@ -1,15 +1,17 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Slot } from "../Slot";
+import { TermChip } from "../explain";
 import type { Warmup, KeyId } from "@/lib/types";
 import { scaleRepId } from "@/lib/types";
 import { KEY_META, scale } from "@/lib/music";
+import { ghostKeyToTermId } from "@/lib/pathFilter";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { Metronome } from "../Metronome";
 import { ensureAudio, playSequence } from "@/lib/audio";
 import { useAppState } from "@/hooks/useAppState";
 
-export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways }: { module?: InstrumentModule; warmup?: Warmup; ghostName: string; ghostKey: KeyId; printAlways?: boolean }) {
+export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, isNow, status }: { module?: InstrumentModule; warmup?: Warmup; ghostName: string; ghostKey: KeyId; printAlways?: boolean; isNow?: boolean; status?: "done" | "active" | null }) {
   const { state, bumpRep } = useAppState();
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -32,19 +34,32 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways }:
   if (!warmup) return null;
   const InstrumentVisual = module?.InstrumentVisual;
 
+  // V4 soul-first: lead with the feeling-first summary when present, with the
+  // theory key name as an always-tappable TermChip; else wrap the ghost key name
+  // inline so the theory term is still explainable (degrades to plain text).
+  const summary = warmup.soulSummary ? (
+    <span className="flex flex-wrap items-baseline gap-x-1.5">
+      <span>{warmup.soulSummary}</span>
+      <span className="text-[color:var(--ink-3)]">·</span>
+      <TermChip term={ghostKeyToTermId(ghostKey)} label={ghostName} variant="subtitle" />
+    </span>
+  ) : (
+    <span className="flex flex-wrap items-baseline gap-x-1.5">
+      <span>{warmup.label} ·</span>
+      <TermChip term={ghostKeyToTermId(ghostKey)} label={ghostName} />
+    </span>
+  );
+
   return (
     <Slot
       index={1}
       title="Warmup"
       pillar="technique"
       duration="90s"
-      status={reps ? "done" : null}
-      summary={
-        <>
-          {warmup.label} · {ghostName}
-        </>
-      }
+      status={status ?? (reps ? "done" : null)}
+      summary={summary}
       defaultOpen={false}
+      isNow={isNow}
       printAlways={printAlways}
     >
       <div className="space-y-3 text-sm">

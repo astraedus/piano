@@ -18,23 +18,32 @@ export function AppShell({ children, hideNav = false }: { children: ReactNode; h
     <div className="min-h-screen flex flex-col">
       {!hideNav && (
         <header className="no-print sticky top-0 z-20 bg-[color:var(--bg-base)]/85 backdrop-blur border-b border-[color:var(--bg-rule)]">
-          <nav className="max-w-3xl mx-auto px-5 h-14 flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2 group shrink-0" aria-label="Home">
-              <PianoMark />
-            </Link>
-            {/* The instrument wordmark is now a real switcher — the owner could
-                not find another way to switch, so it lives right in the header. */}
-            <InstrumentSwitcher current={state.instrument} />
-            <div className="flex items-center gap-5 text-sm text-[color:var(--ink-3)]">
-              <NavLink href="/tree" active={path?.startsWith("/tree")}>The Tree</NavLink>
-              <NavLink href="/timeline" active={path?.startsWith("/timeline")}>Timeline</NavLink>
-              <NavLink href="/settings" active={path?.startsWith("/settings")}>Settings</NavLink>
+          {/* P0 mobile overflow fix: below sm the header is TWO rows — brand + nav
+              on top, the level/XP/streak + Just Play CTA on a second row — so the
+              CTA is never clipped at 390px. At sm+ it collapses back to one row.
+              The container width tracks the stand's content width (shell-container,
+              wider on desktop for the 2-col layout) so nav no longer misaligns. */}
+          <nav className="shell-container px-5 py-2 sm:h-14 flex flex-col sm:flex-row sm:items-center gap-y-2.5 gap-x-5 sm:gap-x-6">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <Link href="/" className="flex items-center gap-2 group shrink-0" aria-label="Home">
+                <PianoMark />
+              </Link>
+              {/* The instrument wordmark is now a real switcher — the owner could
+                  not find another way to switch, so it lives right in the header. */}
+              <InstrumentSwitcher current={state.instrument} />
+              {/* whitespace-nowrap so "The Tree" never wraps at narrow widths (P2). */}
+              <div className="flex items-center gap-4 sm:gap-5 text-sm text-[color:var(--ink-3)] whitespace-nowrap">
+                <NavLink href="/tree" active={path?.startsWith("/tree")}>The Tree</NavLink>
+                <NavLink href="/timeline" active={path?.startsWith("/timeline")}>Timeline</NavLink>
+                <NavLink href="/settings" active={path?.startsWith("/settings")}>Settings</NavLink>
+              </div>
             </div>
-            {/* Persistent gamification indicator — level + progress + streak.
-                Compact so it sits quietly in the header; hidden on the narrowest
-                widths so the nav never crowds. */}
-            <div className="ml-auto flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-3">
+            {/* Persistent gamification indicator — level + progress + streak — plus
+                the Just Play CTA. On its own second row under sm; pushed to the
+                right edge of the single row at sm+. Always visible now (the second
+                row gives it room), fixing the clipped CTA at 390px. */}
+            <div className="flex items-center gap-3 sm:ml-auto">
+              <div className="flex items-center gap-3">
                 <XPBar xp={state.xp ?? 0} compact />
                 <StreakFlame streak={state.streak ?? emptyStreak()} compact />
               </div>
@@ -43,7 +52,7 @@ export function AppShell({ children, hideNav = false }: { children: ReactNode; h
           </nav>
         </header>
       )}
-      <main className="flex-1 max-w-3xl w-full mx-auto px-5 py-6">{children}</main>
+      <main className="flex-1 shell-container w-full px-5 py-6">{children}</main>
     </div>
   );
 }
