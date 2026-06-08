@@ -5,7 +5,7 @@ import { emptyStreak } from "./progression";
 // and leave the old key in place as a backup (the owner's real practice history).
 export const STORAGE_KEY = "practice.state";
 export const LEGACY_STORAGE_KEY = "piano.state";
-const VERSION = 4 as const;
+const VERSION = 5 as const;
 
 export function defaultState(): AppState {
   return {
@@ -33,6 +33,10 @@ export function defaultState(): AppState {
     pendingLevelUps: [],
     // V3 motor-learning defaults (storage v4).
     skillReview: {},
+    // V4 soul-first learning defaults (storage v5). learningPath undefined =
+    // show everything (back-compat); theory off until opted in or go-deep chosen.
+    learningPath: undefined,
+    theoryEnabled: false,
   };
 }
 
@@ -73,9 +77,10 @@ export function loadState(): AppState {
 }
 
 /**
- * Run the full migration ladder (v1→v2→v3→v4) for any pre-current blob. Older
+ * Run the full migration ladder (v1→v2→v3→v4→v5) for any pre-current blob. Older
  * blobs enter the ladder at the right rung: v1 (or missing) runs every step; v2
- * skips v1→v2; v3 skips to v3→v4. Idempotent on already-current blobs.
+ * skips v1→v2; v3 skips to v3→v4; v4 only runs the final v4→v5 pass. Idempotent
+ * on already-current blobs (every step is a non-destructive merge over defaults).
  */
 export function migrateToCurrent(old: Record<string, unknown>): AppState {
   const version = Number((old as { version?: unknown }).version ?? 1);
@@ -83,7 +88,9 @@ export function migrateToCurrent(old: Record<string, unknown>): AppState {
   const v2 = version >= 2 ? (old as unknown as AppState) : migrateV1toV2(old);
   // v3+ blobs are already v3-shaped; v2 blobs gain the gamification spine here.
   const v3 = version >= 3 ? (v2 as unknown as AppState) : migrateV2toV3(v2 as unknown as Record<string, unknown>);
-  return migrateV3toV4(v3 as unknown as Record<string, unknown>);
+  // v4+ blobs are already v4-shaped; v3 blobs gain the spaced-review queue here.
+  const v4 = version >= 4 ? (v3 as unknown as AppState) : migrateV3toV4(v3 as unknown as Record<string, unknown>);
+  return migrateV4toV5(v4 as unknown as Record<string, unknown>);
 }
 
 /**
@@ -141,15 +148,37 @@ export function migrateV2toV3(old: Record<string, unknown>): AppState {
  * Real v3 → v4 migration. Injects the V3 motor-learning state (skillReview
  * spaced-retrieval queue) with safe defaults, preserving any values already
  * present. All prior fields (including the full practice history) pass through
- * untouched. Idempotent on a partial v4 blob.
+ * untouched. Idempotent on a partial v4 blob. Stamps version 4 explicitly (NOT
+ * the moving VERSION const) so a v3 blob lands at v4 and the v4→v5 step runs next.
  */
 export function migrateV3toV4(old: Record<string, unknown>): AppState {
   const o = old as Partial<AppState>;
   return {
     ...defaultState(),
     ...o,
-    version: VERSION,
+    version: 4 as AppState["version"],
     skillReview: o.skillReview ?? {},
+  } as AppState;
+}
+
+/**
+ * Real v4 → v5 migration. Injects the V4 soul-first learning state
+ * (learningPath / theoryEnabled) with safe defaults, preserving any values
+ * already present. All prior fields (full practice history, gamification, the
+ * spaced-review queue) pass through untouched. Idempotent on a partial v5 blob.
+ *
+ * Defaults are intentionally back-compatible: an existing user (who never picked
+ * a path) gets `learningPath: undefined` → the tree keeps showing everything, and
+ * `theoryEnabled: false` → theory nodes stay hidden until they opt in.
+ */
+export function migrateV4toV5(old: Record<string, unknown>): AppState {
+  const o = old as Partial<AppState>;
+  return {
+    ...defaultState(),
+    ...o,
+    version: VERSION,
+    learningPath: o.learningPath ?? undefined,
+    theoryEnabled: o.theoryEnabled ?? false,
   } as AppState;
 }
 

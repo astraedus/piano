@@ -1,6 +1,12 @@
 // Shared types — small, shippable.
 
+import type { ReactNode } from "react";
+
 export type Phase = 1 | 2 | 3 | 4 | 5;
+
+// ---- Soul-First Learning (V4) ----
+// Which intent a node belongs to. A node with no pathTags shows on every path.
+export type PathTag = "just-play" | "play-with-soul" | "go-deep";
 
 export type Grade =
   | "initial"
@@ -46,6 +52,16 @@ export interface SkillNode {
   // ("fluent") beyond `learned`: pass this test (perform while doing something
   // else) to prove the skill is automatic, not just recallable.
   fluencyTest?: { prompt: string };
+  // ── V4 soul-first labels + path membership (all optional, backward-compatible) ──
+  soulTitle?: string;   // feeling/outcome-first label, e.g. "The Rock Chug", "Make a Note Cry"
+  keepTitle?: string;   // the theory name kept as a tappable subtitle; defaults to `title`
+  pathTags?: PathTag[]; // path membership; untagged = shown on every path
+  theory?: boolean;     // true = node only renders when theoryEnabled is on
+  // V4 Phase 2 (content) — optional rich, term-annotated variants of the plain
+  // strings. The plain `masteryDrill` / `unlock` strings remain the always-present
+  // fallback, so a node renders correctly even if the rich variant is absent.
+  richMasteryDrill?: ReactNode;
+  richUnlock?: ReactNode;
 }
 
 // ---- Per-skill mastery state (replaces the dead `requires` system) ----
@@ -83,6 +99,9 @@ export interface ChainStep {
   // Per-step overrides; when absent the drill-level config (below) applies.
   repBlocks?: RepBlockConfig;   // R2 micro-rest cadence for this step
   bpmLadder?: BpmLadderConfig;  // R5 tempo ladder for this step
+  // V4 Phase 2 (content) — term-annotated instruction; plain `instruction` is the
+  // always-present fallback.
+  richInstruction?: ReactNode;
 }
 
 // R2 — micro-rest structure: do N reps, then rest, repeat. The rest between
@@ -116,6 +135,9 @@ export interface ChainDrill {
   pillar: Pillar;
   steps: ChainStep[];
   closingNote: string;
+  // V4 — feeling/outcome-first drill name, e.g. "Your First Solo" instead of
+  // "Am Pentatonic Chain". When absent the theory `name` is the fallback.
+  soulName?: string;
   // ── V3 motor-learning config (all optional, backward-compatible) ──
   repBlocks?: RepBlockConfig;  // R2 default micro-rest cadence for the drill
   bpmLadder?: BpmLadderConfig; // R5 default tempo ladder for the drill
@@ -132,12 +154,20 @@ export interface Warmup {
   label: string;
   lines: string[]; // instructions. Kept short, scannable.
   postureLine: string;
+  // V4 — feeling-first one-liner, e.g. "Loosen up in the home shape" instead of
+  // "G major scale". When absent `label` is the fallback.
+  soulSummary?: string;
 }
 
 export type EarRoundType =
   | "interval" | "quality" | "cadence" | "progression" | "updown" | "scale-degree" | "maj-min";
 
-export interface EarChoice { label: string; id: string; }
+export interface EarChoice {
+  label: string;
+  id: string;
+  // V4 — glossary key so an ear-round choice label becomes a tappable TermChip.
+  termId?: string;
+}
 export interface EarRound {
   id: string;
   type: EarRoundType;
@@ -274,7 +304,7 @@ export interface SkillReviewEntry {
 }
 
 export interface AppState {
-  version: 4;                   // v1→v2→v3→v4 migrations in storage.ts
+  version: 5;                   // v1→v2→v3→v4→v5 migrations in storage.ts
   instrument: Instrument;       // NEW — active instrument for this profile
   firstOpenedAt?: string;       // ISO
   name?: string;                // optional display name
@@ -311,6 +341,12 @@ export interface AppState {
   level: number;                // derived from xp via progression.levelForXp (cached)
   streak: StreakState;          // forgiving daily-practice streak
   pendingLevelUps?: number[];   // level numbers reached but not yet shown (B2 reward moment)
+  // ── V4 soul-first learning (storage v5) ──
+  // Chosen intent. `undefined` = show everything (back-compat for existing users,
+  // who get a one-time nudge rather than forced re-onboarding).
+  learningPath?: PathTag;
+  // Whether theory nodes render. Independent of path; forced true when go-deep.
+  theoryEnabled?: boolean;
 }
 
 // Skill rep id helpers.

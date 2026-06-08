@@ -7,6 +7,7 @@ import {
   migrateV1toV2,
   migrateV2toV3,
   migrateV3toV4,
+  migrateV4toV5,
   migrateToCurrent,
   defaultState,
   importStateJson,
@@ -163,40 +164,83 @@ describe("migrateV3toV4 (pure)", () => {
   });
 });
 
-describe("migrateToCurrent ladder", () => {
-  it("runs a v1 blob all the way to v4 (instrument + gamification + review queue)", () => {
-    const m = migrateToCurrent(v1Blob());
-    expect(m.version).toBe(4);
-    expect(m.instrument).toBe("piano");
-    expect(m.xp).toBe(0);
-    expect(m.skillReview).toEqual({});
-    // v1→v2 arc rewrite still happened en route
-    expect(m.arc.find((e) => e.id.startsWith("piano-begins"))?.kind).toBe("instrument-begins");
+describe("migrateV4toV5 (pure)", () => {
+  // A representative v4 blob: full practice history + gamification + review queue,
+  // but NO soul-first learning fields yet.
+  function v4Blob(): Record<string, unknown> {
+    return { ...migrateV3toV4({ ...migrateV2toV3(v2Blob()), version: 3 } as unknown as Record<string, unknown>) };
+  }
+
+  it("injects soul-first defaults (learningPath undefined, theoryEnabled false)", () => {
+    const m = migrateV4toV5(v4Blob());
+    expect(m.version).toBe(5);
+    expect(m.learningPath).toBeUndefined();
+    expect(m.theoryEnabled).toBe(false);
   });
 
-  it("runs a v2 blob to v4 without re-running the v1→v2 instrument injection", () => {
-    const m = migrateToCurrent(v2Blob());
-    expect(m.version).toBe(4);
-    expect(m.instrument).toBe("guitar"); // preserved, not forced to piano
-    expect(m.xp).toBe(0);
-    expect(m.skillReview).toEqual({});
+  it("preserves an existing learningPath + theoryEnabled (idempotent)", () => {
+    const blob = { ...v4Blob(), version: 5, learningPath: "go-deep", theoryEnabled: true };
+    const m = migrateV4toV5(blob);
+    expect(m.learningPath).toBe("go-deep");
+    expect(m.theoryEnabled).toBe(true);
   });
 
-  it("runs a v3 blob to v4, layering only the review queue (gamification untouched)", () => {
-    const v3 = { ...migrateV2toV3(v2Blob()), version: 3, xp: 420, level: 4 } as unknown as Record<string, unknown>;
-    const m = migrateToCurrent(v3);
-    expect(m.version).toBe(4);
-    expect(m.xp).toBe(420); // preserved, not reset to 0
-    expect(m.level).toBe(4);
+  it("preserves the practice + gamification + review data carried up from v4", () => {
+    const m = migrateV4toV5(v4Blob());
+    expect(m.instrument).toBe("guitar");
+    expect(m.skillProgress?.["g-t0-anatomy"]?.status).toBe("learned");
+    expect(m.xp).toBe(0);
     expect(m.skillReview).toEqual({});
   });
 });
 
-describe("loadState v1→v4 round-trip via localStorage", () => {
+describe("migrateToCurrent ladder", () => {
+  it("runs a v1 blob all the way to v5 (instrument + gamification + review queue + paths)", () => {
+    const m = migrateToCurrent(v1Blob());
+    expect(m.version).toBe(5);
+    expect(m.instrument).toBe("piano");
+    expect(m.xp).toBe(0);
+    expect(m.skillReview).toEqual({});
+    expect(m.learningPath).toBeUndefined();
+    expect(m.theoryEnabled).toBe(false);
+    // v1→v2 arc rewrite still happened en route
+    expect(m.arc.find((e) => e.id.startsWith("piano-begins"))?.kind).toBe("instrument-begins");
+  });
+
+  it("runs a v2 blob to v5 without re-running the v1→v2 instrument injection", () => {
+    const m = migrateToCurrent(v2Blob());
+    expect(m.version).toBe(5);
+    expect(m.instrument).toBe("guitar"); // preserved, not forced to piano
+    expect(m.xp).toBe(0);
+    expect(m.skillReview).toEqual({});
+    expect(m.theoryEnabled).toBe(false);
+  });
+
+  it("runs a v3 blob to v5, layering review queue + paths (gamification untouched)", () => {
+    const v3 = { ...migrateV2toV3(v2Blob()), version: 3, xp: 420, level: 4 } as unknown as Record<string, unknown>;
+    const m = migrateToCurrent(v3);
+    expect(m.version).toBe(5);
+    expect(m.xp).toBe(420); // preserved, not reset to 0
+    expect(m.level).toBe(4);
+    expect(m.skillReview).toEqual({});
+    expect(m.learningPath).toBeUndefined();
+  });
+
+  it("runs a v4 blob to v5, layering only the soul-first defaults", () => {
+    const v4 = { ...migrateV3toV4({ ...migrateV2toV3(v2Blob()), version: 3 } as unknown as Record<string, unknown>), xp: 99 } as unknown as Record<string, unknown>;
+    const m = migrateToCurrent(v4);
+    expect(m.version).toBe(5);
+    expect(m.xp).toBe(99); // preserved
+    expect(m.theoryEnabled).toBe(false);
+    expect(m.learningPath).toBeUndefined();
+  });
+});
+
+describe("loadState v1→v5 round-trip via localStorage", () => {
   it("reads a legacy piano.state blob, migrates it to current, and persists under practice.state", () => {
     window.localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(v1Blob()));
     const loaded = loadState();
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(5);
     expect(loaded.instrument).toBe("piano");
     expect(loaded.name).toBe("Anti");
     // gamification defaults injected by the v2→v3 step
@@ -205,11 +249,14 @@ describe("loadState v1→v4 round-trip via localStorage", () => {
     expect(loaded.streak).toEqual({ current: 0, longest: 0, lastPracticeDate: undefined });
     // spaced-review queue injected by the v3→v4 step
     expect(loaded.skillReview).toEqual({});
+    // soul-first defaults injected by the v4→v5 step
+    expect(loaded.learningPath).toBeUndefined();
+    expect(loaded.theoryEnabled).toBe(false);
 
     // migrated blob is now written to the current key at current version
     const newRaw = window.localStorage.getItem(STORAGE_KEY);
     expect(newRaw).toBeTruthy();
-    expect(JSON.parse(newRaw!).version).toBe(4);
+    expect(JSON.parse(newRaw!).version).toBe(5);
   });
 
   it("leaves the legacy piano.state key in place as a backup", () => {
@@ -240,7 +287,7 @@ describe("loadState v1→v4 round-trip via localStorage", () => {
     const loaded = loadState();
     expect(loaded.name).toBe("Round");
     expect(loaded.phase).toBe(4);
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(5);
   });
 });
 
@@ -249,7 +296,7 @@ describe("importStateJson", () => {
     const ok = importStateJson(JSON.stringify(v1Blob()));
     expect(ok).toBe(true);
     const loaded = loadState();
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(5);
     expect(loaded.instrument).toBe("piano");
     expect(loaded.xp).toBe(0);
   });
