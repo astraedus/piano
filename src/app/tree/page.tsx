@@ -7,10 +7,11 @@ import { GuitarMap } from "@/components/GuitarMap";
 import { SongShelf } from "@/components/SongShelf";
 import { YourArc } from "@/components/YourArc";
 import { SkillGraphView } from "@/components/SkillGraphView";
+import { PathView } from "@/components/PathView";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 
-type Tab = "map" | "graph" | "shelf" | "arc";
+type Tab = "path" | "map" | "graph" | "shelf" | "arc";
 
 // Instrument-aware progress map: render the keymap for "keymap" instruments
 // (piano) and the fretboard territory map for "fretboard" instruments (guitar).
@@ -32,7 +33,8 @@ export default function TreePage() {
 }
 
 function TreeShell() {
-  const [tab, setTab] = useState<Tab>("map");
+  // "path" is the default — it is the autonomous robot-mode spine the user sees first.
+  const [tab, setTab] = useState<Tab>("path");
   const { state } = useAppState();
   const totalMin = (state.sessions ?? []).reduce((s, x) => s + x.minutes, 0);
   const timeStr = totalMin <= 0 ? "—" : totalMin < 60 ? `${totalMin} min` : `${Math.floor(totalMin / 60)}h${totalMin % 60 ? ` ${totalMin % 60}m` : ""}`;
@@ -48,12 +50,14 @@ function TreeShell() {
         <p className="text-sm text-[color:var(--ink-3)] italic">{timeStr} · {sessions} session{sessions === 1 ? "" : "s"} · {pieces} piece{pieces === 1 ? "" : "s"} on the shelf.</p>
       </header>
       <div className="flex gap-2 border-b border-[color:var(--rule)]">
+        <TabButton active={tab === "path"}  onClickAction={() => setTab("path")}>Your Path</TabButton>
         <TabButton active={tab === "map"}   onClickAction={() => setTab("map")}>{mapLabel}</TabButton>
         <TabButton active={tab === "graph"} onClickAction={() => setTab("graph")}>Skill Graph</TabButton>
         <TabButton active={tab === "shelf"} onClickAction={() => setTab("shelf")}>Song Shelf</TabButton>
         <TabButton active={tab === "arc"}   onClickAction={() => setTab("arc")}>Your Arc</TabButton>
       </div>
       <div className="pt-2">
+        {tab === "path" && <PathView />}
         {tab === "map" && <ProgressMap />}
         {tab === "graph" && <SkillGraphView />}
         {tab === "shelf" && <SongShelf />}
