@@ -36,14 +36,66 @@ describe("xpForSession", () => {
     expect(xpForSession(log({ mode: "just-play" }))).toBe(XP_AWARDS.sessionBase["just-play"]);
   });
 
-  it("adds +10 per engaged slot (only touched slots count)", () => {
+  it("adds +10 per engaged slot, but warmup is minimal and chain is quality-weighted (R6/R8)", () => {
+    // piece + free are flat +10 each; warmup is minimal (+2); chain XP is the
+    // quality award (not the flat per-slot), and with no quality data falls to
+    // the floor: round(drillQualityMax * drillQualityFloor) = round(30*0.4) = 12.
     const slots: SessionSlotLog[] = [
-      { slot: "warmup", touched: true },
-      { slot: "chain", touched: true },
-      { slot: "ear", touched: false }, // not engaged
+      { slot: "warmup", touched: true }, // +2 (minimal)
+      { slot: "piece", touched: true },  // +10
+      { slot: "chain", touched: true },  // +12 via drillQualityXp floor
+      { slot: "free", touched: true },   // +10
+      { slot: "ear", touched: false },   // not engaged
     ];
-    // full (50) + 2 engaged * 10 = 70
-    expect(xpForSession(log({ mode: "full", slotsTouched: slots }))).toBe(70);
+    const floorDrill = Math.round(XP_AWARDS.drillQualityMax * XP_AWARDS.drillQualityFloor);
+    expect(floorDrill).toBe(12);
+    // full (50) + 2 + 10 + 10 + 12 = 84
+    expect(xpForSession(log({ mode: "full", slotsTouched: slots }))).toBe(84);
+  });
+
+  it("weights the chain-drill award by success rate (R8): accurate > sloppy", () => {
+    const slots: SessionSlotLog[] = [{ slot: "chain", touched: true }];
+    const sloppy = xpForSession(log({
+      mode: "full",
+      slotsTouched: slots,
+      quality: { attempts: 10, successes: 5 }, // 50%
+    }));
+    const accurate = xpForSession(log({
+      mode: "full",
+      slotsTouched: slots,
+      quality: { attempts: 10, successes: 10 }, // 100%
+    }));
+    expect(accurate).toBeGreaterThan(sloppy);
+    // 50%: 50 + round(30*(0.4 + 0.6*0.5)) = 50 + round(21) = 71
+    expect(sloppy).toBe(50 + 21);
+    // 100%: 50 + round(30*1.0) = 50 + 30 = 80
+    expect(accurate).toBe(50 + 30);
+  });
+
+  it("awards a metronome bonus and a BPM-advance bonus (R8)", () => {
+    const slots: SessionSlotLog[] = [{ slot: "chain", touched: true }];
+    const withMetro = xpForSession(log({
+      mode: "full",
+      slotsTouched: slots,
+      quality: { attempts: 4, successes: 4, metronomeOn: true },
+    }));
+    // 100% drill (30) + metronome (10) on top of base 50 = 90
+    expect(withMetro).toBe(50 + 30 + XP_AWARDS.metronomeBonus);
+
+    const withBpm = xpForSession(
+      log({ mode: "full", slotsTouched: slots, quality: { attempts: 4, successes: 4 } }),
+      { bpmStepAdvanced: true },
+    );
+    expect(withBpm).toBe(50 + 30 + XP_AWARDS.bpmAdvanceBonus);
+  });
+
+  it("warmup earns minimal XP, never the full slot award (R6)", () => {
+    const onlyWarmup = xpForSession(log({
+      mode: "full",
+      slotsTouched: [{ slot: "warmup", touched: true }],
+    }));
+    expect(onlyWarmup).toBe(50 + XP_AWARDS.perWarmupEngaged);
+    expect(XP_AWARDS.perWarmupEngaged).toBeLessThan(XP_AWARDS.perSlotEngaged);
   });
 
   it("adds +5 per ear-correct, +40 per depth-up, +100 per node learned", () => {

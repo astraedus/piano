@@ -6,7 +6,7 @@
 // it reads a completed session's effects and turns them into points/levels/streak
 // so the gamification UI (Phase B2) has a data-driven, instrument-agnostic spine.
 
-import type { SessionLog, StreakState, TodayMode } from "./types";
+import type { SessionLog, SessionQuality, StreakState, TodayMode } from "./types";
 
 export type { StreakState };
 
@@ -26,14 +26,28 @@ export const XP_AWARDS = {
     "first-back": 20,
     "just-play": 15,
   } satisfies Record<TodayMode, number>,
-  /** Per practice slot actually engaged (warmup / piece / chain / ear / free). */
+  /** Per practice slot actually engaged (piece / chain / ear / free). */
   perSlotEngaged: 10,
+  /** Warmup slot: MINIMAL XP (R6 — don't let warmup be an XP farm; it's
+   *  familiar, low-intensity material, not new learning). */
+  perWarmupEngaged: 2,
   /** Per ear-training round answered correctly. */
   perEarCorrect: 5,
   /** Per key/area that gained depth this session (Heard→…→Home). */
   perDepthUp: 40,
   /** Per skill-tree node newly reaching `learned` this session. */
   perNodeLearned: 100,
+  // ── R8: quality-weighted chain-drill award ──
+  /** Full award for the chain-drill slot at 100% accuracy. The actual award
+   *  scales by success rate, so sloppy completion earns less than accurate. */
+  drillQualityMax: 30,
+  /** Floor fraction of drillQualityMax granted just for completing the drill
+   *  (so a drill with no quality data, or a rough one, still earns something). */
+  drillQualityFloor: 0.4,
+  /** Bonus for practicing the drill with the metronome on (R8). */
+  metronomeBonus: 10,
+  /** Bonus for advancing at least one BPM-ladder step this session (R5/R8). */
+  bpmAdvanceBonus: 15,
 } as const;
 
 /** Context describing what a session caused — everything XP keys off, so the
@@ -45,20 +59,74 @@ export interface XpContext {
   depthUps?: number;
   /** Count of ear-training rounds answered correctly this session. */
   earCorrect?: number;
+  /** True if the session advanced at least one BPM-ladder step (R5/R8). When
+   *  omitted, falls back to inferring from log.quality.bpmReached presence is
+   *  not enough on its own, so callers that know should pass this explicitly. */
+  bpmStepAdvanced?: boolean;
 }
 
-/** Compute XP earned from one completed session + its effects. Pure. */
+/**
+ * Quality-weighted XP for the chain-drill slot (R8). Sloppy completion earns
+ * less than accurate completion:
+ *   - base award scales linearly from drillQualityFloor (rough) to 1.0 (perfect)
+ *     by the session's success rate; no quality data → floor (just completion).
+ *   - +metronomeBonus if the metronome was on.
+ *   - +bpmAdvanceBonus if a BPM-ladder step was advanced.
+ * Returns 0 if the chain slot wasn't engaged. Pure.
+ */
+export function drillQualityXp(
+  log: SessionLog,
+  ctx: Pick<XpContext, "bpmStepAdvanced"> = {},
+): number {
+  const chainTouched = (log.slotsTouched ?? []).some((s) => s.slot === "chain" && s.touched);
+  if (!chainTouched) return 0;
+
+  const q: SessionQuality = log.quality ?? {};
+  const rate = successRateFromQuality(q);
+  // No quality data → treat as the floor (completion-only). Otherwise interpolate
+  // floor → full by success rate.
+  const fraction = rate === null
+    ? XP_AWARDS.drillQualityFloor
+    : XP_AWARDS.drillQualityFloor + (1 - XP_AWARDS.drillQualityFloor) * rate;
+  let xp = Math.round(XP_AWARDS.drillQualityMax * fraction);
+
+  if (q.metronomeOn) xp += XP_AWARDS.metronomeBonus;
+  if (ctx.bpmStepAdvanced) xp += XP_AWARDS.bpmAdvanceBonus;
+  return xp;
+}
+
+/** Success rate (0..1) from a session-quality summary, or null if no attempts. */
+function successRateFromQuality(q: SessionQuality): number | null {
+  const attempts = q.attempts ?? 0;
+  if (attempts <= 0) return null;
+  const successes = Math.max(0, Math.min(attempts, q.successes ?? 0));
+  return successes / attempts;
+}
+
+/** Compute XP earned from one completed session + its effects. Pure.
+ *
+ *  Drill XP is QUALITY-weighted (R8) and warmup earns MINIMAL XP (R6). The
+ *  chain slot's flat per-slot award is replaced by the quality award so accuracy,
+ *  metronome use, and tempo progress drive the reward — not mere completion. */
 export function xpForSession(log: SessionLog, ctx: XpContext = {}): number {
   const base = XP_AWARDS.sessionBase[log.mode] ?? XP_AWARDS.sessionBase.full;
 
-  const slotsEngaged = (log.slotsTouched ?? []).filter((s) => s.touched).length;
-  const slotXp = slotsEngaged * XP_AWARDS.perSlotEngaged;
+  // Per-slot XP: warmup is minimal (R6), the chain slot is handled by the
+  // quality award (so it's excluded here to avoid double-counting).
+  let slotXp = 0;
+  for (const s of log.slotsTouched ?? []) {
+    if (!s.touched) continue;
+    if (s.slot === "warmup") slotXp += XP_AWARDS.perWarmupEngaged;
+    else if (s.slot === "chain") continue; // counted via drillQualityXp
+    else slotXp += XP_AWARDS.perSlotEngaged;
+  }
 
+  const drillXp = drillQualityXp(log, ctx);
   const earXp = Math.max(0, ctx.earCorrect ?? 0) * XP_AWARDS.perEarCorrect;
   const depthXp = Math.max(0, ctx.depthUps ?? 0) * XP_AWARDS.perDepthUp;
   const nodeXp = Math.max(0, ctx.nodesLearned ?? 0) * XP_AWARDS.perNodeLearned;
 
-  return base + slotXp + earXp + depthXp + nodeXp;
+  return base + slotXp + drillXp + earXp + depthXp + nodeXp;
 }
 
 // ─────────────────────────────── Levels ───────────────────────────────
