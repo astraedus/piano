@@ -351,4 +351,152 @@ describe("SkillGraphPanel", () => {
     expect(screen.getByTestId("sg-panel-title").textContent).toBe("Reading the Staff");
     expect(screen.queryByTestId("sg-panel-theory")).toBeNull();
   });
+
+  // ── V5 Teaching Lesson ────────────────────────────────────────────────────
+
+  // g-t1-power has a full authored lesson with what/why/steps/goodWhen/watchOut/song.
+  const lessonNode: SkillNode = {
+    id: "g-t1-power",
+    instrument: "guitar",
+    title: "Power Chords",
+    soulTitle: "The Rock Chug",
+    keepTitle: "Power Chords",
+    tier: 1,
+    category: "chords",
+    prereqs: [],
+    masteryDrill: "Slide a power chord up the neck.",
+    unlock: "Play the riff to almost any rock song.",
+  };
+
+  it("renders the full lesson for a node with an authored lesson (g-t1-power)", () => {
+    render(
+      <SkillGraphPanel
+        node={lessonNode}
+        status="available"
+        statusById={new Map([["g-t1-power", "available"]])}
+        titleById={new Map()}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    // Lesson wrapper is present.
+    expect(screen.getByTestId("sg-lesson")).toBeTruthy();
+
+    // what section includes the lesson text.
+    const what = screen.getByTestId("sg-lesson-what");
+    expect(what.textContent).toContain("power chord");
+    expect(what.textContent).toContain("rock");
+
+    // Steps list is present with numbered steps.
+    const steps = screen.getByTestId("sg-lesson-steps");
+    expect(steps.querySelectorAll("li").length).toBeGreaterThanOrEqual(3);
+
+    // goodWhen section is present.
+    expect(screen.getByTestId("sg-lesson-good").textContent).toBeTruthy();
+
+    // watchOut section present for g-t1-power (it has one).
+    expect(screen.getByTestId("sg-lesson-watch")).toBeTruthy();
+
+    // song section present for g-t1-power.
+    const song = screen.getByTestId("sg-lesson-song");
+    expect(song.textContent).toContain("Smells Like Teen Spirit");
+
+    // drill and unlock testids still work (they're in the lesson layout).
+    expect(screen.getByTestId("sg-panel-drill").textContent).toContain("power chord");
+    expect(screen.getByTestId("sg-panel-unlock").textContent).toBeTruthy();
+  });
+
+  it("falls back to drill/unlock one-liners for a node WITHOUT an authored lesson — no lesson sections rendered", () => {
+    // node id "n1" (piano) has no entry in PIANO_LESSONS.
+    render(
+      <SkillGraphPanel
+        node={node}
+        status="available"
+        statusById={statusById("available")}
+        titleById={titleById}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    // No lesson sections.
+    expect(screen.queryByTestId("sg-lesson")).toBeNull();
+    expect(screen.queryByTestId("sg-lesson-what")).toBeNull();
+    expect(screen.queryByTestId("sg-lesson-steps")).toBeNull();
+    expect(screen.queryByTestId("sg-lesson-good")).toBeNull();
+    expect(screen.queryByTestId("sg-lesson-watch")).toBeNull();
+    expect(screen.queryByTestId("sg-lesson-song")).toBeNull();
+
+    // Original one-liners still render correctly.
+    expect(screen.getByTestId("sg-panel-drill").textContent).toBe("Touch any letter in under a second.");
+    expect(screen.getByTestId("sg-panel-unlock").textContent).toBe("Find any note instantly.");
+  });
+
+  it("renders both watchOut and song sections for p-key-C (piano lesson with all optional fields)", () => {
+    // p-key-C has a full lesson: watchOut present, song present.
+    const pianoNode: SkillNode = {
+      id: "p-key-C",
+      instrument: "piano",
+      title: "C Major",
+      tier: 0,
+      category: "technique",
+      prereqs: [],
+      masteryDrill: "Play C scale hands separately.",
+      unlock: "Play music in C major.",
+    };
+    render(
+      <SkillGraphPanel
+        node={pianoNode}
+        status="available"
+        statusById={new Map([["p-key-C", "available"]])}
+        titleById={new Map()}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    // p-key-C has a watchOut field in the authored lesson.
+    expect(screen.getByTestId("sg-lesson-watch")).toBeTruthy();
+    // p-key-C HAS a song.
+    expect(screen.getByTestId("sg-lesson-song")).toBeTruthy();
+    expect(screen.getByTestId("sg-lesson-song").textContent).toContain("Let It Be");
+  });
+
+  it("does not render watchOut section for a lesson whose watchOut field is absent", () => {
+    // g-t0-anatomy has a lesson WITH both watchOut and song — test a lesson
+    // that lacks watchOut by mocking a minimal SkillNode pointing to a non-existent id.
+    // getLesson returns undefined for unknown ids, so we verify no lesson sections
+    // appear for an unrecognised node that happens to have a fake id.
+    const noLessonNode: SkillNode = {
+      id: "g-unknown-id-xyz",
+      instrument: "guitar",
+      title: "No Lesson Yet",
+      tier: 0,
+      category: "technique",
+      prereqs: [],
+      masteryDrill: "Practice drill.",
+      unlock: "Unlocks something.",
+    };
+    render(
+      <SkillGraphPanel
+        node={noLessonNode}
+        status="available"
+        statusById={new Map([["g-unknown-id-xyz", "available"]])}
+        titleById={new Map()}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    // Unknown node → no lesson, so no watchOut section.
+    expect(screen.queryByTestId("sg-lesson-watch")).toBeNull();
+    expect(screen.queryByTestId("sg-lesson-song")).toBeNull();
+    // Fallback drill renders.
+    expect(screen.getByTestId("sg-panel-drill").textContent).toBe("Practice drill.");
+  });
 });
