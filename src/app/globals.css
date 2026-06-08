@@ -467,6 +467,29 @@ body > * { position: relative; z-index: 1; }
 /* Arc stagger entrance — one-time on mount, delay set inline. */
 .arc-entry { opacity: 0; transform: translateY(8px); animation: cardRise 380ms cubic-bezier(0.2, 0, 0, 1) both; }
 
+/* Rep-engine: calm rest pulse (R2) — a slow breathing ring during micro-rests.
+   The rest is INTENTIONAL, so the cue is gentle, never urgent. */
+@keyframes restPulse {
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50%      { transform: scale(1.12); opacity: 1; }
+}
+.rest-pulse { animation: restPulse 2.4s ease-in-out infinite; transform-origin: center; }
+
+/* Rep-engine: instant per-rep success confirm (R8) — a quick (<2s) warm flash. */
+@keyframes repConfirm {
+  0%   { transform: scale(0.6); opacity: 0; }
+  35%  { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.rep-confirm { animation: repConfirm 360ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Rep-engine: a skill-switch nudge under interleaving (R4). */
+@keyframes skillSwitch {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.skill-switch { animation: skillSwitch 300ms ease both; }
+
 /* Print styles — A4 piano-stand daily sheet. */
 @media print {
   :root {
@@ -496,7 +519,8 @@ body > * { position: relative; z-index: 1; }
   .fade-in, .swell, .slot-body, .card-rise, .sg-pulse, .sg-canvas,
   .next-pulse, .territory-reveal, .home-ring, .arc-entry,
   .warm-card, .slot-card, .cta-pill, .soft-pill, .chip, .stage-card,
-  .key-wedge, .key-wedge path, .xp-fill, .streak-ember {
+  .key-wedge, .key-wedge path, .xp-fill, .streak-ember,
+  .rest-pulse, .rep-confirm, .skill-switch {
     animation: none !important;
     transition: opacity 150ms ease !important;
   }
