@@ -14,9 +14,8 @@ import type { DifficultyVerdict } from "@/lib/skillTree";
 import { ChordDiagram } from "@/lib/guitar/components/ChordDiagram";
 import { Fretboard } from "@/lib/guitar/components/Fretboard";
 import { Tab } from "@/lib/guitar/components/Tab";
-import { TermChip } from "@/components/explain";
+import { TermChip, linkTerms } from "@/components/explain";
 import { nodeToTermId } from "@/lib/pathFilter";
-import { GLOSSARY, lookupTerm } from "@/lib/explain/glossary";
 
 const STATUS_LABEL: Record<SkillNodeStatus, string> = {
   locked: "Locked",
@@ -290,57 +289,4 @@ function Section({ label, children }: { label: string; children: React.ReactNode
       {children}
     </div>
   );
-}
-
-// ── Inline term scanner ─────────────────────────────────────────────────────
-// Every glossary phrase (title + aliases) paired with its term id, longest-first
-// so a multi-word phrase ("power chord") wins over a substring ("chord"). Built
-// once at module load; the GLOSSARY is static.
-const SCAN_PHRASES: { phrase: string; term: string }[] = GLOSSARY.flatMap((e) => [
-  { phrase: e.title, term: e.id },
-  ...e.aliases.map((a) => ({ phrase: a, term: e.id })),
-])
-  .filter((p) => p.phrase.trim().length >= 3) // skip 1-2 char noise
-  .sort((a, b) => b.phrase.length - a.phrase.length);
-
-const wordBoundary = (ch: string | undefined) => ch === undefined || !/[A-Za-z]/.test(ch);
-
-/**
- * Wrap glossary terms found in a plain sentence with TermChips, leaving the rest
- * as text. Lean by design: each distinct term is linked at most once (the first,
- * whole-word, case-insensitive match) so the sentence stays readable rather than
- * a wall of underlines. Unknown text degrades to plain text (no chips). Returns
- * the original string when nothing matches, so callers never get a dead node.
- */
-function linkTerms(text: string): ReactNode {
-  const out: ReactNode[] = [];
-  const used = new Set<string>();
-  let cursor = 0;
-  let key = 0;
-  const lower = text.toLowerCase();
-
-  while (cursor < text.length) {
-    let best: { start: number; end: number; term: string } | null = null;
-    for (const { phrase, term } of SCAN_PHRASES) {
-      if (used.has(term)) continue;
-      const idx = lower.indexOf(phrase.toLowerCase(), cursor);
-      if (idx === -1) continue;
-      // whole-word match only (avoid "art" inside "start").
-      if (!wordBoundary(text[idx - 1]) || !wordBoundary(text[idx + phrase.length])) continue;
-      // confirm the term actually resolves (guards aliases that drift).
-      if (!lookupTerm(term)) continue;
-      if (!best || idx < best.start) best = { start: idx, end: idx + phrase.length, term };
-    }
-    if (!best) {
-      out.push(text.slice(cursor));
-      break;
-    }
-    if (best.start > cursor) out.push(text.slice(cursor, best.start));
-    const label = text.slice(best.start, best.end);
-    out.push(<TermChip key={`t${key++}`} term={best.term} label={label} />);
-    used.add(best.term);
-    cursor = best.end;
-  }
-
-  return out.length ? out : text;
 }

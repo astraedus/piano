@@ -9,3 +9,4 @@ export type { TermChipProps } from "./TermChip";
 export { Explain } from "./Explain";
 export type { ExplainProps } from "./Explain";
 export { ExplainProvider, useExplain } from "./useExplain";
+export { linkTerms } from "./linkTerms";
