@@ -63,10 +63,20 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
       printAlways={printAlways}
     >
       <div className="space-y-3 text-sm">
+        {/* V5 — lead with the soul summary as a concrete instruction heading.
+            When present, this replaces the bare label so the user reads an
+            outcome ("Make chord switches feel automatic") not an exercise name.
+            Falls back to the label when no soulSummary is authored. */}
+        <p
+          data-testid="warmup-soul-summary"
+          className="font-serif text-base text-[color:var(--ink)]"
+        >
+          {warmup.soulSummary ?? warmup.label}
+        </p>
         <div className="text-[color:var(--ink-3)] italic">
           {warmup.postureLine}
         </div>
-        <ul className="space-y-1 font-serif text-base text-[color:var(--ink)]">
+        <ul className="space-y-1 text-sm text-[color:var(--ink-2)]">
           {warmup.lines.map((l, i) => (
             <li key={i} className="flex gap-3">
               <span className="text-[color:var(--ink-3)] text-sm mt-0.5">→</span>
