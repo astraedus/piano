@@ -265,7 +265,7 @@ export function Onboarding() {
             onChange={(e) => setNorthStar(e.target.value)}
             rows={3}
             placeholder="To play Hallelujah without crying. To pick up songs I hear. To feel at home at an instrument."
-            className="w-full bg-[color:var(--surface)] border border-[color:var(--rule)] rounded-lg px-4 py-3 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--accent-soft)] font-serif"
+            className="w-full bg-[color:var(--surface)] border border-[color:var(--rule)] rounded-lg px-4 py-3 text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:outline-none focus:border-[color:var(--focus-gold)] font-serif"
           />
           <Nav onBack={() => setStep(2)} onNext={() => setStep(4)} />
         </section>
@@ -316,7 +316,7 @@ export function Onboarding() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[color:var(--surface)] border border-[color:var(--rule)] rounded-md px-3 py-1.5 text-[color:var(--ink)] focus:outline-none focus:border-[color:var(--accent-soft)]"
+                className="w-full bg-[color:var(--surface)] border border-[color:var(--rule)] rounded-md px-3 py-1.5 text-[color:var(--ink)] focus:outline-none focus:border-[color:var(--focus-gold)]"
                 placeholder="What the app calls you, or leave blank."
               />
             </label>

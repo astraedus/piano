@@ -126,6 +126,14 @@
   --instrument-accent-bg:    #FEF4D8;
   --instrument-accent-glow:  rgba(212, 144, 10, 0.20);
 
+  /* === FOCUS (gold, instrument/phase-independent) ===
+     Form fields in neutral pre-instrument flows (onboarding) must focus to the
+     warm gold accent regardless of the live instrument/phase. Without this they
+     pick up the guitar terracotta (#D45A40) or the phase-2 rose (#D4737F),
+     which reads as a red ERROR state on a plain name input. This token never
+     shifts with data-instrument/data-phase. */
+  --focus-gold:  #C9890C;
+
   /* === LEGACY ALIASES — existing components read these via var() directly ===
      Keep them pointing at the new tokens so nothing visual breaks. */
   --background:   var(--bg-base);

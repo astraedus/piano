@@ -4,6 +4,8 @@ import { useAppState } from "@/hooks/useAppState";
 import { KEY_META } from "@/lib/music";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { nextToLearn } from "@/lib/skillTree";
+import { abilityAxis, generationAxis, patternAxis } from "@/lib/threeAxis";
+import { completionFraction } from "@/lib/skillSummary";
 import type { Warmup, KeyId, Phase } from "@/lib/types";
 
 const PHASE_NAMES: Record<Phase, string> = {
@@ -39,9 +41,17 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
   const pieces = (state.pieces ?? []).length;
   const keysTouched = Object.values(state.keyDepths ?? {}).filter((d) => (d ?? 0) > 0).length;
 
+  // The three product pillars, each derived from already-persisted state.
+  const progress = state.skillProgress ?? {};
+  const generation = generationAxis(nodes, progress, state.pieces ?? [], state.arc ?? []);
+  const ability = abilityAxis(nodes, progress, state.level ?? 1);
+  const pattern = patternAxis(state.earLevel, (state.sessions ?? []).map((s) => s.earResults));
+
   return (
     <section className="border-t border-[color:var(--rule)] pt-8 mt-10 space-y-8">
       <h2 className="text-xs uppercase tracking-[0.22em] text-[color:var(--ink-3)]">Where You Are</h2>
+
+      <ThreeAxisCard generation={generation} ability={ability} pattern={pattern} />
 
       <Row label="This week">
         <div className="space-y-1">
@@ -116,6 +126,117 @@ function Stat({ k, v }: { k: string; v: string }) {
     <div>
       <span className="living-number text-base">{v}</span>
       <span className="text-[color:var(--ink-3)] text-xs ml-1.5">{k}</span>
+    </div>
+  );
+}
+
+// ── Three-Axis Progress card ─────────────────────────────────────────────────
+// The owner's thesis made visible: Generation · Ability · Pattern Recognition.
+// First surface in the app to name all three pillars with a real number + bar
+// each, all read from persisted state. Stacks to one column on mobile.
+
+type GenerationAxis = ReturnType<typeof generationAxis>;
+type AbilityAxis = ReturnType<typeof abilityAxis>;
+type PatternAxis = ReturnType<typeof patternAxis>;
+
+function ThreeAxisCard({
+  generation, ability, pattern,
+}: { generation: GenerationAxis; ability: AbilityAxis; pattern: PatternAxis }) {
+  const abilityFrac = completionFraction(ability.skills);
+  // Pattern progress = how far along the L1..L5 content ladder.
+  const patternFrac = Math.min(1, (pattern.earLevel - 1) / (pattern.maxLevel - 1));
+  // Generation has no single denominator (no fake score); show qualitative depth.
+  const genSignals =
+    generation.improvNodesLearned + generation.piecesYours + (generation.hasFirstImprov ? 1 : 0);
+  const genFrac = generation.gettingStarted ? 0 : Math.min(1, genSignals / 4);
+
+  return (
+    <div
+      className="rounded-xl border p-5 sm:p-6"
+      style={{
+        borderColor: "var(--rule)",
+        background: "var(--bg-surface)",
+        boxShadow: "var(--shadow-card)",
+      }}
+    >
+      <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-4">
+        Your three axes
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
+        <AxisColumn
+          name="Generation"
+          frac={genFrac}
+          headline={
+            generation.gettingStarted
+              ? "Just getting started"
+              : genStat(generation)
+          }
+          caption={
+            generation.gettingStarted
+              ? "Improvise in a free slot to begin."
+              : "Improv, pieces you've made yours."
+          }
+          muted={generation.gettingStarted}
+        />
+        <AxisColumn
+          name="Ability"
+          frac={abilityFrac}
+          headline={`${ability.skills.learned} / ${ability.skills.total} skills`}
+          caption={`Level ${ability.level} · play & technique.`}
+        />
+        <AxisColumn
+          name="Pattern Recognition"
+          frac={patternFrac}
+          headline={`Ear L${pattern.earLevel} of ${pattern.maxLevel}`}
+          caption={
+            pattern.accuracy != null
+              ? `${pattern.label} · ${Math.round(pattern.accuracy * 100)}% by ear.`
+              : `${pattern.label} · listen to begin.`
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+function genStat(g: GenerationAxis): string {
+  const parts: string[] = [];
+  if (g.improvNodesLearned > 0) parts.push(`${g.improvNodesLearned} improv`);
+  if (g.piecesYours > 0) parts.push(`${g.piecesYours} yours`);
+  if (parts.length === 0 && g.hasFirstImprov) return "First improv done";
+  return parts.join(" · ") || "Beginning";
+}
+
+function AxisColumn({
+  name, frac, headline, caption, muted,
+}: { name: string; frac: number; headline: string; caption: string; muted?: boolean }) {
+  const pct = Math.round(Math.max(0, Math.min(1, frac)) * 100);
+  return (
+    <div className="space-y-2">
+      <p className="text-xs uppercase tracking-[0.14em] text-[color:var(--ink-3)]">{name}</p>
+      <p
+        className={
+          "font-serif text-lg tracking-[-0.01em] " +
+          (muted ? "text-[color:var(--ink-2)] italic" : "text-[color:var(--ink)]")
+        }
+      >
+        {headline}
+      </p>
+      <div
+        className="h-1.5 w-full rounded-full overflow-hidden"
+        style={{ background: "var(--bg-surface-3)" }}
+        role="progressbar"
+        aria-valuenow={pct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`${name} progress`}
+      >
+        <div
+          className="h-full rounded-full transition-[width] duration-500"
+          style={{ width: `${pct}%`, background: "var(--instrument-accent)" }}
+        />
+      </div>
+      <p className="text-xs text-[color:var(--ink-3)]">{caption}</p>
     </div>
   );
 }
