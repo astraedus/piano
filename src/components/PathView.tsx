@@ -55,7 +55,7 @@ const STATUS_COLOR: Record<SkillNodeStatus, string> = {
   locked: "var(--ink-3)",
   available: "var(--instrument-accent-deep)",
   "in-progress": "var(--instrument-accent)",
-  learned: "var(--color-success)",
+  learned: "var(--success)",
 };
 
 // ── Topological sort within a tier ─────────────────────────────────────────

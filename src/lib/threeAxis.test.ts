@@ -22,34 +22,70 @@ function piece(status: Piece["status"]): Piece {
 }
 
 describe("generationAxis", () => {
-  it("reports getting-started when there is no generation signal", () => {
+  it("reports getting-started with zero milestones when there is no signal", () => {
     const g = generationAxis([node("a", "technique")], {}, [], []);
     expect(g.gettingStarted).toBe(true);
+    expect(g.milestonesDone).toBe(0);
     expect(g.improvNodesLearned).toBe(0);
     expect(g.piecesYours).toBe(0);
     expect(g.hasFirstImprov).toBe(false);
   });
 
-  it("counts learned expression nodes as improv signal", () => {
+  it("exposes exactly three discrete first-steps milestones (not a percentage)", () => {
+    const g = generationAxis([], {}, [], []);
+    expect(g.milestones).toHaveLength(3);
+    expect(g.milestones.every((m) => m.done === false)).toBe(true);
+    // No fabricated fraction field — the axis is milestones, not a %.
+    expect(g).not.toHaveProperty("genFrac");
+  });
+
+  it("counts a learned expression node as the improv-skill milestone", () => {
     const nodes = [node("imp", "expression"), node("tech", "technique")];
     const g = generationAxis(nodes, { imp: learned, tech: learned }, [], []);
     expect(g.improvNodesLearned).toBe(1); // only the expression node
+    expect(g.milestones.find((m) => m.label === "An improv skill learned")!.done).toBe(true);
+    expect(g.milestonesDone).toBe(1);
     expect(g.gettingStarted).toBe(false);
   });
 
-  it("counts pieces marked yours and the first-improv arc moment", () => {
+  it("does NOT max generation from many expression nodes alone (honest milestones)", () => {
+    // The dishonesty being fixed: a piano user with several expression nodes
+    // should NOT read as fully generative without ever improvising or owning a
+    // piece. Milestones count distinct first steps reached, not raw node count.
+    const nodes = [node("a", "expression"), node("b", "expression"), node("c", "expression")];
+    const g = generationAxis(nodes, { a: learned, b: learned, c: learned }, [], []);
+    expect(g.improvNodesLearned).toBe(3);
+    expect(g.milestonesDone).toBe(1); // still just the "improv skill" milestone
+  });
+
+  it("counts pieces marked yours and the first-improv arc moment as milestones", () => {
     const arc: ArcEvent[] = [
       { id: "1", at: "2026-01-01", kind: "first-improv", label: "first improv" },
     ];
     const g = generationAxis([], {}, [piece("yours"), piece("learning")], arc);
     expect(g.piecesYours).toBe(1);
     expect(g.hasFirstImprov).toBe(true);
+    expect(g.milestonesDone).toBe(2); // first-improv + piece-yours
     expect(g.gettingStarted).toBe(false);
+  });
+
+  it("reaches all three milestones when every first step is done", () => {
+    const arc: ArcEvent[] = [
+      { id: "1", at: "2026-01-01", kind: "first-improv", label: "first improv" },
+    ];
+    const g = generationAxis(
+      [node("imp", "expression")],
+      { imp: learned },
+      [piece("yours")],
+      arc,
+    );
+    expect(g.milestonesDone).toBe(3);
   });
 
   it("does not count an expression node that is not yet learned", () => {
     const g = generationAxis([node("imp", "expression")], {}, [], []);
     expect(g.improvNodesLearned).toBe(0);
+    expect(g.milestonesDone).toBe(0);
   });
 });
 

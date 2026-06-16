@@ -438,4 +438,22 @@ describe("endSession — earLevel auto-advance", () => {
     const { state: next } = endSession(state, earLog(2, 1), new Date("2026-06-07T10:30:00Z"));
     expect(next.earLevel).toBe(4);
   });
+
+  it("advances by AT MOST one level per endSession across consecutive calls (ratchet guard)", () => {
+    // The windowed history never "resets", so a very strong run must still step
+    // L2 → L3 → L4 one level at a time — never L2 → L4 in a single session, even
+    // though every prior round in the window was correct.
+    let state = stateWith({
+      earLevel: 2,
+      sessions: [priorEarSession(1, 3, 0), priorEarSession(2, 3, 0)],
+    });
+
+    const first = endSession(state, earLog(3, 0), new Date("2026-06-07T10:30:00Z"));
+    expect(first.state.earLevel).toBe(3); // +1, not +2
+    state = first.state;
+
+    const second = endSession(state, earLog(3, 0), new Date("2026-06-08T10:30:00Z"));
+    expect(second.state.earLevel).toBe(4); // exactly one more, never skips to 5
+    expect(second.state.earLevel - first.state.earLevel).toBe(1);
+  });
 });

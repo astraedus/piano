@@ -6,6 +6,7 @@ import { getModuleSync } from "@/lib/instrumentRegistry";
 import { nextToLearn } from "@/lib/skillTree";
 import { abilityAxis, generationAxis, patternAxis } from "@/lib/threeAxis";
 import { completionFraction } from "@/lib/skillSummary";
+import { fmtTotalTime } from "@/lib/format";
 import type { Warmup, KeyId, Phase } from "@/lib/types";
 
 const PHASE_NAMES: Record<Phase, string> = {
@@ -132,8 +133,13 @@ function Stat({ k, v }: { k: string; v: string }) {
 
 // ── Three-Axis Progress card ─────────────────────────────────────────────────
 // The owner's thesis made visible: Generation · Ability · Pattern Recognition.
-// First surface in the app to name all three pillars with a real number + bar
-// each, all read from persisted state. Stacks to one column on mobile.
+// First surface in the app to name all three pillars, each read from persisted
+// state. Stacks to one column on mobile.
+//
+// Ability + Pattern have honest denominators (learned/total skills; the L1..L5
+// ear ladder), so they show a continuous bar. Generation has NO honest single
+// denominator — its signals are loose milestones — so it is shown as a discrete
+// milestone tracker (pips + "N of M first steps"), never a fake percentage.
 
 type GenerationAxis = ReturnType<typeof generationAxis>;
 type AbilityAxis = ReturnType<typeof abilityAxis>;
@@ -145,10 +151,6 @@ function ThreeAxisCard({
   const abilityFrac = completionFraction(ability.skills);
   // Pattern progress = how far along the L1..L5 content ladder.
   const patternFrac = Math.min(1, (pattern.earLevel - 1) / (pattern.maxLevel - 1));
-  // Generation has no single denominator (no fake score); show qualitative depth.
-  const genSignals =
-    generation.improvNodesLearned + generation.piecesYours + (generation.hasFirstImprov ? 1 : 0);
-  const genFrac = generation.gettingStarted ? 0 : Math.min(1, genSignals / 4);
 
   return (
     <div
@@ -163,21 +165,7 @@ function ThreeAxisCard({
         Your three axes
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
-        <AxisColumn
-          name="Generation"
-          frac={genFrac}
-          headline={
-            generation.gettingStarted
-              ? "Just getting started"
-              : genStat(generation)
-          }
-          caption={
-            generation.gettingStarted
-              ? "Improvise in a free slot to begin."
-              : "Improv, pieces you've made yours."
-          }
-          muted={generation.gettingStarted}
-        />
+        <GenerationColumn generation={generation} />
         <AxisColumn
           name="Ability"
           frac={abilityFrac}
@@ -199,12 +187,43 @@ function ThreeAxisCard({
   );
 }
 
-function genStat(g: GenerationAxis): string {
-  const parts: string[] = [];
-  if (g.improvNodesLearned > 0) parts.push(`${g.improvNodesLearned} improv`);
-  if (g.piecesYours > 0) parts.push(`${g.piecesYours} yours`);
-  if (parts.length === 0 && g.hasFirstImprov) return "First improv done";
-  return parts.join(" · ") || "Beginning";
+// Generation = discrete milestone tracker. Honest: pips show which first steps
+// are reached; no continuous bar implying a precision the data lacks.
+function GenerationColumn({ generation }: { generation: GenerationAxis }) {
+  const { milestones, milestonesDone, gettingStarted } = generation;
+  const total = milestones.length;
+  return (
+    <div className="space-y-2">
+      <p className="text-xs uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Generation</p>
+      <p
+        className={
+          "font-serif text-lg tracking-[-0.01em] " +
+          (gettingStarted ? "text-[color:var(--ink-2)] italic" : "text-[color:var(--ink)]")
+        }
+      >
+        {gettingStarted ? "Just getting started" : `${milestonesDone} of ${total} first steps`}
+      </p>
+      <div
+        className="flex gap-1.5"
+        role="img"
+        aria-label={`Generation: ${milestonesDone} of ${total} first steps reached`}
+      >
+        {milestones.map((m) => (
+          <span
+            key={m.label}
+            title={m.label}
+            className="h-1.5 flex-1 rounded-full"
+            style={{
+              background: m.done ? "var(--instrument-accent)" : "var(--bg-surface-3)",
+            }}
+          />
+        ))}
+      </div>
+      <p className="text-xs text-[color:var(--ink-3)]">
+        {gettingStarted ? "Improvise in a free slot to begin." : "Improv, and pieces you've made yours."}
+      </p>
+    </div>
+  );
 }
 
 function AxisColumn({
@@ -239,13 +258,4 @@ function AxisColumn({
       <p className="text-xs text-[color:var(--ink-3)]">{caption}</p>
     </div>
   );
-}
-
-function fmtTotalTime(totalMin: number): string {
-  if (totalMin <= 0) return "—";
-  if (totalMin < 60) return `${totalMin} min`;
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
 }

@@ -17,6 +17,13 @@ type ProgressMap = Record<string, SkillProgress>;
 
 // ── Generation ─────────────────────────────────────────────────────────────
 
+/** One discrete generation milestone — done or not. Generation has no honest
+ *  single denominator, so it is a MILESTONE TRACKER, not a percentage bar. */
+export interface GenerationMilestone {
+  label: string;
+  done: boolean;
+}
+
 export interface GenerationAxis {
   /** Improv/expression skill nodes the user has actually learned. */
   improvNodesLearned: number;
@@ -24,15 +31,22 @@ export interface GenerationAxis {
   piecesYours: number;
   /** Whether the user has crossed their first-improv milestone. */
   hasFirstImprov: boolean;
-  /** True when there is no generation signal at all → show the honest
-   *  "just getting started" copy instead of a hollow zero. */
+  /** The discrete first-steps milestones, in order. The UI renders these as
+   *  pips ("N of M first steps") rather than a continuous %, because the
+   *  underlying signals are loose milestones, not a measured fraction. */
+  milestones: GenerationMilestone[];
+  /** How many milestones are done. */
+  milestonesDone: number;
+  /** True when no milestone is reached → show the honest "just getting started"
+   *  copy instead of a hollow zero. */
   gettingStarted: boolean;
 }
 
 /**
- * Generation proxy from real state. Counts learned `expression`-category nodes
- * (the improv/voice nodes in the DAG), pieces marked "yours", and the presence
- * of the `first-improv` arc moment. No invented score.
+ * Generation proxy from real state. Reports three discrete first-steps
+ * milestones (first improv, an improv/expression skill learned, a piece made
+ * "yours") plus the raw counts behind them. No invented score, no fabricated
+ * percentage — the milestones are reached or not.
  */
 export function generationAxis(
   nodes: SkillNode[],
@@ -49,8 +63,22 @@ export function generationAxis(
   }
   const piecesYours = pieces.filter((p) => p.status === "yours").length;
   const hasFirstImprov = arc.some((e) => e.kind === "first-improv");
-  const gettingStarted = improvNodesLearned === 0 && piecesYours === 0 && !hasFirstImprov;
-  return { improvNodesLearned, piecesYours, hasFirstImprov, gettingStarted };
+
+  const milestones: GenerationMilestone[] = [
+    { label: "First improvisation", done: hasFirstImprov },
+    { label: "An improv skill learned", done: improvNodesLearned > 0 },
+    { label: "A piece made yours", done: piecesYours > 0 },
+  ];
+  const milestonesDone = milestones.filter((m) => m.done).length;
+
+  return {
+    improvNodesLearned,
+    piecesYours,
+    hasFirstImprov,
+    milestones,
+    milestonesDone,
+    gettingStarted: milestonesDone === 0,
+  };
 }
 
 // ── Ability ──────────────────────────────────────────────────────────────────

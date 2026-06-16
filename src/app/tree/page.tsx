@@ -11,6 +11,7 @@ import { PathView } from "@/components/PathView";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { skillLearnedCount } from "@/lib/skillSummary";
+import { fmtTotalTime } from "@/lib/format";
 
 type Tab = "path" | "map" | "graph" | "shelf" | "arc";
 
@@ -38,7 +39,7 @@ function TreeShell() {
   const [tab, setTab] = useState<Tab>("path");
   const { state } = useAppState();
   const totalMin = (state.sessions ?? []).reduce((s, x) => s + x.minutes, 0);
-  const timeStr = totalMin <= 0 ? "—" : totalMin < 60 ? `${totalMin} min` : `${Math.floor(totalMin / 60)}h${totalMin % 60 ? ` ${totalMin % 60}m` : ""}`;
+  const timeStr = fmtTotalTime(totalMin);
   const sessions = (state.sessions ?? []).length;
   const pieces = (state.pieces ?? []).length;
   const nodes = getModuleSync(state.instrument)?.skillNodes ?? [];
