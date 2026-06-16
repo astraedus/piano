@@ -1,5 +1,6 @@
 import type { EarRound, KeyId } from "./types";
 import { KEY_META, pitchMidi, midiToSpn, progressionChords, triad } from "./music";
+import { intervalRound, INTERVAL_MIN_LEVEL } from "./intervalRound";
 
 // V4: where an ear-round choice label is a glossary concept, tag it with a
 // `termId` so P-C can render it as a tappable TermChip. Only choices that map
@@ -16,6 +17,12 @@ export function generateEarRound(
   level: 1 | 2 | 3 | 4 | 5 | 6 | 7,
   ghostKey: KeyId
 ): EarRound {
+  // Interval training is an L3+ skill (by then the user labels chord quality).
+  // Mix it in at ~1-in-3 so the level's primary round type still dominates but
+  // the user actually meets the new interval rounds. Pure RNG matches the rest
+  // of this module; the round generator itself is seedable + tested.
+  if (level >= INTERVAL_MIN_LEVEL && rng() < 1 / 3) return intervalRound(ghostKey);
+
   // Pick a round type appropriate to level
   if (level <= 1) return majMinTriadRound(ghostKey);
   if (level === 2) return scaleDegreeRound(ghostKey, 5);

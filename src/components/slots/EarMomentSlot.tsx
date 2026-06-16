@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { Slot } from "../Slot";
-import { TermChip } from "../explain";
+import { TermChip, useExplain } from "../explain";
+import { lookupTerm } from "@/lib/explain/glossary";
 import type { EarRound } from "@/lib/types";
 import { ensureAudio, playEarRound } from "@/lib/audio";
 import { clsx } from "clsx";
@@ -22,12 +23,14 @@ export function EarMomentSlot({
   onResultAction?: (correctIds: string[], wrongIds: string[]) => void;
 }) {
   const reduce = useReducedMotion();
+  const { open } = useExplain();
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [resting, setResting] = useState(false);
   const [correct, setCorrect] = useState<string[]>([]);
   const [wrong, setWrong] = useState<string[]>([]);
   const playedRef = useRef(false);
+  const choicesRef = useRef<HTMLDivElement>(null);
 
   const round = rounds[i];
 
@@ -64,6 +67,16 @@ export function EarMomentSlot({
       setWrong(next);
       onResultAction?.(correct, next);
     }
+    // Close the theory loop: auto-reveal the glossary card for the CORRECT
+    // answer's term (the "ear → theory" bridge the audit flagged as missing).
+    // Anchored to the choices grid; only fires when the correct choice carries a
+    // real glossary term, so it never opens an empty card.
+    const correctChoice = round.choices.find((c) => c.id === round.correctId);
+    const entry = correctChoice?.termId ? lookupTerm(correctChoice.termId) : undefined;
+    if (entry && choicesRef.current) {
+      const anchor = choicesRef.current;
+      setTimeout(() => open(entry, anchor), 450);
+    }
     // After feedback, a brief micro-rest before the next round (R2), unless this
     // was the last round.
     const isLast = i >= rounds.length - 1;
@@ -98,7 +111,7 @@ export function EarMomentSlot({
           <button type="button" onClick={play} className="chip chip-accent text-xs px-3 py-1">Play</button>
           <span className="text-xs text-[color:var(--ink-3)]">You'll hear it twice.</span>
         </div>
-        <div className="grid grid-cols-2 gap-2 no-print">
+        <div ref={choicesRef} className="grid grid-cols-2 gap-2 no-print">
           {round.choices.map((c) => {
             const isPicked = picked === c.id;
             const isRight = picked && c.id === round.correctId;
