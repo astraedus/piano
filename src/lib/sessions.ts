@@ -17,6 +17,7 @@ import {
 } from "./skillTree";
 import { levelForXp, localDateKey, updateStreak, xpForSession } from "./progression";
 import { advanceReview, dueReviews, enqueueReview } from "./skillReview";
+import { nextEarLevel, earLevelAdvanced, earLevelLabel, type EarTally } from "./earProgression";
 
 export function endSession(
   state: AppState,
@@ -172,6 +173,28 @@ export function endSession(
   // Forgiving streak: a single missed day is auto-graced (see progression.ts).
   const streak = updateStreak(state.streak ?? { current: 0, longest: 0 }, localDateKey(date));
 
+  // ── Pattern-Recognition axis: auto-advance earLevel ──
+  // Read the recent window of ear results (this session is already in `sessions`)
+  // and bump earLevel one step when accuracy is solidly high. Capped at L5 (only
+  // L1–L5 have authored rounds). Emits an `ear-level-up` arc event on advance.
+  const prevEarLevel = state.earLevel;
+  const earWindow: EarTally[] = sessions
+    .map((s) => ({
+      correct: s.earResults?.correctIds.length ?? 0,
+      wrong: s.earResults?.wrongIds.length ?? 0,
+    }));
+  const earLevel = nextEarLevel(prevEarLevel, earWindow);
+  if (earLevelAdvanced(prevEarLevel, earLevel)) {
+    arc.push({
+      id: `ear-level-up-${earLevel}-${id}`,
+      at: log.endedAt,
+      kind: "ear-level-up",
+      instrument: state.instrument,
+      label: `ear level ${earLevel} — ${earLevelLabel(earLevel)}`,
+      detail: { earLevel },
+    });
+  }
+
   const nextState: AppState = {
     ...state,
     sessions,
@@ -188,6 +211,7 @@ export function endSession(
     level: nextLevel,
     streak,
     pendingLevelUps,
+    earLevel,
   };
   return { state: nextState, newUnlocks: newlyEarned };
 }

@@ -26,7 +26,7 @@ export function YourArc() {
   return (
     <ol className="space-y-5">
       {combined.map((ev, i) => {
-        const highlight = ev.kind === "phase-begins" || ev.kind === "unlock" || ev.kind === "level-up";
+        const highlight = ev.kind === "phase-begins" || ev.kind === "unlock" || ev.kind === "level-up" || ev.kind === "ear-level-up";
         return (
           <li
             key={i}
@@ -58,6 +58,7 @@ function labelPrefix(kind: string) {
     case "phase-begins": return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--accent-deep)] font-medium mr-3">phase</span>;
     case "unlock":       return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--accent-deep)] font-medium mr-3">unlock</span>;
     case "level-up":     return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--instrument-accent-deep)] font-medium mr-3">level up</span>;
+    case "ear-level-up": return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--instrument-accent-deep)] font-medium mr-3">ear up</span>;
     case "piece-yours":  return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--ink-3)] mr-3">yours</span>;
     case "first-improv": return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--ink-3)] mr-3">first</span>;
     case "piece-started":return <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--ink-3)] mr-3">piece</span>;
@@ -66,7 +67,7 @@ function labelPrefix(kind: string) {
 }
 
 function dotClass(kind: string) {
-  if (kind === "level-up") return "bg-[color:var(--instrument-accent)]";
+  if (kind === "level-up" || kind === "ear-level-up") return "bg-[color:var(--instrument-accent)]";
   if (kind === "phase-begins" || kind === "unlock") return "bg-[color:var(--accent)]";
   return "bg-[color:var(--surface-2)]";
 }
