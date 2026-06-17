@@ -80,6 +80,21 @@ const pianoNode: SkillNode = {
   keepTitle: "C major",
 };
 
+// The real progression-container node id (isProgressionContainerNode → true).
+// No prereqs so it's immediately available + expandable in the test.
+const popFormulaNode: SkillNode = {
+  id: "p-t2-pop-formula",
+  instrument: "piano",
+  title: "The Pop Formula",
+  tier: 2,
+  category: "chords",
+  prereqs: [],
+  masteryDrill: "Am–F–C–G as block chords, then a melody over the loop.",
+  unlock: "You can play half of pop music.",
+  soulTitle: "Half of All Pop",
+  keepTitle: "The Pop Formula",
+};
+
 // ── Mock instrument module ─────────────────────────────────────────────────
 
 const GUITAR_NODES = [t0Node, t1NodeA, t1NodeB];
@@ -108,7 +123,7 @@ const pianoModule: InstrumentModule = {
   id: "piano",
   displayName: "Piano",
   accentVar: "piano",
-  skillNodes: [pianoNode],
+  skillNodes: [pianoNode, popFormulaNode],
   focusKind: "key",
   progressMapKind: "keymap",
 };
@@ -272,6 +287,39 @@ describe("PathView — expand a step with a full lesson", () => {
     const lessonPanel = screen.getByTestId(`path-lesson-${pianoNode.id}`);
     // what text should include "C major"
     expect(within(lessonPanel).getByTestId("lesson-what").textContent).toContain("C major");
+  });
+});
+
+describe("PathView — Songs You Can Now Play panel (the real surface)", () => {
+  it("renders the songs catalog inside the expanded pop-formula accordion", () => {
+    mockState("piano", {});
+    render(<PathView />);
+
+    // Collapsed: no songs panel yet.
+    expect(screen.queryByTestId("songs-you-can-play")).toBeNull();
+
+    // Expand the pop-formula node — the accordion surface users actually open.
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${popFormulaNode.id}`));
+
+    const lessonPanel = screen.getByTestId(`path-lesson-${popFormulaNode.id}`);
+    const songs = within(lessonPanel).getByTestId("songs-you-can-play");
+    expect(songs).toBeTruthy();
+
+    // The canonical heading + a real song title + all three group headings.
+    expect(within(songs).getByText("Songs You Can Now Play")).toBeTruthy();
+    expect(within(songs).getByText("Let It Be")).toBeTruthy();
+    expect(within(songs).getByText(/I–V–vi–IV/)).toBeTruthy();
+    expect(within(songs).getByText(/I–IV–V/)).toBeTruthy();
+    expect(within(songs).getByText(/I–vi–IV–V/)).toBeTruthy();
+  });
+
+  it("does NOT render the songs panel for a non-container node (p-key-C)", () => {
+    mockState("piano", {});
+    render(<PathView />);
+
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${pianoNode.id}`));
+    const lessonPanel = screen.getByTestId(`path-lesson-${pianoNode.id}`);
+    expect(within(lessonPanel).queryByTestId("songs-you-can-play")).toBeNull();
   });
 });
 

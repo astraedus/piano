@@ -19,6 +19,7 @@ import { levelForXp, localDateKey, updateStreak, xpForSession } from "./progress
 import { advanceReview, dueReviews, enqueueReview } from "./skillReview";
 import { nextEarLevel, earLevelAdvanced, earLevelLabel, type EarTally } from "./earProgression";
 import { clearedTarget } from "./drillConfig";
+import { songUnlocksForNewlyLearned } from "./progressionSongs";
 
 export function endSession(
   state: AppState,
@@ -152,6 +153,16 @@ export function endSession(
     if (!node.unlockCardId || earnedIds.has(node.unlockCardId)) continue;
     const card = cardById.get(node.unlockCardId);
     if (!card) continue;
+    earnedIds.add(card.id);
+    newlyEarned.push({ ...card, addedAt: log.endedAt });
+  }
+
+  // #7 — Pop-Formula song-unlock cards. When the progression-container node
+  // (e.g. p-t2-pop-formula / g-t1-openDGC) first becomes learned, fire ONE
+  // representative "You can now play X" card per progression. Same dedupe as
+  // above (earnedIds) so a card never re-fires once shown.
+  for (const card of songUnlocksForNewlyLearned(state.instrument, newlyLearnedIds)) {
+    if (earnedIds.has(card.id)) continue;
     earnedIds.add(card.id);
     newlyEarned.push({ ...card, addedAt: log.endedAt });
   }

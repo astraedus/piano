@@ -8,13 +8,14 @@
 //   - "mark learned"  → markNodeProgress({ learned: true })
 // Both write through the AppState hook's `patch`, so the graph re-derives status.
 
-import type { ReactNode } from "react";
 import type { SkillNode, SkillNodeStatus } from "@/lib/types";
 import type { DifficultyVerdict } from "@/lib/skillTree";
 import { TermChip, linkTerms } from "@/components/explain";
 import { nodeToTermId } from "@/lib/pathFilter";
 import { getLesson } from "@/lib/lessons";
 import { LessonMedia } from "@/components/LessonMedia";
+import { ProgressionSongsPanel } from "@/components/ProgressionSongsPanel";
+import { isProgressionContainerNode } from "@/lib/progressionSongs";
 
 const STATUS_LABEL: Record<SkillNodeStatus, string> = {
   locked: "Locked",
@@ -83,6 +84,10 @@ export function SkillGraphPanel({
   const theoryName = node.keepTitle ?? node.title;
   const showTheorySubtitle = Boolean(node.soulTitle);
   const theoryTermId = nodeToTermId(node.id);
+
+  // #7 — the Pop-Formula payoff: progression-container nodes surface the
+  // "Songs You Can Now Play" catalog grouped by progression.
+  const showSongs = isProgressionContainerNode(node.id);
 
   return (
     <aside
@@ -238,6 +243,8 @@ export function SkillGraphPanel({
           </Section>
         </>
       )}
+
+      {showSongs && <ProgressionSongsPanel />}
 
       {/* R3 — difficulty self-assessment from the recorded success rate. Only shown
           once there are enough attempts to judge (verdict !== unknown). */}
