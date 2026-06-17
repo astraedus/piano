@@ -4,7 +4,7 @@
 // (no hardcoded C five-finger pattern). Proven by rendering, not just unit tests.
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { WarmupSlot } from "./WarmupSlot";
 import { AppStateProvider } from "@/hooks/useAppState";
 import { pianoModule } from "@/lib/piano/module";
