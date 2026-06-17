@@ -199,7 +199,9 @@ export const PIANO_NODES: SkillNode[] = [
     title: "The Pop Formula",
     tier: 2,
     category: "chords",
-    prereqs: ["p-t2-chord-under-melody"],
+    // #2 — gated on the Am→F transition clearing the fluency threshold, so the
+    // song unlock fires only once the hard change is actually in tempo.
+    prereqs: ["p-t2-chord-under-melody", "p-trans-am-F"],
     masteryDrill: "Am–F–C–G as block chords, then a melody over the loop.",
     unlock: "You can play half of pop music.",
     chainDrillId: "p2-am-pop-formula",
@@ -344,5 +346,25 @@ export const PIANO_NODES: SkillNode[] = [
     soulTitle: "Blues Permission",
     keepTitle: "12-Bar Blues",
     pathTags: ["play-with-soul", "go-deep"],
+  },
+
+  // ───── Curriculum #2 — chord-transition fluency (the song bottleneck) ─────
+  // A timed one-minute-changes drill on the Am→F pair (the hard change behind
+  // the Pop Formula loop). Learned when the pair clears ~30 clean changes/min;
+  // it gates The Pop Formula as "the last reps before the song." Prereqs are the
+  // two keys the chords live in — no cycle (pop-formula sits above this).
+  {
+    id: "p-trans-am-F",
+    instrument: "piano",
+    title: "Am → F, in time",
+    tier: 2,
+    category: "chords",
+    prereqs: ["p-key-C", "p-key-am"],
+    masteryDrill: "One-minute changes Am↔F. Count clean changes. Target 30/min.",
+    unlock: "Change between Am and F in tempo — the last reps before the song.",
+    chainDrillId: "p-trans-am-F-drill",
+    soulTitle: "The Last Reps Before the Song",
+    keepTitle: "Am → F transition",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
 ];

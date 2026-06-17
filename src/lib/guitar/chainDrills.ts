@@ -399,6 +399,26 @@ const RAW_GUITAR_CHAIN_DRILLS: ChainDrill[] = [
     ],
     closingNote: "Syncopation is what makes a rhythm part feel alive instead of mechanical.",
   },
+
+  // ───── Curriculum #2 — timed chord-transition fluency ─────
+  // A TRANSITION drill (transitionPairId set): the slot renders the 60-second
+  // clean-change counter. Clearing ~30/min marks g-trans-G-C learned, gating the
+  // 12-Bar Blues "jam-ready" unlock.
+  {
+    id: "g-trans-G-C-drill",
+    instrument: "guitar",
+    phase: 1,
+    name: "G → C, one-minute changes",
+    soulName: "The Last Reps Before the Song",
+    minutes: 2,
+    ghostKey: "G",
+    pillar: "technique",
+    transitionPairId: "G-C",
+    steps: [
+      { type: "progression", durationSec: 60, instruction: "Switch G↔C cleanly for 60 seconds. Count each clean change. Target 30." },
+    ],
+    closingNote: "The hardest open-chord change. The count going up is the whole game.",
+  },
 ];
 
 export const GUITAR_CHAIN_DRILLS: ChainDrill[] = withDefaultMotorConfigAll(RAW_GUITAR_CHAIN_DRILLS);

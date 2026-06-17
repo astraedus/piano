@@ -26,6 +26,20 @@ export const PIANO_LESSONS: Record<string, NodeLesson> = {
     song: { name: "Let It Be (The Beatles)", note: "The chorus is C, G, Am, F. You already have two of those four chords." },
   },
 
+  "p-trans-am-F": {
+    what: "This is a timed change drill, not a new chord. You already know Am and F. The job is to switch BETWEEN them, cleanly and in time, over and over for one minute, counting each clean landing. Am to F is the hard change inside the Pop Formula loop (Am, F, C, G), so it is the one worth drilling on its own.",
+    why: "Knowing a chord and being able to change to it in tempo are weeks apart. A song does not wait while you reshape your hand. Once Am to F lands around thirty clean changes a minute, the change runs on its own and the song becomes playable instead of stuttering.",
+    steps: [
+      { do: "Set Am in your hand: A, C, E. Set F: F, A, C. Notice C is shared, so it can stay put.", feel: "Two of three fingers barely move. Find the smallest motion that works." },
+      { do: "Start the minute. Switch Am to F to Am to F, slowly at first, both chords ringing fully each time.", feel: "Clean, not fast. A change that buzzes does not count." },
+      { do: "Tap once for every CLEAN change you land. Watch the count climb.", feel: "The number going up is the only score that matters tonight." },
+      { do: "When the minute ends, note your changes-per-minute. Next time, beat it.", feel: "You are racing only yesterday's you." },
+    ],
+    goodWhen: "You reach roughly thirty clean Am to F changes in a minute without looking, both chords ringing in time.",
+    watchOut: "Do not trade clean for fast. Mark only changes where both chords actually ring. Honest counting is what builds the real motor program.",
+    song: { name: "Someone Like You (Adele)", note: "Once Am to F is in tempo, its loop carries the whole verse." },
+  },
+
   "p-t0-keyboard-map": {
     "what": "The keyboard looks like a wall of identical keys, but it is not. The black keys come in groups of two and three, over and over, and those groups are your map. Once you can read them, you can find any note instantly, anywhere on the piano.",
     "why": "Every scale, every chord, every song starts with knowing where the notes are. Nail this and you never hunt for a key again. You stop staring down at your hands and start playing. This one skill quietly speeds up everything you ever learn after it.",

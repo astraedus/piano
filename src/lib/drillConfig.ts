@@ -60,6 +60,9 @@ export const DEFAULT_FLAT_BPM_LADDER: BpmLadderConfig = {
  * bpmLadder keeps its own; only the MISSING pieces are filled in. Pure.
  */
 export function withDefaultMotorConfig(drill: ChainDrill): ChainDrill {
+  // A timed chord-transition drill is not a rep/ladder drill — it runs the
+  // 60-second clean-change counter, so it gets no rep blocks and no ladder.
+  if (drill.transitionPairId) return drill;
   const repBlocks = drill.repBlocks ?? DEFAULT_REP_BLOCKS;
   const bpmLadder =
     drill.bpmLadder ?? (drillWantsTempoLadder(drill) ? DEFAULT_FLAT_BPM_LADDER : null);

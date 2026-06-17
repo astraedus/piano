@@ -240,6 +240,20 @@ export const GUITAR_LESSONS: Record<string, NodeLesson> = {
     }
   },
 
+  "g-trans-G-C": {
+    "what": "This is a timed change drill, not a new shape. You already know G and C. The job is to switch BETWEEN them, cleanly and in time, for one minute, counting every clean change. G to C is the change almost every beginner stalls on, because both shapes need all four fingers to move at once.",
+    "why": "A chord you can form but cannot change to in tempo is not yet usable in a song. The song keeps moving while your hand reshapes. Drill G to C to around thirty clean changes a minute and the change starts to run without thinking, which is the exact moment open-chord songs become playable.",
+    "steps": [
+      { "do": "Form G, then C, slowly. Watch your third finger, which can stay near the same area between the two shapes.", "feel": "Find the lazy path. Move the fewest fingers." },
+      { "do": "Start the minute. Switch G to C to G to C, slowly at first, every string ringing on each shape.", "feel": "Clean beats fast. A buzzing change does not count." },
+      { "do": "Count every CLEAN change you land, both chords ringing, in time.", "feel": "The rising count is the whole game tonight." },
+      { "do": "At the end, note your changes-per-minute. Next session, beat that number.", "feel": "You are only racing yesterday's you." }
+    ],
+    "goodWhen": "You hit roughly thirty clean G to C changes in a minute without looking, every string ringing.",
+    "watchOut": "Do not sacrifice clean for fast. Only count changes where both chords actually ring out. Honest counting is what builds the real change.",
+    "song": { "name": "Wonderwall (Oasis)", "note": "Its progression leans on this change; once G to C is in tempo, the song opens up." }
+  },
+
   "g-t1-openDGC": {
     "what": "D, G, and C are the three bright, happy open chords that complete your beginner toolkit. Together with the minor chords you already have, these are the workhorse shapes of folk, pop, and country. C and G are the two chords nearly every singer-songwriter leans on, and D is the sunny one that makes a progression feel like it is lifting off.",
     "why": "Add these three and you have the full open-chord vocabulary. The most common chord progression in popular music, G to C to D, is now entirely in your hands. This is the moment guitar stops being shapes and starts being songs.",

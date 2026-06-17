@@ -99,6 +99,9 @@ export interface SkillProgress {
   // Curriculum #2 — count of sessions that cleared the drill's authored target
   // ceiling. Drives the cross-session targetBpm ceiling bump (drillConfig.ts).
   targetClears?: number;
+  // Curriculum #2 (transition fluency) — best clean chord-changes/min recorded
+  // for a transition-pair node (transitionDrill.ts). Set on a transition node id.
+  bestChanges?: number;
   fluent?: boolean;                   // R10 — passed the autonomous fluency test
   fluentAt?: string;                  // R10 — ISO when fluency was reached (distinct from learnedAt)
 }
@@ -166,6 +169,12 @@ export interface ChainDrill {
   repBlocks?: RepBlockConfig;  // R2 default micro-rest cadence for the drill
   bpmLadder?: BpmLadderConfig; // R5 default tempo ladder for the drill
   interleavable?: boolean;     // R4 — may participate in interleaved rep sequences
+  // Curriculum #2 — when set, this is a TIMED CHORD-TRANSITION drill (not a rep
+  // drill): drill a chord PAIR for 60s and count clean changes. The id matches a
+  // TransitionPair.pairId (transitionDrill.ts). The slot renders the transition
+  // counter instead of the rep engine, and clearing the threshold marks the
+  // linked node learned (gating the target song via the DAG prereq).
+  transitionPairId?: string;
 }
 
 export type WarmupType =

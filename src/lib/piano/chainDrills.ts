@@ -553,6 +553,26 @@ const RAW_CHAIN_DRILLS: ChainDrill[] = [
     ],
     closingNote: "Reading well is reading twice. You did.",
   },
+
+  // ───── Curriculum #2 — timed chord-transition fluency ─────
+  // A TRANSITION drill (transitionPairId set): the slot renders the 60-second
+  // clean-change counter, not the rep engine. Clearing ~30/min marks p-trans-am-F
+  // learned, which gates The Pop Formula.
+  {
+    id: "p-trans-am-F-drill",
+    instrument: "piano",
+    phase: 2,
+    name: "Am → F, one-minute changes",
+    soulName: "The Last Reps Before the Song",
+    minutes: 2,
+    ghostKey: "am",
+    pillar: "technique",
+    transitionPairId: "am-F",
+    steps: [
+      { type: "progression", durationSec: 60, instruction: "Switch Am↔F cleanly for 60 seconds. Tap each clean landing. Target 30." },
+    ],
+    closingNote: "The count going up IS the progress. Beat your last number, that's it.",
+  },
 ];
 
 export const CHAIN_DRILLS: ChainDrill[] = withDefaultMotorConfigAll(RAW_CHAIN_DRILLS);

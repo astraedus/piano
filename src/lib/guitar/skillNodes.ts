@@ -360,7 +360,9 @@ export const GUITAR_NODES: SkillNode[] = [
     title: "12-Bar Blues",
     tier: 3,
     category: "repertoire",
-    prereqs: ["g-t1-power", "g-t1-strum", "g-t2-pent-box1"],
+    // #2 — gated on the G→C transition clearing fluency, so the "jam-ready"
+    // unlock waits until the hard open-chord change is actually in tempo.
+    prereqs: ["g-t1-power", "g-t1-strum", "g-t2-pent-box1", "g-trans-G-C"],
     masteryDrill: "12-bar in A power chords 75bpm, then solo Box1",
     unlock: "Harmonic spine of blues/rock; can jam",
     chainDrillId: "g-t3-blues12-chain",
@@ -440,6 +442,26 @@ export const GUITAR_NODES: SkillNode[] = [
     chainDrillId: "g-t3-syncopation-chain",
     soulTitle: "Rhythm With Attitude",
     keepTitle: "Rhythm Syncopation & Accents",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
+  },
+
+  // ───── Curriculum #2 — chord-transition fluency (the song bottleneck) ─────
+  // The G→C one-minute-changes drill — the notorious beginner wall behind most
+  // open-chord songs. Learned when it clears ~30 clean changes/min. Depends on
+  // the open D/G/C chords; gates the 12-Bar Blues as "the last reps before the
+  // song" (blues is tier 3, above this — acyclic).
+  {
+    id: "g-trans-G-C",
+    instrument: "guitar",
+    title: "G → C, in time",
+    tier: 2,
+    category: "chords",
+    prereqs: ["g-t1-openDGC"],
+    masteryDrill: "One-minute changes G↔C. Count clean changes. Target 30/min.",
+    unlock: "Change between G and C in tempo — the wall most beginners stall on.",
+    chainDrillId: "g-trans-G-C-drill",
+    soulTitle: "The Last Reps Before the Song",
+    keepTitle: "G → C transition",
     pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
 ];

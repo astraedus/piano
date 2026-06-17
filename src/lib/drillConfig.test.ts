@@ -97,15 +97,27 @@ describe("withDefaultMotorConfig", () => {
 });
 
 describe("exported drill lists carry motor config (#2 — no more flat 'mark done')", () => {
-  it("every piano drill now has repBlocks", () => {
-    for (const d of CHAIN_DRILLS) expect(d.repBlocks, d.id).toBeTruthy();
+  it("every non-transition piano drill now has repBlocks", () => {
+    for (const d of CHAIN_DRILLS) {
+      if (!d.transitionPairId) expect(d.repBlocks, d.id).toBeTruthy();
+    }
   });
-  it("every guitar drill now has repBlocks", () => {
-    for (const d of GUITAR_CHAIN_DRILLS) expect(d.repBlocks, d.id).toBeTruthy();
+  it("every non-transition guitar drill now has repBlocks", () => {
+    for (const d of GUITAR_CHAIN_DRILLS) {
+      if (!d.transitionPairId) expect(d.repBlocks, d.id).toBeTruthy();
+    }
   });
-  it("every tempo-relevant drill now has a bpmLadder", () => {
+  it("transition drills get NO rep config (they run the change counter)", () => {
+    const transitions = [...CHAIN_DRILLS, ...GUITAR_CHAIN_DRILLS].filter((d) => d.transitionPairId);
+    expect(transitions.length).toBeGreaterThan(0);
+    for (const d of transitions) {
+      expect(d.repBlocks, d.id).toBeUndefined();
+      expect(d.bpmLadder, d.id).toBeUndefined();
+    }
+  });
+  it("every tempo-relevant non-transition drill now has a bpmLadder", () => {
     for (const d of [...CHAIN_DRILLS, ...GUITAR_CHAIN_DRILLS]) {
-      if (drillWantsTempoLadder(d)) expect(d.bpmLadder, d.id).toBeTruthy();
+      if (!d.transitionPairId && drillWantsTempoLadder(d)) expect(d.bpmLadder, d.id).toBeTruthy();
     }
   });
   it("the previously-flat majority now carry a ladder (>30 of ~48)", () => {
