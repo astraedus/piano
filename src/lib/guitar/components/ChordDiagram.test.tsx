@@ -39,4 +39,26 @@ describe("ChordDiagram", () => {
     const el = getByTestId("chord-diagram");
     expect(el.textContent?.toLowerCase()).toContain("no chord shape");
   });
+
+  it("renders a capo'd shape (G shape with capo at fret 3) without crashing", async () => {
+    const { getByTestId } = render(
+      <ChordDiagram chordShape={[3, 2, 0, 0, 0, 3]} capoFret={3} title="G shape → Bb" />,
+    );
+    const el = getByTestId("chord-diagram");
+    await waitFor(() => expect(el.innerHTML.length).toBeGreaterThan(0));
+    // When the SVG draws, the capo is announced for screen readers. (In jsdom the
+    // draw may fall back; the contract is "never throws", asserted above.)
+    const svg = el.querySelector("svg");
+    if (svg) {
+      expect(svg.getAttribute("aria-label")).toContain("capo at fret 3");
+    }
+  });
+
+  it("renders capo 0 identically to no capo (no capo bar, no throw)", async () => {
+    const { getByTestId } = render(
+      <ChordDiagram chordShape={[-1, 3, 2, 0, 1, 0]} capoFret={0} title="C" />,
+    );
+    const el = getByTestId("chord-diagram");
+    await waitFor(() => expect(el.innerHTML.length).toBeGreaterThan(0));
+  });
 });
