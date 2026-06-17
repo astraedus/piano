@@ -161,9 +161,20 @@ function ThreeAxisCard({
         boxShadow: "var(--shadow-card)",
       }}
     >
-      <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-4">
-        Your three axes
-      </p>
+      <div className="mb-5">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--ink-3)]">
+          Where you are
+        </p>
+        <p
+          className="font-serif text-[length:var(--text-xl)] text-[color:var(--ink)] tracking-[-0.015em] mt-0.5"
+          style={{ fontVariationSettings: "'opsz' 30, 'SOFT' 40" }}
+        >
+          Your three axes
+        </p>
+        <p className="text-sm text-[color:var(--ink-2)] italic mt-0.5">
+          Generation, ability, and the ear — how far each has come.
+        </p>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
         <GenerationColumn generation={generation} />
         <AxisColumn
@@ -203,8 +214,11 @@ function GenerationColumn({ generation }: { generation: GenerationAxis }) {
       >
         {gettingStarted ? "Just getting started" : `${milestonesDone} of ${total} first steps`}
       </p>
+      {/* Discrete milestone dots — small fixed-width lozenges with clear gaps so
+          a glance reads "milestones," not a percentage bar. A done step is a
+          filled dot with a tiny check; a pending step is a hollow ring. */}
       <div
-        className="flex gap-1.5"
+        className="flex items-center gap-2 py-0.5"
         role="img"
         aria-label={`Generation: ${milestonesDone} of ${total} first steps reached`}
       >
@@ -212,14 +226,23 @@ function GenerationColumn({ generation }: { generation: GenerationAxis }) {
           <span
             key={m.label}
             title={m.label}
-            className="h-1.5 flex-1 rounded-full"
-            style={{
-              background: m.done ? "var(--instrument-accent)" : "var(--bg-surface-3)",
-            }}
-          />
+            aria-hidden
+            className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold leading-none transition-colors"
+            style={
+              m.done
+                ? { background: "var(--instrument-accent)", color: "var(--bg-base)" }
+                : {
+                    background: "transparent",
+                    border: "1.5px solid var(--bg-rule)",
+                    color: "transparent",
+                  }
+            }
+          >
+            ✓
+          </span>
         ))}
       </div>
-      <p className="text-xs text-[color:var(--ink-3)]">
+      <p className="text-xs text-[color:var(--ink-2)]">
         {gettingStarted ? "Improvise in a free slot to begin." : "Improv, and pieces you've made yours."}
       </p>
     </div>
@@ -255,7 +278,7 @@ function AxisColumn({
           style={{ width: `${pct}%`, background: "var(--instrument-accent)" }}
         />
       </div>
-      <p className="text-xs text-[color:var(--ink-3)]">{caption}</p>
+      <p className="text-xs text-[color:var(--ink-2)]">{caption}</p>
     </div>
   );
 }

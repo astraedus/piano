@@ -13,6 +13,7 @@ import { ghostKeyFor, weeksSinceEpoch } from "./ghostKey";
 import { buildInterleavePlan, pickChainDrill, type InterleavePlan } from "./chainDrillPicker";
 import { dueReviews } from "./skillReview";
 import { miniShelfLineFor } from "./miniShelfLines";
+import { formatNorthStarNudge } from "./format";
 import { getModuleSync, type InstrumentModule } from "./instrumentRegistry";
 
 // Resolve the active instrument's module from the sync cache, falling back to
@@ -109,7 +110,7 @@ export function computeTodayPlan(state: AppState, date: Date, overrideMode?: Tod
     const withinFirst30 = daysSinceFirst <= 30;
     const due = now >= showAfter && now >= hiddenUntil;
     if (withinFirst30 || due) {
-      northStarNudge = `Your goal: ${state.northStar} Keep going.`;
+      northStarNudge = formatNorthStarNudge(state.northStar);
     }
   }
 

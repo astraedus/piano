@@ -15,3 +15,16 @@ export function fmtTotalTime(totalMin: number): string {
   if (m === 0) return `${h}h`;
   return `${h}h ${m}m`;
 }
+
+/**
+ * The home footer's north-star nudge: "Your goal: <goal>. Keep going."
+ * The user's goal is free text that may or may not end in punctuation; without
+ * a separator the goal and the "Keep going." nudge run together. This ensures
+ * the goal is terminated by a sentence-ender before the nudge — without
+ * doubling punctuation when the goal already ends in `.`/`!`/`?`/`…`.
+ */
+export function formatNorthStarNudge(goal: string): string {
+  const trimmed = goal.trim();
+  const sep = /[.!?…]$/.test(trimmed) ? "" : ".";
+  return `Your goal: ${trimmed}${sep} Keep going.`;
+}

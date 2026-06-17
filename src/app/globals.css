@@ -435,6 +435,10 @@ body > * { position: relative; z-index: 1; }
   font-family: var(--font-serif);
   font-style: italic;
   color: var(--instrument-accent-deep);
+  /* Lining + tabular figures: Fraunces defaults to oldstyle (text) figures,
+     which makes a leading count read as a glyph rather than a digit. Force
+     full-height, evenly-spaced numerals so counts are unmistakably numbers. */
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 /* Slot expand transitions. Slow, warm. */
