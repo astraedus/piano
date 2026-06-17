@@ -139,6 +139,76 @@ describe("endSession — node-completion drives unlocks (B3), no phase-jump (B2)
   });
 });
 
+// ─── #2 BLOCKER regression: transition node is NOT learnable via endSession ───
+// The transition node links the transition drill via chainDrillId, but it must be
+// owned EXCLUSIVELY by the TransitionDrill threshold path (bestChanges >= target).
+// endSession's generic completion loop must SKIP it, or a do-nothing session that
+// "ran" the transition drill (no quality reported) would falsely learn it and
+// unlock the gated song.
+describe("endSession — transition nodes are not gameable via drill completion (#2)", () => {
+  it("a sub-threshold transition session (no quality) leaves the node NOT learned", () => {
+    // Pre-learn the transition node's prereqs so prereqs are NOT the thing blocking it.
+    const s = stateWith({
+      phase: 2,
+      skillProgress: {
+        "p-t0-keyboard-map": learned(),
+        "p-t0-posture": learned(),
+        "p-key-C": learned(),
+        "p-key-am": learned(),
+      },
+    });
+    // Run the transition drill with NO quality (the do-nothing-then-Done repro).
+    const { state: next } = endSession(
+      s,
+      logBase({ ghostKey: "am", chainDrillId: "p-trans-am-F-drill" }),
+      new Date(),
+    );
+    expect(next.skillProgress?.["p-trans-am-F"]?.status ?? "available").not.toBe("learned");
+  });
+
+  it("the Pop Formula stays locked after a do-nothing transition session", () => {
+    const s = stateWith({
+      phase: 2,
+      skillProgress: {
+        "p-t0-keyboard-map": learned(),
+        "p-t0-posture": learned(),
+        "p-key-C": learned(),
+        "p-key-am": learned(),
+        "p-t2-chord-under-melody": learned(),
+      },
+    });
+    const { state: next } = endSession(
+      s,
+      logBase({ ghostKey: "am", chainDrillId: "p-trans-am-F-drill" }),
+      new Date(),
+    );
+    // p-t2-pop-formula requires p-trans-am-F (still not learned) → not learned.
+    expect(next.skillProgress?.["p-t2-pop-formula"]?.status ?? "available").not.toBe("learned");
+  });
+
+  it("a CLEARED transition (node learned via the slot's threshold path) unlocks the song", () => {
+    // Simulate the TransitionDrill slot having marked the node learned on a >=target
+    // run (it patches skillProgress directly). Then the DAG gate opens.
+    const s = stateWith({
+      phase: 2,
+      skillProgress: {
+        "p-t0-keyboard-map": learned(),
+        "p-t0-posture": learned(),
+        "p-key-C": learned(),
+        "p-key-am": learned(),
+        "p-t2-chord-under-melody": learned(),
+        "p-trans-am-F": { status: "learned", reps: 1, bestChanges: 32, learnedAt: "2026-01-01" },
+      },
+    });
+    const { state: next } = endSession(
+      s,
+      logBase({ ghostKey: "am", chainDrillId: "p2-am-pop-formula" }),
+      new Date(),
+    );
+    expect(next.skillProgress?.["p-t2-pop-formula"]?.status).toBe("learned");
+  });
+});
+
 // ───────────────────────── endSession bookkeeping ─────────────────────────
 describe("endSession — bookkeeping", () => {
   it("caps recentDrillIds at 5, newest first", () => {

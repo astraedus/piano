@@ -78,9 +78,19 @@ export function endSession(
     bpmReached: q.bpmReached,
   };
 
+  // Transition nodes are owned EXCLUSIVELY by the TransitionDrill threshold path
+  // (bestChanges >= target/min, persisted via patch in the slot). They must NOT be
+  // learnable through the generic drill-completion loop — the transition drill
+  // reports via onCompleteAction, not onQualityChangeAction, so log.quality is
+  // undefined and the success-rate gate would (wrongly) pass on a zero-score run.
+  const transitionDrillIds = new Set(
+    chainDrills.filter((d) => d.transitionPairId).map((d) => d.id),
+  );
+
   let nextProgress = prevProgress;
   for (const node of nodes) {
     if (prevStatus.get(node.id) === "learned") continue;
+    if (node.chainDrillId && transitionDrillIds.has(node.chainDrillId)) continue;
     if (!nodeSatisfiedThisSession(node, log, keyDepths)) continue;
 
     // Record this session's quality on the node first (so the success-rate gate
