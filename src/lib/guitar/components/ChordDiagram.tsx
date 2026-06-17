@@ -18,6 +18,10 @@ export interface ChordDiagramProps {
   chordShape?: number[];
   /** CAGED root shape — used to render a representative diagram when no explicit shape. */
   cagedShape?: "E" | "A" | "G" | "C" | "D";
+  /** Optional capo. When > 0, draws a labelled capo bar across all strings at
+   *  that fret and shifts the shape up so it sits above the capo — the open
+   *  shape played with a capo on. 0 / undefined = no capo (normal diagram). */
+  capoFret?: number;
   title?: string;
   className?: string;
 }
@@ -33,30 +37,60 @@ const CAGED_SHAPES: Record<string, number[]> = {
   D: [-1, -1, 0, 2, 3, 2], // D major (the D-shape)
 };
 
-// Convert a lowE..highE shape array into svguitar fingers/barres + a position
-// offset so frets up the neck render inside the 5-fret window.
-function toSvguitarChord(shape: number[]): {
-  fingers: [number, number | "x" | 0][];
-  position: number;
-} {
-  const fretted = shape.filter((f) => f > 0);
-  const minFret = fretted.length ? Math.min(...fretted) : 1;
-  const maxFret = fretted.length ? Math.max(...fretted) : 1;
-  // Keep open-position shapes anchored at the nut; otherwise slide the window so
-  // the lowest fretted note sits near the top of the 5-fret diagram.
-  const position = maxFret <= 4 ? 1 : minFret;
+interface SvguitarBarre {
+  fromString: number;
+  toString: number;
+  fret: number;
+  text?: string;
+}
 
-  const fingers = shape.map((f, i): [number, number | "x" | 0] => {
+// Convert a lowE..highE shape array into svguitar fingers/barres + a position
+// offset so frets up the neck render inside the 5-fret window. With `capo > 0`,
+// the capo acts as a movable nut: every fretted note shifts up by `capo`, open
+// notes (0) sit ON the capo, and a labelled capo bar is drawn across all
+// strings at the capo fret — i.e. the open shape *played with a capo on*.
+function toSvguitarChord(shape: number[], capo = 0): {
+  fingers: [number, number | "x" | 0][];
+  barres: SvguitarBarre[];
+  position: number;
+  frets: number;
+} {
+  const hasCapo = capo > 0;
+  // Effective fret for each string: muted stays muted; otherwise add the capo
+  // offset (an open string now rings at the capo fret, a fretted note above it).
+  const eff = shape.map((f) => (f < 0 ? -1 : f + capo));
+  // The fret window must include the capo bar and every (post-capo) fretted note.
+  const sounded = eff.filter((f) => f > 0);
+  const lo = hasCapo ? capo : sounded.length ? Math.min(...sounded) : 1;
+  const hi = sounded.length ? Math.max(...sounded) : 1;
+  // Anchor at the nut when everything fits in the first 4 frets; otherwise slide
+  // the window so the lowest sounded fret sits near the top of the diagram.
+  const position = hi <= 4 ? 1 : lo;
+
+  const fingers = eff.map((f, i): [number, number | "x" | 0] => {
     const stringNum = 6 - i; // array index 0 (low E) → svguitar string 6
     if (f < 0) return [stringNum, "x"];
-    if (f === 0) return [stringNum, 0];
+    if (f === 0) return [stringNum, 0]; // only when no capo (open string)
+    // With a capo, a note sitting exactly on the capo fret is held by the capo,
+    // not a finger — drop it so only the shape's own fingers are dots.
+    if (hasCapo && f === capo) return [stringNum, 0];
     // svguitar frets are relative to `position` (1-based within the window).
     return [stringNum, f - position + 1];
   });
-  return { fingers, position };
+
+  const barres: SvguitarBarre[] = hasCapo
+    ? [{ fromString: 6, toString: 1, fret: capo - position + 1, text: "Capo" }]
+    : [];
+
+  // Window must span from the capo (or nut) up through the highest sounded note,
+  // with a little headroom. Default 4; widen so capo + shape always fit.
+  const span = Math.max(hi, capo) - position + 1;
+  const frets = Math.max(4, span + 1);
+
+  return { fingers, barres, position, frets };
 }
 
-export function ChordDiagram({ chordShape, cagedShape, title, className }: ChordDiagramProps) {
+export function ChordDiagram({ chordShape, cagedShape, capoFret, title, className }: ChordDiagramProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,13 +114,13 @@ export function ChordDiagram({ chordShape, cagedShape, title, className }: Chord
       try {
         const { SVGuitarChord } = await import("svguitar");
         if (cancelled || !ref.current) return;
-        const { fingers, position } = toSvguitarChord(shape);
+        const { fingers, barres, position, frets } = toSvguitarChord(shape, capoFret ?? 0);
         const chart = new SVGuitarChord(ref.current);
         chart
-          .chord({ fingers, barres: [], title })
+          .chord({ fingers, barres, title })
           .configure({
             strings: 6,
-            frets: 4,
+            frets,
             position,
             tuning: ["E", "A", "D", "G", "B", "E"],
             // Warm Studio tokens so the diagram is born on-system.
@@ -101,9 +135,10 @@ export function ChordDiagram({ chordShape, cagedShape, title, className }: Chord
         const svg = ref.current.querySelector("svg");
         if (svg) {
           svg.setAttribute("role", "img");
+          const capoSuffix = capoFret && capoFret > 0 ? ` with capo at fret ${capoFret}` : "";
           svg.setAttribute(
             "aria-label",
-            title ? `${title} chord diagram` : "guitar chord diagram",
+            (title ? `${title} chord diagram` : "guitar chord diagram") + capoSuffix,
           );
           // svguitar emits an SVG with a viewBox but no intrinsic width. Inside a
           // flex/centering slot that collapses it to 0×0, so pin an explicit width
@@ -123,7 +158,7 @@ export function ChordDiagram({ chordShape, cagedShape, title, className }: Chord
       cancelled = true;
       if (el) el.innerHTML = "";
     };
-  }, [chordShape, cagedShape, title]);
+  }, [chordShape, cagedShape, capoFret, title]);
 
   return <div ref={ref} className={className ?? "w-[150px] max-w-full"} data-testid="chord-diagram" />;
 }

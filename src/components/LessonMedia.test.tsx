@@ -19,6 +19,10 @@ vi.mock("@/lib/guitar/components/ChordDiagram", () => ({
   ),
 }));
 
+vi.mock("@/components/CapoTeacher", () => ({
+  CapoTeacher: () => <div data-testid="capo-teacher" />,
+}));
+
 vi.mock("@/lib/guitar/components/Fretboard", () => ({
   Fretboard: ({ ariaLabel }: { ariaLabel?: string }) => (
     <div data-testid="fretboard" aria-label={ariaLabel} />
@@ -137,9 +141,33 @@ const pianoBareNode: SkillNode = {
   unlock: "Something.",
 };
 
+// The capo node gets its dedicated interactive teacher instead of a single
+// static visual.
+const capoNode: SkillNode = {
+  id: "g-t1-capo",
+  instrument: "guitar",
+  title: "The Capo — One Shape, Every Key",
+  tier: 1,
+  category: "chords",
+  prereqs: ["g-t1-openEM", "g-t1-openDGC"],
+  masteryDrill: "Capo on 2, play G/C/D shapes.",
+  unlock: "Play in any key with the shapes you know.",
+  viz: "chord_diagram",
+  chordShape: [-1, 3, 2, 0, 1, 0],
+};
+
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe("LessonMedia", () => {
+  describe("(h) the capo node renders the CapoTeacher, not a plain diagram", () => {
+    it("renders capo-teacher and not a chord-diagram for g-t1-capo", () => {
+      mockLookupTerm.mockReturnValue(undefined);
+      render(<LessonMedia node={capoNode} />);
+      expect(screen.getByTestId("capo-teacher")).toBeTruthy();
+      expect(screen.queryByTestId("chord-diagram")).toBeNull();
+    });
+  });
+
   describe("(a) chord_diagram viz node renders a chord diagram", () => {
     beforeEach(() => {
       // g-t1-power has a glossary term — supply it for audio.

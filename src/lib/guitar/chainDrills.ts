@@ -400,6 +400,29 @@ const RAW_GUITAR_CHAIN_DRILLS: ChainDrill[] = [
     closingNote: "Syncopation is what makes a rhythm part feel alive instead of mechanical.",
   },
 
+  // ───── Curriculum #8 — capo as a key multiplier ─────
+  // The same One-Minute-Changes mechanism as open chords, but with a capo on:
+  // clamp the capo, play known open shapes, and HEAR them sound in a new key.
+  // The point is recognition (shape ≠ sounding key) + counting clean changes,
+  // not new motor cost — that's the whole leverage of the capo.
+  {
+    id: "g-capo-chain",
+    instrument: "guitar",
+    phase: 1,
+    name: "capo: shapes in a new key",
+    soulName: "One Capo, Every Key",
+    minutes: 4,
+    ghostKey: "G",
+    pillar: "technique",
+    steps: [
+      { type: "tone", durationSec: 30, instruction: "Clamp the capo on fret 2, just behind the fret. Every string should ring clean — re-check tuning if it pulls sharp." },
+      { type: "triad", durationSec: 45, instruction: "Play your G, C, D shapes with the capo on 2. The SHAPES are identical — but they now sound A, D, E. Same fingers, new key." },
+      { type: "progression", durationSec: 90, instruction: "One-minute changes G↔C shapes WITH the capo on. Count clean changes — your open-chord fluency carries straight over." },
+      { type: "song", durationSec: 45, instruction: "Find a song a step too high to sing — capo up two frets and play the open-chord version. It now sits in your range." },
+    ],
+    closingNote: "Five open shapes + one moving bar = every key, for near-zero new effort. The capo is the cheapest range you'll ever buy.",
+  },
+
   // ───── Curriculum #2 — timed chord-transition fluency ─────
   // A TRANSITION drill (transitionPairId set): the slot renders the 60-second
   // clean-change counter. Clearing ~30/min marks g-trans-G-C learned, gating the

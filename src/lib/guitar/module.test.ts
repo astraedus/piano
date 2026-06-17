@@ -58,11 +58,12 @@ describe("every guitar chain drill + warmup + song is instrument-tagged", () => 
 });
 
 describe("GUITAR_NODES form a coherent DAG", () => {
-  it("has the full plan §2.4 node set plus the curriculum-#2 transition node (28)", () => {
+  it("has the full plan §2.4 node set plus the curriculum transition + capo nodes (29)", () => {
     // plan §2.4's verbatim list = 27 (g-t0-anatomy … g-t3-syncopation); curriculum
     // batch #1 adds the G→C transition-fluency node (g-trans-G-C) that gates the
-    // 12-Bar Blues song unlock, bringing the total to 28.
-    expect(GUITAR_NODES.length).toBe(28);
+    // 12-Bar Blues song unlock (→28); batch #2 #8 adds the capo key-multiplier node
+    // (g-t1-capo) after open chords (→29).
+    expect(GUITAR_NODES.length).toBe(29);
   });
 
   it("is acyclic", () => {

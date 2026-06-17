@@ -25,6 +25,7 @@ import type { SkillNode } from "@/lib/types";
 import { nodeToTermId } from "@/lib/pathFilter";
 import { lookupTerm } from "@/lib/explain/glossary";
 import { ChordDiagram } from "@/lib/guitar/components/ChordDiagram";
+import { CapoTeacher } from "@/components/CapoTeacher";
 import { Fretboard } from "@/lib/guitar/components/Fretboard";
 import { Tab } from "@/lib/guitar/components/Tab";
 import { Keyboard } from "@/lib/piano/components/Keyboard";
@@ -96,6 +97,13 @@ function LessonVisual({
   termHasVis: boolean;
   termEntry: ReturnType<typeof lookupTerm>;
 }) {
+  // 0. The capo node gets its dedicated interactive teacher (chart + calculator)
+  //    instead of a single static diagram — the capo IS a calculator, so the
+  //    interactive surface is the right "one visual" for this lesson.
+  if (node.id === "g-t1-capo") {
+    return <CapoTeacher />;
+  }
+
   // 1. Concrete node.viz.
   switch (node.viz) {
     case "chord_diagram":

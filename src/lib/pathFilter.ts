@@ -93,6 +93,7 @@ const NODE_TERM_IDS: Record<string, string> = {
   // the named-string fretboard + the open-string audio land exactly on subject.
   "g-t0-anatomy": "open-string",
   "g-t1-power": "power-chord",
+  "g-t1-capo": "capo",
   "g-t1-palmmute": "palm-muting",
   "g-t1-strum": "strumming",
   "g-t1-altpick": "alternate-picking",
