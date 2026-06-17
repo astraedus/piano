@@ -152,6 +152,24 @@ export const GUITAR_NODES: SkillNode[] = [
     pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
+    id: "g-t1-capo",
+    instrument: "guitar",
+    title: "The Capo — One Shape, Every Key",
+    tier: 1,
+    category: "chords",
+    // After BOTH open-chord sets: the capo's whole value is reusing shapes you
+    // already own. With the full open vocabulary, one moving bar unlocks every key.
+    prereqs: ["g-t1-openEM", "g-t1-openDGC"],
+    masteryDrill: "Capo on 2: play G/C/D shapes, name the sounding key (A/D/E). 1-min changes G↔C with the capo on.",
+    unlock: "Play in any key with the 5 open shapes you already know — the capo multiplies a small vocabulary across the whole spectrum.",
+    viz: "chord_diagram",
+    chordShape: [-1, 3, 2, 0, 1, 0] /*C shape — the chart's first row*/,
+    chainDrillId: "g-capo-chain",
+    soulTitle: "One Capo, Every Key",
+    keepTitle: "The Capo (Key Multiplier)",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
+  },
+  {
     id: "g-t1-strum",
     instrument: "guitar",
     title: "Basic Strumming",

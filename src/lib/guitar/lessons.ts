@@ -287,6 +287,21 @@ export const GUITAR_LESSONS: Record<string, NodeLesson> = {
     }
   },
 
+  "g-t1-capo": {
+    what: "A capo is a clamp you put across all the strings at one fret. It works like a moveable nut: it raises every open string, so the open shapes you already know sound in a higher key without you changing a single finger. One small bar turns your five open shapes into every key.",
+    why: "This is the biggest payoff for the least effort on the whole guitar. You spent weeks learning open chords. The capo lets that handful of shapes play in all twelve keys, so you can match any singer's range and play along with almost any recording. Knowing C, A, G, E, and D shapes plus a capo covers most of the popular song catalog.",
+    steps: [
+      { do: "Clamp the capo just behind a fret (not on top of it), pressing all six strings evenly.", feel: "Every string should ring clean. If a string buzzes or sounds dead, the capo is crooked or too far from the fret." },
+      { do: "Capo on the 2nd fret, then play your G shape exactly as you learned it. Listen: it now sounds A, not G.", feel: "Same fingers, same shape, higher key. The shape did not change, only where it lives." },
+      { do: "Still on the 2nd fret, play your C and D shapes too. They now sound D and E.", feel: "Use the chart and the calculator below to read every shape and fret combination." },
+      { do: "Use the calculator: pick the key you want and a shape you know, and it tells you which fret to clamp.", feel: "Pick a song that sits a little too high to sing and capo up until it fits your voice." },
+      { do: "Run one minute changes between two shapes with the capo on, the same way you drilled open chords.", feel: "Your open-chord fluency carries straight over. The capo costs almost no new motor learning." },
+    ],
+    goodWhen: "With the capo on the 2nd fret you can play your G, C, and D shapes and correctly name the keys they sound in (A, D, E), and you can use the calculator to find the fret for any target key.",
+    watchOut: "Place the capo right behind the fret, not in the middle of the gap, or the strings buzz and pull sharp. Re-check tuning after clamping, since a tight capo can bend strings slightly sharp.",
+    song: { name: "Hey There Delilah / most singer-songwriter songs", note: "Countless recordings use a capo so open shapes land in the right key. Capo up and play the open-chord version." },
+  },
+
   "g-t1-strum": {
     "what": "Strumming is the engine that turns chords into music. It is the rhythm of your hand brushing the strings, down and up, that makes a song feel like a song instead of a slideshow of shapes. The pattern down, down-up, up-down-up is the single most common strum in pop and folk, and once your arm knows it, your hand keeps time on its own.",
     "why": "Holding chords is silent until you can strum. This one pattern lets you accompany a huge swath of real songs and sing over the top. It is the difference between knowing chords and playing the guitar.",

@@ -292,6 +292,23 @@ export const GLOSSARY: GlossaryEntry[] = [
     seeChordShape: [1, 3, 3, 2, 1, 1],
     instrument: "guitar",
   },
+  {
+    id: "capo",
+    title: "Capo",
+    aliases: ["capo", "key multiplier", "moveable nut"],
+    what: "A clamp across all the strings at a fret — a moveable nut that raises every open shape by however many frets up you put it.",
+    why: "One capo lets the 5 open shapes you already know play in every key, for near-zero new effort — the cheapest range on the guitar.",
+    // The shape never changes — only the sounding key. Demo: a G-shape voicing
+    // open (sounds G), then the SAME shape with a capo on fret 2 (sounds A).
+    hear: () =>
+      hear(async () => {
+        await playChord(["G2", "B2", "D3", "G3", "B3", "G4"]); // G shape, open
+        await playChord(["A2", "C#3", "E3", "A3", "C#4", "A4"]); // same shape, capo 2 → A
+      }),
+    seeKind: "chord-diagram",
+    seeChordShape: [3, 2, 0, 0, 0, 3], // the open G shape — what the capo carries up the neck
+    instrument: "guitar",
+  },
 
   // ---- Keys, tonality, harmony (Cluster 4) ----
   {
