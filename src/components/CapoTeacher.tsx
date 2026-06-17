@@ -18,7 +18,6 @@ import {
   CAPO_SHAPES,
   TARGET_KEYS,
   capoFret,
-  soundingKey,
   type CagedShape,
 } from "@/lib/guitar/capo";
 import { ChordDiagram } from "@/lib/guitar/components/ChordDiagram";
