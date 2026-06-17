@@ -241,6 +241,54 @@ describe("circleNeighbors", () => {
   });
 });
 
+// The Circle-of-Fifths chord-grid cell LABELS (and wheel badge spelling) must be
+// derived from the SOUNDED chord — i.e. the root of progressionChords(key, role)
+// — NOT from KEY_META[neighbor].tonic (the circle array's fixed enharmonic). The
+// two diverge at exactly two keys: F# major's V is C# (not Db), and Db major's IV
+// is Gb (not F#). Labels follow the audio, or a teaching feature teaches wrong
+// theory. This mirrors the `rootName(progressionChords(...))` derivation in
+// KeyMap's CircleChords/spellingByKey.
+describe("circle chord-cell labels match the sounded chord, not the circle-array enharmonic", () => {
+  const ROLE_ORDER = ["I", "IV", "V", "vi"] as const;
+  // Reproduce the component's labelling rule exactly.
+  const cellLabels = (key: KeyId): string[] => {
+    const tones = progressionChords(key, [...ROLE_ORDER]);
+    return ROLE_ORDER.map((role, i) => stripOct(tones[i][0]) + (role === "vi" ? "m" : ""));
+  };
+
+  it("F# major cells read F# / B / C# / D#m (V is C#, not Db)", () => {
+    expect(cellLabels("Fs")).toEqual(["F#", "B", "C#", "D#m"]);
+  });
+  it("Db major cells read Db / Gb / Ab / Bbm (IV is Gb, not F#)", () => {
+    expect(cellLabels("Db")).toEqual(["Db", "Gb", "Ab", "Bbm"]);
+  });
+  it("ordinary keys are unaffected: C → C / F / G / Am, G → G / C / D / Em", () => {
+    expect(cellLabels("C")).toEqual(["C", "F", "G", "Am"]);
+    expect(cellLabels("G")).toEqual(["G", "C", "D", "Em"]);
+  });
+
+  it("the sounded-root label differs from KEY_META[neighbor].tonic at EXACTLY the enharmonic keys", () => {
+    // Locks the regression: only F#'s V and Db's IV may diverge from the circle
+    // array's tonic. Any new divergence is a bug; losing these two means the fix
+    // regressed back to labelling from KEY_META.tonic.
+    const divergences: string[] = [];
+    for (const key of CIRCLE_MAJORS) {
+      const n = circleNeighbors(key)!;
+      const sounded = cellLabels(key); // I, IV, V, vi(+m)
+      const arrayTonic = [
+        KEY_META[n.I].tonic,
+        KEY_META[n.IV].tonic,
+        KEY_META[n.V].tonic,
+        KEY_META[n.vi].tonic + "m",
+      ];
+      ROLE_ORDER.forEach((role, i) => {
+        if (sounded[i] !== arrayTonic[i]) divergences.push(`${key}:${role}`);
+      });
+    }
+    expect(divergences.sort()).toEqual(["Db:IV", "Fs:V"]);
+  });
+});
+
 // Acoustic safety: changing the tonic spelling must NOT change pitch — Bb and
 // A# are the same MIDI note. Verified indirectly: the Bb scale's pitches equal
 // the old A#-spelled scale's pitches.

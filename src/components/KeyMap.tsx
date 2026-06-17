@@ -17,6 +17,16 @@ const R_OUTER = 180;
 const R_MID = 130;
 const R_INNER = 80;
 
+// The four chords the circle teaches for a major key, in display order.
+const ROLE_ORDER = ["I", "IV", "V", "vi"] as const;
+
+// The chord's root note name with the octave stripped (e.g. ["C#4","E#4","G#4"]
+// → "C#"). Used to label a chord cell / wheel badge from the SOUNDED chord, so
+// the displayed enharmonic always matches the audio.
+function rootName(chordTones: string[]): string {
+  return (chordTones[0] ?? "").replace(/-?\d+$/, "");
+}
+
 export function KeyMap() {
   const { state } = useAppState();
   const [selected, setSelected] = useState<KeyId | null>("C");
@@ -38,6 +48,18 @@ export function KeyMap() {
   const rolesByKey: Partial<Record<KeyId, "I" | "IV" | "V" | "vi">> = neighbors
     ? { [neighbors.I]: "I", [neighbors.IV]: "IV", [neighbors.V]: "V", [neighbors.vi]: "vi" }
     : {};
+  // The IN-KEY chord-root spelling for each highlighted wedge, so the badge
+  // teaches the correct enharmonic (e.g. F#'s V badge reads "C#" even though that
+  // chord physically lands on the wheel's "Db" wedge — the circle has one wedge
+  // per pitch class, but the role spelling follows the selected key). Built from
+  // the same progressionChords() that produces the audio, so badge == sound.
+  const spellingByKey: Partial<Record<KeyId, string>> = {};
+  if (neighbors && selected) {
+    const tones = progressionChords(selected, [...ROLE_ORDER]);
+    ROLE_ORDER.forEach((role, i) => {
+      spellingByKey[neighbors[role]] = rootName(tones[i]) + (role === "vi" ? "m" : "");
+    });
+  }
 
   return (
     <div className="grid md:grid-cols-[420px_1fr] gap-6">
@@ -62,6 +84,7 @@ export function KeyMap() {
                 depth={(depths[k] ?? 0) as KeyDepth}
                 selected={selected === k}
                 role={rolesByKey[k]}
+                roleSpelling={spellingByKey[k]}
                 onClickAction={() => setSelected(k)}
               />
             ))}
@@ -77,6 +100,7 @@ export function KeyMap() {
                 depth={(depths[k] ?? 0) as KeyDepth}
                 selected={selected === k}
                 role={rolesByKey[k]}
+                roleSpelling={spellingByKey[k]}
                 onClickAction={() => setSelected(k)}
                 isMinor
               />
@@ -102,8 +126,6 @@ export function KeyMap() {
 // adjacent majors (I, IV, V) plus the inner relative minor (vi) — the Pop Formula.
 // Each chord is playable; reuses the same progressionChords + playChord wiring as
 // the I-IV-V loop in KeyDetailPanel.
-const ROLE_ORDER = ["I", "IV", "V", "vi"] as const;
-
 function CircleChords({ keyId, neighbors }: { keyId: KeyId; neighbors: CircleNeighbors }) {
   // Chord tones for each role, built in the SELECTED key (so vi reads as the
   // relative minor triad of this key, not its own tonic chord).
@@ -111,7 +133,11 @@ function CircleChords({ keyId, neighbors }: { keyId: KeyId; neighbors: CircleNei
   const cells = ROLE_ORDER.map((role, i) => ({
     role,
     keyId: neighbors[role],
-    label: KEY_META[neighbors[role]].tonic + (role === "vi" ? "m" : ""),
+    // Label from the SOUNDED chord's root spelling (the in-key enharmonic), NOT
+    // KEY_META[neighbor].tonic — the circle array's fixed enharmonic diverges
+    // from the played chord at two keys (F# major's V is C# not Db; Db major's
+    // IV is Gb not F#). A teaching feature must label what it plays.
+    label: rootName(tones[i]) + (role === "vi" ? "m" : ""),
     tones: tones[i],
   }));
 
@@ -150,10 +176,10 @@ function CircleChords({ keyId, neighbors }: { keyId: KeyId; neighbors: CircleNei
 }
 
 function KeyWedge({
-  keyId, idx, revealIdx, total, rOuter, rInner, depth, selected, role, onClickAction, isMinor,
+  keyId, idx, revealIdx, total, rOuter, rInner, depth, selected, role, roleSpelling, onClickAction, isMinor,
 }: {
   keyId: KeyId; idx: number; revealIdx: number; total: number; rOuter: number; rInner: number;
-  depth: KeyDepth; selected: boolean; role?: "I" | "IV" | "V" | "vi"; onClickAction: () => void; isMinor?: boolean;
+  depth: KeyDepth; selected: boolean; role?: "I" | "IV" | "V" | "vi"; roleSpelling?: string; onClickAction: () => void; isMinor?: boolean;
 }) {
   const sweep = (2 * Math.PI) / total;
   // 2px-equivalent gap between segments (territory, not a pie chart).
@@ -189,6 +215,13 @@ function KeyWedge({
   const badgeR = isMinor ? rInner - 13 : rOuter + 14;
   const bx = r(badgeR * Math.cos(midA));
   const by = r(badgeR * Math.sin(midA) + 4);
+  // The wheel has one wedge per pitch class, so a chord can land on a wedge whose
+  // canonical name is the OTHER enharmonic (F#'s V is the C# chord, but it sits on
+  // the wheel's "Db" wedge). When the in-key spelling differs from the wedge's own
+  // label, append it to the badge ("V · C#") so the wheel teaches the right
+  // enharmonic and never contradicts the chord grid / audio.
+  const showSpelling = highlighted && roleSpelling != null && roleSpelling !== label;
+  const badgeText = showSpelling ? `${role} · ${roleSpelling}` : role;
 
   // Outline: the tapped I already shows via `selected`; the other three (and the
   // I if not the selected wedge) get an accent ring at role-stroke weight.
@@ -226,7 +259,7 @@ function KeyWedge({
           aria-hidden
           style={{ fontSize: "11px", fontFamily: "var(--font-serif)", fontStyle: "italic", fontWeight: 700, fill: "var(--instrument-accent-deep)" }}
         >
-          {role}
+          {badgeText}
         </text>
       )}
     </g>
