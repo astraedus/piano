@@ -12,7 +12,7 @@
 // rotation of I-V-vi-IV). This is a teaching feature: a mislabeled song teaches
 // the wrong thing, so the bucketing is the contract these tests pin.
 
-import type { Instrument, Phase, UnlockCard } from "./types";
+import type { Instrument, UnlockCard } from "./types";
 
 /** The three taught four-chord/three-chord cores from the Pop Formula. */
 export type Progression = "I-V-vi-IV" | "I-IV-V" | "I-vi-IV-V";

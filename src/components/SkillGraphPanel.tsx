@@ -8,7 +8,6 @@
 //   - "mark learned"  → markNodeProgress({ learned: true })
 // Both write through the AppState hook's `patch`, so the graph re-derives status.
 
-import type { ReactNode } from "react";
 import type { SkillNode, SkillNodeStatus } from "@/lib/types";
 import type { DifficultyVerdict } from "@/lib/skillTree";
 import { TermChip, linkTerms } from "@/components/explain";
