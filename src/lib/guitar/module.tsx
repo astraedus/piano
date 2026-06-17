@@ -29,12 +29,17 @@ import { GUITAR_EAR_ROUNDS } from "./earRounds";
 import { guitarFocusLabel } from "./focus";
 import { Fretboard } from "./components/Fretboard";
 import { Tab, type GuitarTabData } from "./components/Tab";
+import { scaleBoxFor } from "./scaleBox";
 
 // Adapter: agnostic InstrumentVisualProps → Fretboard. The instrument visual slot
 // (warmups / chain-drill progressions) passes `shape` (a chord shape) or nothing;
 // Fretboard falls back to its default pentatonic box when neither is supplied.
-function GuitarInstrumentVisual({ shape, className }: InstrumentVisualProps) {
-  return <Fretboard shape={shape} className={className} />;
+function GuitarInstrumentVisual({ shape, className, scaleKey }: InstrumentVisualProps) {
+  // #4 — when a scaleKey is supplied (warmup/chain slot for the ghost key), plot
+  // the moveable minor-pentatonic Box 1 for that key; otherwise show the chord
+  // shape (or the Fretboard's default box) as before.
+  const positions = scaleKey ? scaleBoxFor(scaleKey) : undefined;
+  return <Fretboard shape={shape} positions={positions} className={className} />;
 }
 
 // Adapter: agnostic NotationVisualProps → Tab. Notation for guitar is tab, never a

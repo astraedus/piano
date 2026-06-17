@@ -27,6 +27,7 @@ import { PIANO_NODES } from "./skillNodes";
 import { Keyboard } from "./components/Keyboard";
 import { Staff } from "./components/Staff";
 import { KEY_META } from "../music";
+import { fingeringsForNotes } from "./fingerings";
 import type { KeyId } from "../types";
 
 // Piano focus = a key. Reuse the existing rich key labels (e.g. "G major").
@@ -43,12 +44,20 @@ function PianoInstrumentVisual({
   className,
   rangeStart = "C4",
   octaves = 2,
+  scaleKey,
 }: InstrumentVisualProps) {
+  // #4 — when a scaleKey is supplied, overlay the canonical right-hand scale
+  // fingerings (1..5, thumb tucks) on the highlighted scale notes. Derived from
+  // the exact notes being shown so the SPN keys align with the lit dots.
+  const fingerings = scaleKey && notes
+    ? fingeringsForNotes(notes, KEY_META[scaleKey].tonic, "right")
+    : undefined;
   return (
     <Keyboard
       notes={notes ?? []}
       rangeStart={rangeStart}
       octaves={octaves}
+      fingerings={fingerings}
       className={className}
     />
   );

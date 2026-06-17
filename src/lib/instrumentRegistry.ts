@@ -45,6 +45,12 @@ export interface InstrumentVisualProps {
   // lower C3 start) without reaching past the module seam.
   rangeStart?: string;
   octaves?: number;
+  // #4 — finger-placement hint. `scaleKey` names the key whose SCALE this visual
+  // represents; each module derives its own finger guidance from it: piano maps
+  // the canonical scale fingerings (1..5) onto the highlighted keys, guitar plots
+  // the moveable minor-pentatonic Box 1 for that key. Absent → no finger overlay
+  // (the prior notes-only behavior).
+  scaleKey?: KeyId;
 }
 
 export interface NotationVisualProps {

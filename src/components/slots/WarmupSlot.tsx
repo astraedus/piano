@@ -33,6 +33,9 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
   // Module/warmup always present in practice (piano registers at init); guard for types.
   if (!warmup) return null;
   const InstrumentVisual = module?.InstrumentVisual;
+  const NotationVisual = module?.NotationVisual;
+  // The 2-octave scale of the ghost key, spelled correctly (flats for flat keys).
+  const scaleNotes = scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 2, 4, keyPrefersFlats(ghostKey));
 
   // V4 soul-first: lead with the feeling-first summary when present, with the
   // theory key name as an always-tappable TermChip; else wrap the ghost key name
@@ -90,7 +93,14 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
               {KEY_META[ghostKey].name} scale · 2 octaves
             </div>
             {InstrumentVisual && (
-              <InstrumentVisual notes={scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 2, 4, keyPrefersFlats(ghostKey))} rangeStart="C4" octaves={2} />
+              <InstrumentVisual notes={scaleNotes} rangeStart="C4" octaves={2} scaleKey={ghostKey} />
+            )}
+            {/* #4 — surface the scale in standard notation (piano Staff / guitar
+                Tab), built but previously only used on the KeyMap reference page. */}
+            {NotationVisual && (
+              <div className="mt-2 overflow-x-auto">
+                <NotationVisual notes={scaleNotes} ariaLabel={`${KEY_META[ghostKey].name} scale in notation`} />
+              </div>
             )}
             <div className="mt-2 flex flex-wrap gap-3 items-center no-print">
               <button
