@@ -54,9 +54,12 @@ export const PROGRESSION_META: Record<Progression, ProgressionMeta> = {
 };
 
 // ── The verified catalog ──────────────────────────────────────────────────
-// Filed by actual harmonic basis. Verified 2026-06-17. Dropped: "Knockin' on
-// Heaven's Door" (G–D–Am–C is I–V–ii–IV, not a true I–IV–V) — replaced in the
-// I-IV-V bucket by "Johnny B. Goode" (Bb–Eb–F, a textbook 12-bar I–IV–V).
+// Filed by actual harmonic basis. Verified 2026-06-17. Dropped from I-IV-V:
+//  - "Knockin' on Heaven's Door" (G–D–Am–C is I–V–ii–IV, not a true I–IV–V) —
+//    replaced by "Johnny B. Goode" (Bb–Eb–F, a textbook 12-bar I–IV–V).
+//  - "Brown Eyed Girl" (verse is I–IV–V but the chorus adds Em = vi, so it's a
+//    four-chord I–IV–V–vi song; tagging it three-chord I–IV–V mis-teaches). Not
+//    replaced — 7 verified I-IV-V songs is enough.
 export const PROGRESSION_SONGS: ProgressionSong[] = [
   // ── I–V–vi–IV (and its rotations) ──
   { title: "Let It Be", artist: "The Beatles", progression: "I-V-vi-IV", key: "C" },
@@ -73,7 +76,6 @@ export const PROGRESSION_SONGS: ProgressionSong[] = [
   { title: "La Bamba", artist: "Ritchie Valens", progression: "I-IV-V", key: "C" },
   { title: "Wild Thing", artist: "The Troggs", progression: "I-IV-V", key: "A" },
   { title: "Three Little Birds", artist: "Bob Marley", progression: "I-IV-V", key: "A" },
-  { title: "Brown Eyed Girl", artist: "Van Morrison", progression: "I-IV-V", key: "G" },
   { title: "Ring of Fire", artist: "Johnny Cash", progression: "I-IV-V", key: "G" },
   { title: "Johnny B. Goode", artist: "Chuck Berry", progression: "I-IV-V", key: "Bb" },
   { title: "Bad Moon Rising", artist: "Creedence Clearwater Revival", progression: "I-IV-V", key: "D" },

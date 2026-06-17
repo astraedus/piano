@@ -44,6 +44,21 @@ describe("progression song catalog — data integrity", () => {
     }
   });
 
+  it("INVARIANT: no progression bucket is empty (guards representativeSong/songUnlockCard)", () => {
+    // representativeSong() reads songsForProgression(p)[0].title and songUnlockCard
+    // computes `count - 1`; an empty bucket would crash on `.title`. Pin >= 1 so a
+    // future song removal can never silently break the unlock-card path.
+    for (const p of PROGRESSIONS) {
+      expect(songsForProgression(p).length, `bucket ${p} is empty`).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("I-IV-V bucket has exactly 7 songs after dropping Brown Eyed Girl", () => {
+    const iivv = songsForProgression("I-IV-V").map((s) => s.title);
+    expect(iivv).not.toContain("Brown Eyed Girl");
+    expect(iivv.length).toBe(7);
+  });
+
   it("the dropped/rebucketed corrections held: no I-IV-V song is a four-chord-with-ii", () => {
     // "Knockin' on Heaven's Door" (I–V–ii–IV) was dropped from I-IV-V; assert it
     // never silently re-enters the catalog under that (wrong) bucket.
