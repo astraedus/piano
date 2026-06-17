@@ -33,6 +33,38 @@ function warmupForWeek(module: InstrumentModule | undefined, weekNumber: number,
   return module.warmups[rotation[idx]];
 }
 
+// #5 — a forward-looking horizon for a given week offset. ghostKeyFor and
+// warmupForWeek are deterministic over a Date but were never called forward, so
+// the UI only ever showed "today." Pass weekOffset=1 for next week. Returns the
+// key + warmup for that week, plus where the week sits in the ghost-key rotation
+// ("week N of M") so the UI can show the cycle position. Pure.
+export interface WeekHorizon {
+  date: Date;
+  key: KeyId;
+  warmup?: Warmup;
+  /** 1-based position in the phase's ghost rotation, or null if no rotation. */
+  weekInRotation: number | null;
+  /** Length of the phase's ghost rotation, or null if no rotation. */
+  rotationLength: number | null;
+}
+
+export function weekHorizon(state: AppState, from: Date, weekOffset = 0): WeekHorizon {
+  const date = new Date(from.getTime() + weekOffset * 7 * 24 * 3600 * 1000);
+  const module = resolveModule(state);
+  const key = ghostKeyFor(state, date);
+  const warmup = warmupForWeek(module, weeksSinceEpoch(date), state.phase);
+
+  const rotation = getModuleSync(state.instrument)?.ghostRotation?.[state.phase]
+    ?? getModuleSync(state.instrument)?.ghostRotation?.[1]
+    ?? [];
+  const rotationLength = rotation.length > 0 ? rotation.length : null;
+  const weekInRotation = rotationLength
+    ? ((weeksSinceEpoch(date) % rotationLength) + rotationLength) % rotationLength + 1
+    : null;
+
+  return { date, key, warmup, weekInRotation, rotationLength };
+}
+
 export type { TodayMode };
 
 export interface TodayPlan {

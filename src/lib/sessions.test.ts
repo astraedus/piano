@@ -139,6 +139,76 @@ describe("endSession — node-completion drives unlocks (B3), no phase-jump (B2)
   });
 });
 
+// ─── #2 BLOCKER regression: transition node is NOT learnable via endSession ───
+// The transition node links the transition drill via chainDrillId, but it must be
+// owned EXCLUSIVELY by the TransitionDrill threshold path (bestChanges >= target).
+// endSession's generic completion loop must SKIP it, or a do-nothing session that
+// "ran" the transition drill (no quality reported) would falsely learn it and
+// unlock the gated song.
+describe("endSession — transition nodes are not gameable via drill completion (#2)", () => {
+  it("a sub-threshold transition session (no quality) leaves the node NOT learned", () => {
+    // Pre-learn the transition node's prereqs so prereqs are NOT the thing blocking it.
+    const s = stateWith({
+      phase: 2,
+      skillProgress: {
+        "p-t0-keyboard-map": learned(),
+        "p-t0-posture": learned(),
+        "p-key-C": learned(),
+        "p-key-am": learned(),
+      },
+    });
+    // Run the transition drill with NO quality (the do-nothing-then-Done repro).
+    const { state: next } = endSession(
+      s,
+      logBase({ ghostKey: "am", chainDrillId: "p-trans-am-F-drill" }),
+      new Date(),
+    );
+    expect(next.skillProgress?.["p-trans-am-F"]?.status ?? "available").not.toBe("learned");
+  });
+
+  it("the Pop Formula stays locked after a do-nothing transition session", () => {
+    const s = stateWith({
+      phase: 2,
+      skillProgress: {
+        "p-t0-keyboard-map": learned(),
+        "p-t0-posture": learned(),
+        "p-key-C": learned(),
+        "p-key-am": learned(),
+        "p-t2-chord-under-melody": learned(),
+      },
+    });
+    const { state: next } = endSession(
+      s,
+      logBase({ ghostKey: "am", chainDrillId: "p-trans-am-F-drill" }),
+      new Date(),
+    );
+    // p-t2-pop-formula requires p-trans-am-F (still not learned) → not learned.
+    expect(next.skillProgress?.["p-t2-pop-formula"]?.status ?? "available").not.toBe("learned");
+  });
+
+  it("a CLEARED transition (node learned via the slot's threshold path) unlocks the song", () => {
+    // Simulate the TransitionDrill slot having marked the node learned on a >=target
+    // run (it patches skillProgress directly). Then the DAG gate opens.
+    const s = stateWith({
+      phase: 2,
+      skillProgress: {
+        "p-t0-keyboard-map": learned(),
+        "p-t0-posture": learned(),
+        "p-key-C": learned(),
+        "p-key-am": learned(),
+        "p-t2-chord-under-melody": learned(),
+        "p-trans-am-F": { status: "learned", reps: 1, bestChanges: 32, learnedAt: "2026-01-01" },
+      },
+    });
+    const { state: next } = endSession(
+      s,
+      logBase({ ghostKey: "am", chainDrillId: "p2-am-pop-formula" }),
+      new Date(),
+    );
+    expect(next.skillProgress?.["p-t2-pop-formula"]?.status).toBe("learned");
+  });
+});
+
 // ───────────────────────── endSession bookkeeping ─────────────────────────
 describe("endSession — bookkeeping", () => {
   it("caps recentDrillIds at 5, newest first", () => {
@@ -158,6 +228,67 @@ describe("endSession — bookkeeping", () => {
     const { state: next } = endSession(s, logBase(), new Date());
     expect(next.sessions).toHaveLength(1);
     expect(next.lastSessionEndedAt).toBe("2026-06-07T10:30:00.000Z");
+  });
+});
+
+// ───────────── #2 — cross-session BPM ceiling: targetClears increment ─────────────
+// p1-c-major-chain is authored with bpmLadder.targetBpm = 100, linked to node
+// p-key-C. A session whose quality.bpmReached clears that ceiling should bump the
+// node's targetClears so the effective ceiling can rise next session.
+describe("endSession — targetClears (ceiling scaling)", () => {
+  it("increments targetClears when the session clears the authored target BPM", () => {
+    const s = stateWith();
+    const { state: next } = endSession(
+      s,
+      logBase({
+        chainDrillId: "p1-c-major-chain",
+        quality: { attempts: 9, successes: 9, bpmReached: 100, metronomeOn: true, interleaved: false },
+      }),
+      new Date(),
+    );
+    expect(next.skillProgress?.["p-key-C"]?.targetClears).toBe(1);
+  });
+
+  it("does NOT increment when the session stays below the target", () => {
+    const s = stateWith();
+    const { state: next } = endSession(
+      s,
+      logBase({
+        chainDrillId: "p1-c-major-chain",
+        quality: { attempts: 9, successes: 9, bpmReached: 90, metronomeOn: true, interleaved: false },
+      }),
+      new Date(),
+    );
+    expect(next.skillProgress?.["p-key-C"]?.targetClears ?? 0).toBe(0);
+  });
+
+  it("accumulates across sessions", () => {
+    let s = stateWith();
+    const clear = () =>
+      logBase({
+        chainDrillId: "p1-c-major-chain",
+        quality: { attempts: 9, successes: 9, bpmReached: 105, metronomeOn: true, interleaved: false },
+      });
+    s = endSession(s, clear(), new Date()).state;
+    s = endSession(s, clear(), new Date()).state;
+    expect(s.skillProgress?.["p-key-C"]?.targetClears).toBe(2);
+  });
+
+  it("still scales the ceiling for an already-learned node", () => {
+    const s = stateWith({
+      skillProgress: { "p-key-C": { status: "learned", reps: 20, learnedAt: "2026-01-01" } },
+    });
+    const { state: next } = endSession(
+      s,
+      logBase({
+        chainDrillId: "p1-c-major-chain",
+        quality: { attempts: 9, successes: 9, bpmReached: 100, metronomeOn: true, interleaved: false },
+      }),
+      new Date(),
+    );
+    expect(next.skillProgress?.["p-key-C"]?.targetClears).toBe(1);
+    // learned status preserved (the increment passes reps:0).
+    expect(next.skillProgress?.["p-key-C"]?.status).toBe("learned");
   });
 });
 

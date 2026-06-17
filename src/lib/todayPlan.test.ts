@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { computeTodayPlan } from "./todayPlan";
+import { computeTodayPlan, weekHorizon } from "./todayPlan";
+import { ghostKeyFor } from "./ghostKey";
 import { defaultState } from "./storage";
 import type { AppState, SkillProgress } from "./types";
 import "./piano/module"; // self-registers piano so the module resolves
@@ -74,5 +75,47 @@ describe("computeTodayPlan — V3 surfacing", () => {
     expect(plan.interleave).toBeNull();
     expect(plan.repBlocks).toBeNull();
     expect(plan.bpmLadder).toBeNull();
+  });
+});
+
+// #5, forward horizon (next week's key + warmup).
+describe("weekHorizon, the future is visible", () => {
+  it("offset 0 matches today's ghost key + a warmup", () => {
+    const s = stateWith({ phase: 1 });
+    const h = weekHorizon(s, DAY, 0);
+    expect(h.key).toBe(ghostKeyFor(s, DAY));
+    expect(h.warmup).toBeDefined();
+  });
+
+  it("offset 1 derives next week's key by advancing the date +7 days", () => {
+    const s = stateWith({ phase: 1 });
+    const nextDate = new Date(DAY.getTime() + 7 * 24 * 3600 * 1000);
+    const h = weekHorizon(s, DAY, 1);
+    expect(h.key).toBe(ghostKeyFor(s, nextDate));
+  });
+
+  it("next week's key differs from this week's when the rotation has >1 key", () => {
+    const s = stateWith({ phase: 1 });
+    const thisWeek = weekHorizon(s, DAY, 0);
+    const nextWeek = weekHorizon(s, DAY, 1);
+    if ((thisWeek.rotationLength ?? 0) > 1) {
+      expect(nextWeek.key).not.toBe(thisWeek.key);
+    }
+  });
+
+  it("reports a 1-based rotation position within the rotation length", () => {
+    const s = stateWith({ phase: 1 });
+    const h = weekHorizon(s, DAY, 0);
+    expect(h.rotationLength).toBeGreaterThan(0);
+    expect(h.weekInRotation).toBeGreaterThanOrEqual(1);
+    expect(h.weekInRotation!).toBeLessThanOrEqual(h.rotationLength!);
+  });
+
+  it("a ghost override for THIS week does not bleed into next week's derivation", () => {
+    // Override only applies to the current weekId; next week falls back to the rotation.
+    const s = stateWith({ phase: 1 });
+    const overridden = { ...s, ghostOverride: { key: "Eb" as const, weekId: "" } };
+    const nextWeek = weekHorizon(overridden, DAY, 1);
+    expect(nextWeek.key).toBe(ghostKeyFor(overridden, new Date(DAY.getTime() + 7 * 86400000)));
   });
 });

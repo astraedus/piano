@@ -27,6 +27,7 @@ import { PIANO_NODES } from "./skillNodes";
 import { Keyboard } from "./components/Keyboard";
 import { Staff } from "./components/Staff";
 import { KEY_META } from "../music";
+import { fingeringsForKey, tuckNotesFor, tuckCue } from "./fingerings";
 import type { KeyId } from "../types";
 
 // Piano focus = a key. Reuse the existing rich key labels (e.g. "G major").
@@ -43,12 +44,25 @@ function PianoInstrumentVisual({
   className,
   rangeStart = "C4",
   octaves = 2,
+  scaleKey,
+  scaleHand = "right",
 }: InstrumentVisualProps) {
+  // #4 — when a scaleKey is supplied, overlay the canonical scale fingerings
+  // (1..5) for the chosen hand on the highlighted notes and ring the thumb-tuck
+  // note. All 24 keys are encoded (fingerings.ts), so this is always correct.
+  const fingerings = scaleKey && notes
+    ? fingeringsForKey(notes, scaleKey, scaleHand)
+    : undefined;
+  const tuckNotes = scaleKey && notes
+    ? tuckNotesFor(notes, scaleKey, scaleHand)
+    : undefined;
   return (
     <Keyboard
       notes={notes ?? []}
       rangeStart={rangeStart}
       octaves={octaves}
+      fingerings={fingerings}
+      tuckNotes={tuckNotes}
       className={className}
     />
   );
@@ -88,6 +102,7 @@ export const pianoModule: InstrumentModule = {
   focusKind: "key",
   focusLabel: pianoFocusLabel,
   progressMapKind: "keymap",
+  scaleFingeringCue: (keyId, hand) => tuckCue(keyId, hand),
   InstrumentVisual: PianoInstrumentVisual,
   NotationVisual: PianoNotationVisual,
 };

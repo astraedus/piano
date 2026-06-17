@@ -58,11 +58,11 @@ describe("every guitar chain drill + warmup + song is instrument-tagged", () => 
 });
 
 describe("GUITAR_NODES form a coherent DAG", () => {
-  it("has the full plan §2.4 node set (27 — the prose says '26' but the verbatim JSON lists 27)", () => {
-    // plan §2.4's prose header says "26 nodes" but the literal node list it tells us
-    // to ship VERBATIM contains 27 (g-t0-anatomy … g-t3-syncopation). The verbatim
-    // list is the source of truth, so we carry all 27.
-    expect(GUITAR_NODES.length).toBe(27);
+  it("has the full plan §2.4 node set plus the curriculum-#2 transition node (28)", () => {
+    // plan §2.4's verbatim list = 27 (g-t0-anatomy … g-t3-syncopation); curriculum
+    // batch #1 adds the G→C transition-fluency node (g-trans-G-C) that gates the
+    // 12-Bar Blues song unlock, bringing the total to 28.
+    expect(GUITAR_NODES.length).toBe(28);
   });
 
   it("is acyclic", () => {

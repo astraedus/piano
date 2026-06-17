@@ -210,6 +210,32 @@ describe("PIANO_NODES shipped graph is a valid, fully-reachable DAG", () => {
   });
 });
 
+// #2 — the transition-fluency gate: The Pop Formula must stay locked until the
+// Am→F transition node is learned, even when its other prereq is learned.
+describe("transition-fluency gates the target song (#2)", () => {
+  const popFormula = PIANO_NODES.find((n) => n.id === "p-t2-pop-formula")!;
+
+  it("declares the transition node as a prereq", () => {
+    expect(popFormula.prereqs).toContain("p-trans-am-F");
+  });
+
+  it("stays locked when the chord-under-melody prereq is learned but the transition is not", () => {
+    const learnedSet: Record<string, SkillProgress> = {};
+    for (const pid of popFormula.prereqs) {
+      if (pid !== "p-trans-am-F") learnedSet[pid] = { status: "learned", reps: 1 };
+    }
+    expect(prereqsMet(popFormula, learnedSet)).toBe(false);
+    expect(resolveStatus(PIANO_NODES, learnedSet).get("p-t2-pop-formula")).toBe("locked");
+  });
+
+  it("unlocks once the transition clears (transition node learned)", () => {
+    const learnedSet: Record<string, SkillProgress> = {};
+    for (const pid of popFormula.prereqs) learnedSet[pid] = { status: "learned", reps: 1 };
+    expect(prereqsMet(popFormula, learnedSet)).toBe(true);
+    expect(resolveStatus(PIANO_NODES, learnedSet).get("p-t2-pop-formula")).toBe("available");
+  });
+});
+
 // ─────────────────── V3 R3: success-rate signals ───────────────────
 describe("successRate", () => {
   it("returns null when no attempts logged (legacy data)", () => {

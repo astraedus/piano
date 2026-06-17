@@ -1,4 +1,5 @@
 import type { ChainDrill } from "../types";
+import { withDefaultMotorConfigAll } from "../drillConfig";
 
 // V4 soul-first: `soulName` adds a feel-first heading for each drill (e.g.
 // "Your First Solo" instead of "minor pentatonic: Box 1"), matching the node
@@ -21,7 +22,9 @@ import type { ChainDrill } from "../types";
 //   progression → chord changes / 12-bar
 //   improv → soloing / phrasing
 //   song → the reward riff
-export const GUITAR_CHAIN_DRILLS: ChainDrill[] = [
+// Raw authored guitar drills; augmented below (#2) the same way as piano:
+// micro-rest cadence for all, a default tempo ladder for tempo-relevant drills.
+const RAW_GUITAR_CHAIN_DRILLS: ChainDrill[] = [
   // ───── PHASE 1 — setup + foundations ─────
   {
     id: "g-t0-tuning-chain",
@@ -396,4 +399,26 @@ export const GUITAR_CHAIN_DRILLS: ChainDrill[] = [
     ],
     closingNote: "Syncopation is what makes a rhythm part feel alive instead of mechanical.",
   },
+
+  // ───── Curriculum #2 — timed chord-transition fluency ─────
+  // A TRANSITION drill (transitionPairId set): the slot renders the 60-second
+  // clean-change counter. Clearing ~30/min marks g-trans-G-C learned, gating the
+  // 12-Bar Blues "jam-ready" unlock.
+  {
+    id: "g-trans-G-C-drill",
+    instrument: "guitar",
+    phase: 1,
+    name: "G → C, one-minute changes",
+    soulName: "The Last Reps Before the Song",
+    minutes: 2,
+    ghostKey: "G",
+    pillar: "technique",
+    transitionPairId: "G-C",
+    steps: [
+      { type: "progression", durationSec: 60, instruction: "Switch G↔C cleanly for 60 seconds. Count each clean change. Target 30." },
+    ],
+    closingNote: "The hardest open-chord change. The count going up is the whole game.",
+  },
 ];
+
+export const GUITAR_CHAIN_DRILLS: ChainDrill[] = withDefaultMotorConfigAll(RAW_GUITAR_CHAIN_DRILLS);

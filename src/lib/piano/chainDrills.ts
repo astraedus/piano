@@ -1,4 +1,5 @@
 import type { ChainDrill } from "../types";
+import { withDefaultMotorConfigAll } from "../drillConfig";
 
 // V4 soul-first: `soulName` adds a feel-first heading per drill (e.g. "The Home
 // Shape" for the C major chain), matching the node soulTitles in skillNodes.ts.
@@ -7,7 +8,12 @@ import type { ChainDrill } from "../types";
 // Every drill ends with a song reference — the instant-musicality rule.
 // "You cannot play this wrong. Try twice. Move on." or a variant — on every one.
 
-export const CHAIN_DRILLS: ChainDrill[] = [
+// Raw authored drills. The 3 Phase-1 technique drills declare their own
+// repBlocks + bpmLadder; the rest are augmented below so they stop running flat
+// (#2): every drill gets a micro-rest cadence, and tempo-relevant drills get a
+// default tempo ladder. Pure-expression/mood and by-ear drills get the cadence
+// but no ladder (see drillConfig.drillWantsTempoLadder).
+const RAW_CHAIN_DRILLS: ChainDrill[] = [
   // ───── PHASE 1 ─────
   {
     id: "p1-c-major-chain",
@@ -547,7 +553,29 @@ export const CHAIN_DRILLS: ChainDrill[] = [
     ],
     closingNote: "Reading well is reading twice. You did.",
   },
+
+  // ───── Curriculum #2 — timed chord-transition fluency ─────
+  // A TRANSITION drill (transitionPairId set): the slot renders the 60-second
+  // clean-change counter, not the rep engine. Clearing ~30/min marks p-trans-am-F
+  // learned, which gates The Pop Formula.
+  {
+    id: "p-trans-am-F-drill",
+    instrument: "piano",
+    phase: 2,
+    name: "Am → F, one-minute changes",
+    soulName: "The Last Reps Before the Song",
+    minutes: 2,
+    ghostKey: "am",
+    pillar: "technique",
+    transitionPairId: "am-F",
+    steps: [
+      { type: "progression", durationSec: 60, instruction: "Switch Am↔F cleanly for 60 seconds. Tap each clean landing. Target 30." },
+    ],
+    closingNote: "The count going up IS the progress. Beat your last number, that's it.",
+  },
 ];
+
+export const CHAIN_DRILLS: ChainDrill[] = withDefaultMotorConfigAll(RAW_CHAIN_DRILLS);
 
 export function findDrill(id: string) {
   return CHAIN_DRILLS.find((d) => d.id === id);

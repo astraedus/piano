@@ -11,6 +11,7 @@ export interface KeyboardProps {
   octaves?: number;           // default 2
   labelNotes?: boolean;       // show letter labels under highlighted notes
   fingerings?: Record<string, number>; // SPN -> finger number (1..5)
+  tuckNotes?: string[];       // SPN of notes where the thumb tucks/crosses — ringed
   height?: number;
   accent?: string;            // highlight color override
   className?: string;         // optional override; defaults to the historical svg classes
@@ -26,6 +27,7 @@ export function Keyboard({
   octaves = 2,
   labelNotes = false,
   fingerings,
+  tuckNotes,
   height = 120,
   accent,
   className,
@@ -35,6 +37,12 @@ export function Keyboard({
     for (const n of notes) set.add(pitchMidi(n));
     return set;
   }, [notes]);
+  // Tuck/cross notes (thumb comes up here), matched by MIDI so flat spellings align.
+  const tuckMidi = useMemo(() => {
+    const set = new Set<number>();
+    for (const n of tuckNotes ?? []) set.add(pitchMidi(n));
+    return set;
+  }, [tuckNotes]);
 
   // Build visible white keys
   const startMidi = pitchMidi(rangeStart);
@@ -67,17 +75,23 @@ export function Keyboard({
       {whiteLetters.map((n, i) => {
         const midi = pitchMidi(n);
         const active = highlighted.has(midi);
+        const finger = fingerings?.[n];
+        const isTuck = active && tuckMidi.has(midi);
+        const cx = i * whiteW + whiteW / 2;
         return (
           <g key={"w" + n}>
-            <rect x={i * whiteW} y={0} width={whiteW} height={whiteH} rx={2} fill={active ? highlightFill : "var(--surface-2)"} stroke="var(--rule)" strokeWidth={1} />
-            {active && (
-              <circle cx={i * whiteW + whiteW / 2} cy={whiteH - 14} r={5} fill="var(--background)" />
-            )}
+            <rect x={i * whiteW} y={0} width={whiteW} height={whiteH} rx={2} fill={active ? highlightFill : "var(--surface-2)"} stroke={isTuck ? "var(--accent-deep)" : "var(--rule)"} strokeWidth={isTuck ? 2.5 : 1} />
+            {/* The finger number IS the marker when present; else a plain dot. */}
+            {active && finger ? (
+              <>
+                <circle cx={cx} cy={whiteH - 16} r={8} fill="var(--background)" opacity={0.92} />
+                <text x={cx} y={whiteH - 12} textAnchor="middle" fontSize="12" fontWeight="700" fill={highlightFill} fontFamily="var(--font-mono)">{finger}</text>
+              </>
+            ) : active ? (
+              <circle cx={cx} cy={whiteH - 14} r={5} fill="var(--background)" />
+            ) : null}
             {active && labelNotes && (
-              <text x={i * whiteW + whiteW / 2} y={whiteH + 10} textAnchor="middle" fontSize="10" fill="var(--ink-2)" fontFamily="var(--font-mono)">{n.replace(/\d+$/, "")}</text>
-            )}
-            {active && fingerings?.[n] && (
-              <text x={i * whiteW + whiteW / 2} y={whiteH - 10} textAnchor="middle" fontSize="10" fill="var(--background)" fontFamily="var(--font-mono)">{fingerings[n]}</text>
+              <text x={cx} y={whiteH + 10} textAnchor="middle" fontSize="10" fill="var(--ink-2)" fontFamily="var(--font-mono)">{n.replace(/\d+$/, "")}</text>
             )}
           </g>
         );
@@ -91,16 +105,21 @@ export function Keyboard({
         const bn = `${black}${octave}`;
         const bMidi = pitchMidi(bn);
         const active = highlighted.has(bMidi);
+        const finger = fingerings?.[bn];
+        const isTuck = active && tuckMidi.has(bMidi);
         const x = i * whiteW + whiteW - blackW / 2;
+        const bcx = x + blackW / 2;
         return (
           <g key={"b" + bn}>
-            <rect x={x} y={0} width={blackW} height={blackH} rx={1.5} fill={active ? highlightFill : "var(--ink)"} opacity={active ? 1 : 0.88} stroke="var(--rule)" strokeWidth={0.5} />
-            {active && (
-              <circle cx={x + blackW / 2} cy={blackH - 10} r={4} fill="var(--background)" />
-            )}
-            {active && fingerings?.[bn] && (
-              <text x={x + blackW / 2} y={blackH - 6} textAnchor="middle" fontSize="9" fill="var(--background)" fontFamily="var(--font-mono)">{fingerings[bn]}</text>
-            )}
+            <rect x={x} y={0} width={blackW} height={blackH} rx={1.5} fill={active ? highlightFill : "var(--ink)"} opacity={active ? 1 : 0.88} stroke={isTuck ? "var(--accent-deep)" : "var(--rule)"} strokeWidth={isTuck ? 2.5 : 0.5} />
+            {active && finger ? (
+              <>
+                <circle cx={bcx} cy={blackH - 12} r={7} fill="var(--background)" opacity={0.95} />
+                <text x={bcx} y={blackH - 8} textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--ink)" fontFamily="var(--font-mono)">{finger}</text>
+              </>
+            ) : active ? (
+              <circle cx={bcx} cy={blackH - 10} r={4} fill="var(--background)" />
+            ) : null}
           </g>
         );
       })}

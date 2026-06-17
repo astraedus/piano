@@ -5,12 +5,16 @@ import { Disclosure } from "./Disclosure";
 import { TermChip, linkTerms } from "../explain";
 import type { ChainDrill, SessionQuality, SkillNode } from "@/lib/types";
 import { drillRepId } from "@/lib/types";
-import { KEY_META, midiToSpn, pitchMidi, progressionChords } from "@/lib/music";
+import { KEY_META, keyPrefersFlats, pentatonic, progressionChords } from "@/lib/music";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { ensureAudio, playProgression, playSequence } from "@/lib/audio";
 import { useAppState } from "@/hooks/useAppState";
 import { RepEngine } from "../RepEngine";
+import { TransitionDrill } from "../TransitionDrill";
 import { buildRepItems, type RepEngineConfig } from "@/lib/repEngine";
+import { effectiveBpmLadder } from "@/lib/drillConfig";
+import { findTransitionPair } from "@/lib/transitionDrill";
+import { markNodeProgress } from "@/lib/skillTree";
 import type { InterleavePlan } from "@/lib/chainDrillPicker";
 import { getLesson } from "@/lib/lessons";
 
@@ -46,7 +50,7 @@ export function ChainDrillSlot({
   const drillLesson = drillNode && drill
     ? getLesson(drill.instrument, drillNode.id)
     : undefined;
-  const { state, bumpRep } = useAppState();
+  const { state, bumpRep, patch } = useAppState();
   // Fire the legacy "tried it" rep counter exactly once per drill session.
   const bumpedRef = useRef(false);
   // V4 soul-first: lead with the feeling/outcome name when present; the theory
@@ -75,9 +79,7 @@ export function ChainDrillSlot({
   const meta = KEY_META[drill.ghostKey];
   const romans = meta.mode === "major" ? ["I", "IV", "V", "I"] : ["i", "iv", "V", "i"];
   const prog = progressionChords(drill.ghostKey, romans);
-  const pentatonicIntervals = meta.mode === "major" ? [0, 2, 4, 7, 9, 12] : [0, 3, 5, 7, 10, 12];
-  const rootMidi = pitchMidi(meta.tonic + "4");
-  const pentatonicNotes = pentatonicIntervals.map((i) => midiToSpn(rootMidi + i));
+  const pentatonicNotes = pentatonic(meta.tonic, meta.mode, 4, keyPrefersFlats(drill.ghostKey));
 
   const rep = state.skillReps?.[drillRepId(drill.id)];
 
@@ -92,10 +94,22 @@ export function ChainDrillSlot({
     repBlocks: drill.repBlocks ?? null,
   });
   const interleaved = !!interleave && interleave.drills.length > 1;
+  // #2 — seed the ladder from this skill node's persisted best + scale its
+  // ceiling once cleared across sessions, so the BPM ladder is no longer
+  // amnesiac and the drill keeps getting harder after it's beaten. Falls back to
+  // the authored ladder (or null) when there's no node / progress yet.
+  const nodeProgress = drillNode ? state.skillProgress?.[drillNode.id] : undefined;
+  const seededLadder = effectiveBpmLadder(drill.bpmLadder ?? null, nodeProgress);
+
+  // #2 — timed chord-transition drill. When the drill carries a transitionPairId,
+  // the slot runs the 60-second clean-change counter instead of the rep engine.
+  const transitionPair = drill.transitionPairId
+    ? findTransitionPair(drill.instrument, drill.transitionPairId)
+    : undefined;
   const engineConfig: RepEngineConfig = {
     reps: repItems,
     repBlocks: drill.repBlocks ?? null,
-    bpmLadder: drill.bpmLadder ?? null,
+    bpmLadder: seededLadder,
     interleaved,
   };
 
@@ -145,26 +159,55 @@ export function ChainDrillSlot({
           </div>
         )}
 
-        {/* The interactive rep-engine (R2/R4/R5/R8) — pinned at the top. */}
+        {/* The interactive surface — pinned at the top. A transition drill runs
+            the timed clean-change counter; every other drill runs the rep
+            engine (R2/R4/R5/R8). */}
         <div className="no-print">
           <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-2">
-            Run the reps
+            {transitionPair ? "One-minute changes" : "Run the reps"}
           </p>
-          <RepEngine
-            config={engineConfig}
-            noteText={interleaveNote}
-            resumeKey={drillRepId(drill.id)}
-            onQualityChangeAction={(q) => {
-              onQualityChangeAction?.(q);
-              // Keep the legacy "tried it" rep counter warm on the first clean rep
-              // so the historical skillReps signal (and the "done" pill) still fire.
-              // Guard with a ref so a parent re-render can't double-count it.
-              if (!bumpedRef.current && (q.successes ?? 0) >= 1) {
-                bumpedRef.current = true;
-                bumpRep(drillRepId(drill.id), { bpm: q.bpmReached });
-              }
-            }}
-          />
+          {transitionPair ? (
+            <TransitionDrill
+              pair={transitionPair}
+              bestChanges={nodeProgress?.bestChanges}
+              onCompleteAction={({ perMinute, fluent }) => {
+                // Keep the "tried it" rep counter + done pill warm.
+                if (!bumpedRef.current) {
+                  bumpedRef.current = true;
+                  bumpRep(drillRepId(drill.id));
+                }
+                // Persist the per-pair best on the linked node, and mark it
+                // learned once the pair clears the threshold — that flips the
+                // DAG prereq gate on the target song node. Monotonic on best.
+                if (drillNode) {
+                  const prevBest = state.skillProgress?.[drillNode.id]?.bestChanges ?? 0;
+                  const best = Math.max(prevBest, perMinute);
+                  const next = markNodeProgress(state.skillProgress ?? {}, drillNode.id, {
+                    reps: 0,
+                    learned: fluent || undefined,
+                  });
+                  next[drillNode.id] = { ...next[drillNode.id], bestChanges: best };
+                  patch({ skillProgress: next });
+                }
+              }}
+            />
+          ) : (
+            <RepEngine
+              config={engineConfig}
+              noteText={interleaveNote}
+              resumeKey={drillRepId(drill.id)}
+              onQualityChangeAction={(q) => {
+                onQualityChangeAction?.(q);
+                // Keep the legacy "tried it" rep counter warm on the first clean rep
+                // so the historical skillReps signal (and the "done" pill) still fire.
+                // Guard with a ref so a parent re-render can't double-count it.
+                if (!bumpedRef.current && (q.successes ?? 0) >= 1) {
+                  bumpedRef.current = true;
+                  bumpRep(drillRepId(drill.id), { bpm: q.bpmReached });
+                }
+              }}
+            />
+          )}
         </div>
 
         {/* Reference 1 — the step list, collapsed by default. */}
