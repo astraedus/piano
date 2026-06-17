@@ -15,6 +15,8 @@ import { TermChip, linkTerms } from "@/components/explain";
 import { nodeToTermId } from "@/lib/pathFilter";
 import { getLesson } from "@/lib/lessons";
 import { LessonMedia } from "@/components/LessonMedia";
+import { ProgressionSongsPanel } from "@/components/ProgressionSongsPanel";
+import { isProgressionContainerNode } from "@/lib/progressionSongs";
 
 const STATUS_LABEL: Record<SkillNodeStatus, string> = {
   locked: "Locked",
@@ -83,6 +85,10 @@ export function SkillGraphPanel({
   const theoryName = node.keepTitle ?? node.title;
   const showTheorySubtitle = Boolean(node.soulTitle);
   const theoryTermId = nodeToTermId(node.id);
+
+  // #7 — the Pop-Formula payoff: progression-container nodes surface the
+  // "Songs You Can Now Play" catalog grouped by progression.
+  const showSongs = isProgressionContainerNode(node.id);
 
   return (
     <aside
@@ -237,6 +243,12 @@ export function SkillGraphPanel({
             </p>
           </Section>
         </>
+      )}
+
+      {showSongs && (
+        <Section label="songs you can now play">
+          <ProgressionSongsPanel />
+        </Section>
       )}
 
       {/* R3 — difficulty self-assessment from the recorded success rate. Only shown
