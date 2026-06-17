@@ -330,6 +330,21 @@ export const GLOSSARY: GlossaryEntry[] = [
     seeNotes: ["A3", "C4", "E4"],
   },
   {
+    id: "circle-of-fifths",
+    title: "Circle of Fifths",
+    aliases: ["circle of fifths", "fifths", "the circle", "key wheel", "wheel of fifths"],
+    what: "A wheel of the 12 major keys (minors inside) arranged so each step clockwise jumps up a fifth — and neighbours on the wheel are the keys that sound at home together.",
+    why: "It shows at a glance which chords belong together: the three keys touching yours are its I, IV and V, and the one tucked inside is its vi — and those four chords are most pop songs.",
+    hear: () => hear(() => playProgression([
+      ["C4", "E4", "G4"], // I  — C
+      ["G3", "B3", "D4"], // V  — G (clockwise neighbour)
+      ["A3", "C4", "E4"], // vi — A minor (inner neighbour)
+      ["F3", "A3", "C4"], // IV — F (counter-clockwise neighbour)
+    ])),
+    seeKind: "keyboard",
+    seeNotes: ["C4", "F4", "G4", "A4"], // the roots of C's four neighbours: I, IV, V, vi
+  },
+  {
     id: "pop-formula",
     title: "The Pop Formula",
     aliases: ["pop formula", "the four chords", "i-v-vi-iv", "four chord song"],
