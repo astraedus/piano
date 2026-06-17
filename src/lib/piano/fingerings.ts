@@ -51,11 +51,13 @@ const LH_ONE_OCTAVE: Record<string, number[]> = {
 };
 
 /** The one-octave ascending finger sequence for a tonic + hand, defaulting to
- *  the C-major (white-key tuck) shape when the key isn't explicitly listed. */
+ *  the C-major (white-key tuck) shape when the tonic isn't explicitly listed.
+ *  We do NOT borrow a same-letter sharp/flat key's shape (e.g. Db must not get
+ *  D-major's fingering) — an unlisted tonic falls straight to C. In practice the
+ *  caller gates on hasCanonicalFingering so only listed tonics reach here. */
 function oneOctaveSequence(tonicLetter: string, hand: Hand): number[] {
   const table = hand === "right" ? RH_ONE_OCTAVE : LH_ONE_OCTAVE;
-  const root = tonicLetter.replace(/[#b]/g, ""); // map enharmonic spellings to the letter
-  return table[tonicLetter] ?? table[root] ?? table.C;
+  return table[tonicLetter] ?? table.C;
 }
 
 /**
@@ -85,19 +87,20 @@ export function fingeringsForNotes(
   hand: Hand = "right",
 ): Record<string, number> {
   const seq = oneOctaveSequence(tonicLetter, hand);
+  // The finger that starts each octave (and ends the whole scale): RH thumb (1),
+  // LH pinky (5)... except the very LAST note flips (RH top is 5, LH top is 1).
+  const joinFinger = hand === "right" ? 1 : 5;
+  const topFinger = hand === "right" ? 5 : 1;
   const out: Record<string, number> = {};
   const lastIdx = notes.length - 1;
   notes.forEach((spn, i) => {
     if (i === lastIdx) {
-      // The final note is the scale's top: RH thumb-five / LH five-thumb.
-      out[spn] = hand === "right" ? 5 : 1;
+      out[spn] = topFinger;
       return;
     }
     // Within-octave degree (0..6); octave join notes reuse the start finger.
     const degree = i % 7;
-    out[spn] = hand === "right"
-      ? (degree === 0 ? 1 : seq[degree])
-      : (degree === 0 ? 5 : seq[degree]);
+    out[spn] = degree === 0 ? joinFinger : seq[degree];
   });
   return out;
 }

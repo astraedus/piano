@@ -13,7 +13,7 @@
 // shape shown is the correct scale for the key.
 
 import type { KeyId } from "../types";
-import { KEY_META } from "../music";
+import { KEY_META, noteIndex } from "../music";
 
 // Re-declared locally to avoid importing the React component's type. Matches
 // Fretboard's FretPosition (string 1 = low E .. 6 = high e; fret 0 = open).
@@ -23,14 +23,6 @@ export interface ScaleBoxPosition {
   root?: boolean;
   label?: string;
 }
-
-// Note-name -> fret on the low E string (0..11), E open = 0. Sharps only; we
-// normalize flats to their sharp enharmonic for the fret math (the fret is the
-// same pitch either way — this is positions, not spelling).
-const LOW_E_FRET: Record<string, number> = {
-  E: 0, F: 1, "F#": 2, Gb: 2, G: 3, "G#": 4, Ab: 4, A: 5, "A#": 6, Bb: 6,
-  B: 7, C: 8, "C#": 9, Db: 9, D: 10, "D#": 11, Eb: 11,
-};
 
 // The moveable minor-pentatonic Box 1 shape, as fret OFFSETS from the root fret
 // (string 1 = low E). Root degrees flagged. This is the canonical Box 1 the app
@@ -52,10 +44,12 @@ export function scaleBoxRootNote(keyId: KeyId): string {
   return KEY_META[meta.relative].tonic; // relative minor of the major key
 }
 
-/** Root fret (0..11) of the moveable box on the low E string for a key. */
+/** Root fret (0..11) of the moveable box on the low E string for a key. The low
+ *  E string is the note E, so the fret is the pitch-class distance from E —
+ *  music.ts already owns the note-name → pitch-class mapping (handles #/b/Cb). */
 export function scaleBoxRootFret(keyId: KeyId): number {
   const root = scaleBoxRootNote(keyId);
-  return LOW_E_FRET[root] ?? LOW_E_FRET[root.replace(/b$/, "")] ?? 5;
+  return (noteIndex(root) - noteIndex("E") + 12) % 12;
 }
 
 /**
