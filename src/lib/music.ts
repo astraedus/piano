@@ -86,36 +86,109 @@ export function midiToSpn(midi: number, preferFlats = false): string {
   return noteName(midi % 12, preferFlats) + oct;
 }
 
-export function scale(tonic: string, mode: KeyMode, octaves = 1, startOct = 4, preferFlats = false): string[] {
+// ─────────────────── letter-aware diatonic spelling ───────────────────
+// A diatonic scale uses each of the seven letters A–G exactly once. Spelling
+// note-by-note from the tonic's LETTER (not from a fixed flat/sharp enharmonic
+// table) is what lets flat keys spell Cb / Fb correctly — Gb major is
+// Gb Ab Bb Cb Db Eb F Gb, not "...B Db..." (which the enharmonic table produced,
+// since its flat array has B/E and never Cb/Fb).
+
+const LETTER_ORDER = ["C", "D", "E", "F", "G", "A", "B"] as const;
+const LETTER_PC: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+
+/** Spell a target pitch class with a SPECIFIC letter, choosing the accidental
+ *  (b / bb / # / ## / natural) that maps that letter to the pitch. Used so each
+ *  diatonic degree keeps its own letter (the rule that gives Cb/Fb). */
+function spellWithLetter(letter: string, targetPc: number): string {
+  const natural = LETTER_PC[letter];
+  let diff = ((targetPc - natural) % 12 + 12) % 12; // 0..11 semitones above natural
+  if (diff > 6) diff -= 12; // choose the nearest direction (-1 = flat, +1 = sharp)
+  if (diff === 0) return letter;
+  if (diff === 1) return letter + "#";
+  if (diff === 2) return letter + "##";
+  if (diff === -1) return letter + "b";
+  if (diff === -2) return letter + "bb";
+  return letter; // unreachable for diatonic scales
+}
+
+/** The letter-spelled scale degree names (no octave) for a tonic + mode, walking
+ *  the letters A–G in order from the tonic letter so each is used once. Pure. */
+export function spelledScaleNames(tonic: string, mode: KeyMode): string[] {
   const steps = mode === "major" ? MAJOR_STEPS : NATURAL_MINOR_STEPS;
-  const startMidi = pitchMidi(tonic + startOct);
-  const out: string[] = [midiToSpn(startMidi, preferFlats)];
-  let cur = startMidi;
+  const tonicLetter = tonic[0].toUpperCase();
+  const startMidi = pitchMidi(tonic + "4");
+  const names: string[] = [spellWithLetter(tonicLetter, startMidi % 12)];
+  let pc = startMidi % 12;
+  let letterIdx = LETTER_ORDER.indexOf(tonicLetter as (typeof LETTER_ORDER)[number]);
+  for (const s of steps) {
+    pc = (pc + s) % 12;
+    letterIdx = (letterIdx + 1) % 7;
+    names.push(spellWithLetter(LETTER_ORDER[letterIdx], pc));
+  }
+  return names; // 8 entries, first === last letter+accidental
+}
+
+export function scale(tonic: string, mode: KeyMode, octaves = 1, startOct = 4, _preferFlats = false): string[] {
+  // Spell the degrees letter-by-letter from the tonic (each letter A–G once),
+  // which is correct for EVERY key — flats spell Cb/Fb, sharps spell F#, and the
+  // flat-vs-sharp choice is driven entirely by the (correctly-spelled) tonic, so
+  // the legacy `preferFlats` hint is no longer needed (kept for call-site compat).
+  const steps = mode === "major" ? MAJOR_STEPS : NATURAL_MINOR_STEPS;
+  const names = spelledScaleNames(tonic, mode); // 8 degree names (octave inclusive)
+  let cur = pitchMidi(tonic + startOct);
+  const out: string[] = [];
   for (let o = 0; o < octaves; o++) {
-    for (const s of steps) {
-      cur += s;
-      out.push(midiToSpn(cur, preferFlats));
+    for (let i = 0; i < steps.length; i++) {
+      out.push(names[i] + (Math.floor(cur / 12) - 1));
+      cur += steps[i];
     }
   }
+  out.push(names[0] + (Math.floor(cur / 12) - 1)); // final octave note
   return out;
 }
 
-export function triad(tonic: string, quality: "maj" | "min" | "dim" | "aug", oct = 4, preferFlats = false): string[] {
+// Spell a TERTIAN chord (stacked thirds) by letter: the root keeps its letter,
+// each successive chord tone steps the letter by 2 (a third) and is spelled to
+// the target pitch — so Cb major spells Cb Eb Gb (not B D# F#), and a 7th adds
+// the next letter up. `semis` are semitone intervals above the root (e.g. maj
+// triad [0,4,7]). Octaves attach by tracking absolute MIDI. Pure.
+function spellTertianChord(rootName: string, rootMidi: number, semis: number[]): string[] {
+  const rootLetter = rootName.replace(/[#b]+$/, "")[0].toUpperCase();
+  const rootLetterIdx = LETTER_ORDER.indexOf(rootLetter as (typeof LETTER_ORDER)[number]);
+  return semis.map((s, i) => {
+    const midi = rootMidi + s;
+    // i-th chord tone sits a third (2 letters) above the previous one.
+    const letter = LETTER_ORDER[(rootLetterIdx + 2 * i) % 7];
+    const oct = Math.floor(midi / 12) - 1;
+    return spellWithLetter(letter, midi % 12) + oct;
+  });
+}
+
+const TRIAD_SEMIS: Record<"maj" | "min" | "dim" | "aug", number[]> = {
+  maj: [0, 4, 7],
+  min: [0, 3, 7],
+  dim: [0, 3, 6],
+  aug: [0, 4, 8],
+};
+
+export function triad(tonic: string, quality: "maj" | "min" | "dim" | "aug", oct = 4, _preferFlats = false): string[] {
   const rootMidi = pitchMidi(tonic + oct);
-  const third = quality === "maj" || quality === "aug" ? 4 : 3;
-  const fifth = quality === "aug" ? 8 : quality === "dim" ? 6 : 7;
-  return [midiToSpn(rootMidi, preferFlats), midiToSpn(rootMidi + third, preferFlats), midiToSpn(rootMidi + fifth, preferFlats)];
+  // Spell from the tonic letter so flat-key triads (incl. Cb) read correctly;
+  // preferFlats is implied by the tonic spelling (kept for call-site compat).
+  return spellTertianChord(tonic, rootMidi, TRIAD_SEMIS[quality]);
 }
 
 // Map roman-numeral progressions to chord tones in a given key.
 // Supports: I ii iii IV V vi vii° (major) and i iiø III iv v VI VII (minor)
 export function progressionChords(key: KeyId, romans: string[], oct = 4): string[][] {
   const meta = KEY_META[key];
-  const preferFlats = keyPrefersFlats(key);
   const tonicMidi = pitchMidi(meta.tonic + oct);
   const majSteps = [0, 2, 4, 5, 7, 9, 11];
   const minSteps = [0, 2, 3, 5, 7, 8, 10];
   const steps = meta.mode === "major" ? majSteps : minSteps;
+  // Spelled degree roots (each letter once) so a chord built on, say, the IV of
+  // Gb (Cb) keeps the Cb letter instead of collapsing to B.
+  const degreeRoots = spelledScaleNames(meta.tonic, meta.mode); // 8 (octave inclusive)
   const romanMap: Record<string, { degree: number; quality: "maj" | "min" | "dim" | "aug" }> = meta.mode === "major"
     ? {
         I:  { degree: 0, quality: "maj" },
@@ -143,11 +216,10 @@ export function progressionChords(key: KeyId, romans: string[], oct = 4): string
   return romans.map((r) => {
     const info = romanMap[r] ?? { degree: 0, quality: "maj" };
     const rootMidi = tonicMidi + steps[info.degree];
-    const third = info.quality === "maj" || info.quality === "aug" ? 4 : 3;
-    const fifth = info.quality === "aug" ? 8 : info.quality === "dim" ? 6 : 7;
-    const tones = [midiToSpn(rootMidi, preferFlats), midiToSpn(rootMidi + third, preferFlats), midiToSpn(rootMidi + fifth, preferFlats)];
-    if (r === "V7") tones.push(midiToSpn(rootMidi + 10, preferFlats));
-    return tones;
+    const rootName = degreeRoots[info.degree]; // letter-correct degree spelling
+    const semis = [...TRIAD_SEMIS[info.quality]];
+    if (r === "V7") semis.push(10); // add the minor 7th as a fourth chord tone
+    return spellTertianChord(rootName, rootMidi, semis);
   });
 }
 
@@ -163,9 +235,16 @@ export function romansToEnglish(key: KeyId, romans: string[]): string {
   }).join("–");
 }
 
-// Pentatonic scale tones (for improv layer).
-export function pentatonic(tonic: string, mode: KeyMode, oct = 4, preferFlats = false): string[] {
+// Pentatonic scale tones (for improv layer). Spelled letter-correct by pulling
+// the relevant diatonic degrees from the spelled scale (so flat keys read flats,
+// incl. Cb). Major pentatonic = degrees 1 2 3 5 6; minor = 1 3 4 5 7.
+export function pentatonic(tonic: string, mode: KeyMode, oct = 4, _preferFlats = false): string[] {
+  const names = spelledScaleNames(tonic, mode); // 8 (degree 0..6 + octave at 7)
   const rootMidi = pitchMidi(tonic + oct);
   const intervals = mode === "major" ? [0, 2, 4, 7, 9, 12] : [0, 3, 5, 7, 10, 12];
-  return intervals.map((i) => midiToSpn(rootMidi + i, preferFlats));
+  const degreeOf = mode === "major" ? [0, 1, 2, 4, 5, 0] : [0, 2, 3, 4, 6, 0];
+  return intervals.map((semi, i) => {
+    const midi = rootMidi + semi;
+    return names[degreeOf[i]] + (Math.floor(midi / 12) - 1);
+  });
 }

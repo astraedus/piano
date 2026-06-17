@@ -66,6 +66,16 @@ describe("scale spelling", () => {
   it("G major still reads with F# (sharp key preserved)", () => {
     expect(scale("G", "major", 1, 4, false).map(stripOct)).toContain("F#");
   });
+  it("Gb major reads Gb Ab Bb Cb Db Eb F Gb (the Cb spelling — was 'B')", () => {
+    expect(scale("Gb", "major", 1, 4, true).map(stripOct)).toEqual([
+      "Gb", "Ab", "Bb", "Cb", "Db", "Eb", "F", "Gb",
+    ]);
+  });
+  it("Eb minor reads Eb F Gb Ab Bb Cb Db Eb (its 6th is Cb, not B)", () => {
+    expect(scale("Eb", "minor", 1, 4, true).map(stripOct)).toEqual([
+      "Eb", "F", "Gb", "Ab", "Bb", "Cb", "Db", "Eb",
+    ]);
+  });
 });
 
 describe("triad spelling", () => {
@@ -86,20 +96,47 @@ describe("pentatonic spelling", () => {
 });
 
 // Class-level invariant: for EVERY flat key, NOTHING the user sees (scale 2
-// octaves + tonic triad + the I–IV–V–I / i–iv–V–i progression) may contain a
-// '#'. This is the catch-all that prevents any flat key regressing to sharps.
+// octaves + tonic triad + the I–IV–V–I / i–iv–V–i progression + pentatonic) may
+// contain a '#'. This is the catch-all that prevents any flat key regressing to
+// sharps.
 describe("no flat key ever displays a sharp (class invariant)", () => {
+  // NOTE: the natural diatonic content (scale, tonic triad, pentatonic) of a flat
+  // key has NO sharps. The harmonic-minor V chord is deliberately EXCLUDED here:
+  // it raises the leading tone, which is correctly spelled with a sharp/natural
+  // even in a flat minor key (D minor's V = A C# E, G minor's V = D F# A). That
+  // raised tone is verified separately below.
   for (const key of FLAT_KEYS) {
-    it(`${key} (${KEY_META[key].name}) displays only flats/naturals`, () => {
+    it(`${key} (${KEY_META[key].name}) natural content displays only flats/naturals`, () => {
       const meta = KEY_META[key];
-      const romans = meta.mode === "major" ? ["I", "IV", "V", "I"] : ["i", "iv", "V", "i"];
       const display = [
         ...scale(meta.tonic, meta.mode, 2, 4, true),
         ...triad(meta.tonic, meta.mode === "major" ? "maj" : "min", 4, true),
-        ...progressionChords(key, romans).flat(),
         ...pentatonic(meta.tonic, meta.mode, 4, true),
       ].join(" ");
       expect(display, `${key} display: ${display}`).not.toContain("#");
+    });
+  }
+
+  it("the harmonic-minor V raises the leading tone with a SHARP, not a flat", () => {
+    // D minor V = A C# E (NOT A Db E — the leading tone is C#). This is the bug
+    // the letter-aware speller fixes: the old preferFlats path mis-spelled it Db.
+    const dmV = progressionChords("dm", ["V"]).flat().map(stripOct);
+    expect(dmV).toEqual(["A", "C#", "E"]);
+    // G minor V = D F# A.
+    const gmV = progressionChords("gm", ["V"]).flat().map(stripOct);
+    expect(gmV).toEqual(["D", "F#", "A"]);
+  });
+
+  // STRENGTHENED: a diatonic scale must use each letter A–G exactly once. This
+  // catches WRONG-LETTER spellings (Cb mis-rendered as "B", Fb as "E") that the
+  // '#'-only check above misses — e.g. Gb major must read ...Bb Cb Db..., never
+  // ...Bb B Db... (B used twice, C skipped).
+  for (const key of [...FLAT_KEYS] as const) {
+    it(`${key} (${KEY_META[key].name}) scale uses each letter A–G exactly once`, () => {
+      const meta = KEY_META[key];
+      const oneOctave = scale(meta.tonic, meta.mode, 1, 4).slice(0, 7); // drop the repeat
+      const letters = oneOctave.map((n) => n.replace(/[#b]+/g, "").replace(/-?\d+$/, ""));
+      expect(new Set(letters).size, `${key} letters: ${letters.join(" ")}`).toBe(7);
     });
   }
 });
