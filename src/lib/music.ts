@@ -51,6 +51,36 @@ export function keyPrefersFlats(key: KeyId): boolean {
 export const CIRCLE_MAJORS: KeyId[] = ["C", "G", "D", "A", "E", "B", "Fs", "Db", "Ab", "Eb", "Bb", "F"];
 export const CIRCLE_MINORS: KeyId[] = ["am", "em", "bm", "fsm", "csm", "gsm", "dsm", "bbm", "fm", "cm", "gm", "dm"];
 
+// The four chords the circle teaches for a MAJOR key (the "Pop Formula" core):
+// the tapped key is I; its clockwise outer neighbour is V; its counter-clockwise
+// outer neighbour is IV; and the relative minor directly inside it (same index on
+// the inner ring) is vi. These are the diatonic I, IV, V and vi of the key — and
+// they are literally adjacent on the circle, which is the single most transferable
+// pattern in popular music. Reads geometry only (no chord math), wrapping around
+// the 12-element ring.
+export interface CircleNeighbors {
+  I: KeyId; // root — the tapped major key
+  IV: KeyId; // subdominant — counter-clockwise outer neighbour
+  V: KeyId; // dominant — clockwise outer neighbour
+  vi: KeyId; // relative minor — inner ring, same position
+}
+
+/** Given a MAJOR circle key, return its I / IV / V / vi neighbours on the circle
+ *  of fifths. Returns null for minor (or off-circle) keys, since the I-IV-V-vi
+ *  adjacency is a major-key teaching. Pure — derives purely from CIRCLE_MAJORS /
+ *  CIRCLE_MINORS positions, wrapping at the ends of the ring. */
+export function circleNeighbors(key: KeyId): CircleNeighbors | null {
+  const i = CIRCLE_MAJORS.indexOf(key);
+  if (i < 0) return null; // minor or not on the circle
+  const n = CIRCLE_MAJORS.length; // 12
+  return {
+    I: key,
+    V: CIRCLE_MAJORS[(i + 1) % n], // clockwise (up a fifth)
+    IV: CIRCLE_MAJORS[(i - 1 + n) % n], // counter-clockwise (down a fifth)
+    vi: CIRCLE_MINORS[i], // relative minor, directly inside
+  };
+}
+
 export function noteIndex(note: string): number {
   // Accept "C", "C#", "Db" — no octave
   const n = note.replace(/\d+$/, "");

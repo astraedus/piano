@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META, keyPrefersFlats, scale, triad, progressionChords } from "@/lib/music";
+import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META, keyPrefersFlats, scale, triad, progressionChords, circleNeighbors } from "@/lib/music";
+import type { CircleNeighbors } from "@/lib/music";
 import { DEPTH_MEANINGS, DEPTH_NAMES } from "@/lib/types";
 import type { KeyId, KeyDepth } from "@/lib/types";
 import { useAppState } from "@/hooks/useAppState";
@@ -16,6 +17,16 @@ const R_OUTER = 180;
 const R_MID = 130;
 const R_INNER = 80;
 
+// The four chords the circle teaches for a major key, in display order.
+const ROLE_ORDER = ["I", "IV", "V", "vi"] as const;
+
+// The chord's root note name with the octave stripped (e.g. ["C#4","E#4","G#4"]
+// → "C#"). Used to label a chord cell / wheel badge from the SOUNDED chord, so
+// the displayed enharmonic always matches the audio.
+function rootName(chordTones: string[]): string {
+  return (chordTones[0] ?? "").replace(/-?\d+$/, "");
+}
+
 export function KeyMap() {
   const { state } = useAppState();
   const [selected, setSelected] = useState<KeyId | null>("C");
@@ -27,6 +38,28 @@ export function KeyMap() {
   const touched = Object.values(depths).filter((d) => (d ?? 0) > 0).length;
 
   const sel = selected ? KEY_META[selected] : null;
+
+  // The four chords the circle teaches for the selected MAJOR key: I (root),
+  // V (clockwise neighbour), IV (counter-clockwise neighbour), vi (inner
+  // relative minor). null when a minor key is selected — the adjacency is a
+  // major-key teaching.
+  const neighbors = selected ? circleNeighbors(selected) : null;
+  // Map each highlighted KeyId → its roman numeral, for the wheel overlay.
+  const rolesByKey: Partial<Record<KeyId, "I" | "IV" | "V" | "vi">> = neighbors
+    ? { [neighbors.I]: "I", [neighbors.IV]: "IV", [neighbors.V]: "V", [neighbors.vi]: "vi" }
+    : {};
+  // The IN-KEY chord-root spelling for each highlighted wedge, so the badge
+  // teaches the correct enharmonic (e.g. F#'s V badge reads "C#" even though that
+  // chord physically lands on the wheel's "Db" wedge — the circle has one wedge
+  // per pitch class, but the role spelling follows the selected key). Built from
+  // the same progressionChords() that produces the audio, so badge == sound.
+  const spellingByKey: Partial<Record<KeyId, string>> = {};
+  if (neighbors && selected) {
+    const tones = progressionChords(selected, [...ROLE_ORDER]);
+    ROLE_ORDER.forEach((role, i) => {
+      spellingByKey[neighbors[role]] = rootName(tones[i]) + (role === "vi" ? "m" : "");
+    });
+  }
 
   return (
     <div className="grid md:grid-cols-[420px_1fr] gap-6">
@@ -50,6 +83,8 @@ export function KeyMap() {
                 rInner={R_MID}
                 depth={(depths[k] ?? 0) as KeyDepth}
                 selected={selected === k}
+                role={rolesByKey[k]}
+                roleSpelling={spellingByKey[k]}
                 onClickAction={() => setSelected(k)}
               />
             ))}
@@ -64,30 +99,87 @@ export function KeyMap() {
                 rInner={R_INNER}
                 depth={(depths[k] ?? 0) as KeyDepth}
                 selected={selected === k}
+                role={rolesByKey[k]}
+                roleSpelling={spellingByKey[k]}
                 onClickAction={() => setSelected(k)}
                 isMinor
               />
             ))}
             {/* center label */}
-            <text textAnchor="middle" y={6} className="fill-[color:var(--ink-2)]" style={{ fontSize: "13px", fontFamily: "var(--font-serif)", fontStyle: "italic" }}>The Keys</text>
+            <text textAnchor="middle" y={2} className="fill-[color:var(--ink-2)]" style={{ fontSize: "12px", fontFamily: "var(--font-serif)", fontStyle: "italic" }}>Circle of</text>
+            <text textAnchor="middle" y={18} className="fill-[color:var(--ink-2)]" style={{ fontSize: "12px", fontFamily: "var(--font-serif)", fontStyle: "italic" }}>Fifths</text>
           </svg>
         </div>
         <p className="text-xs text-[color:var(--ink-muted)] italic mt-3 text-center">
           {touched === 0
-            ? "Majors outside, minors inside. Play a key and it warms up."
+            ? "Clockwise goes up a fifth. Majors outside, relative minors inside."
             : `${touched} key${touched === 1 ? "" : "s"} charted so far. It only grows.`}
         </p>
+        {neighbors && selected && <CircleChords keyId={selected} neighbors={neighbors} />}
       </div>
       {sel && selected && <KeyDetailPanel keyId={selected} depth={(depths[selected] ?? 0) as KeyDepth} />}
     </div>
   );
 }
 
+// The four-chord payoff of the circle for a major key: I / IV / V / vi. The three
+// adjacent majors (I, IV, V) plus the inner relative minor (vi) — the Pop Formula.
+// Each chord is playable; reuses the same progressionChords + playChord wiring as
+// the I-IV-V loop in KeyDetailPanel.
+function CircleChords({ keyId, neighbors }: { keyId: KeyId; neighbors: CircleNeighbors }) {
+  // Chord tones for each role, built in the SELECTED key (so vi reads as the
+  // relative minor triad of this key, not its own tonic chord).
+  const tones = progressionChords(keyId, [...ROLE_ORDER]); // [[I],[IV],[V],[vi]]
+  const cells = ROLE_ORDER.map((role, i) => ({
+    role,
+    keyId: neighbors[role],
+    // Label from the SOUNDED chord's root spelling (the in-key enharmonic), NOT
+    // KEY_META[neighbor].tonic — the circle array's fixed enharmonic diverges
+    // from the played chord at two keys (F# major's V is C# not Db; Db major's
+    // IV is Gb not F#). A teaching feature must label what it plays.
+    label: rootName(tones[i]) + (role === "vi" ? "m" : ""),
+    tones: tones[i],
+  }));
+
+  return (
+    <div className="warm-card p-4 mt-3">
+      <div className="flex items-center justify-between mb-2.5">
+        <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--ink-3)]">on the circle</p>
+        <button
+          type="button"
+          onClick={async () => { await ensureAudio(); await playProgression(tones); }}
+          className="chip text-xs px-2 py-0.5"
+        >
+          hear the loop
+        </button>
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {cells.map((c) => (
+          <button
+            key={c.role}
+            type="button"
+            onClick={async () => { await ensureAudio(); await playChord(c.tones); }}
+            className="flex flex-col items-center gap-0.5 rounded-[var(--radius-sm)] border border-[color:var(--rule)] bg-[color:var(--bg-surface-2)] px-2 py-2 transition-colors hover:border-[color:var(--instrument-accent)]"
+          >
+            <span className="font-serif italic text-xs text-[color:var(--instrument-accent-deep)] font-bold">{c.role}</span>
+            <span className="font-serif text-[length:var(--text-xl)] text-[color:var(--ink)] leading-none">{c.label}</span>
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-[color:var(--ink-2)] italic mt-2.5 leading-snug">
+        The three majors touching <span className="not-italic font-medium">{KEY_META[keyId].tonic}</span> on the
+        wheel are its <span className="not-italic font-medium">I&nbsp;IV&nbsp;V</span>; the minor tucked inside is the{" "}
+        <span className="not-italic font-medium">vi</span> — and these four chords are most pop songs.
+      </p>
+    </div>
+  );
+}
+
 function KeyWedge({
-  keyId, idx, revealIdx, total, rOuter, rInner, depth, selected, onClickAction, isMinor,
+  keyId, idx, revealIdx, total, rOuter, rInner, depth, selected, role, roleSpelling, onClickAction, isMinor,
 }: {
   keyId: KeyId; idx: number; revealIdx: number; total: number; rOuter: number; rInner: number;
-  depth: KeyDepth; selected: boolean; onClickAction: () => void; isMinor?: boolean;
+  depth: KeyDepth; selected: boolean; role?: "I" | "IV" | "V" | "vi"; roleSpelling?: string; onClickAction: () => void; isMinor?: boolean;
 }) {
   const sweep = (2 * Math.PI) / total;
   // 2px-equivalent gap between segments (territory, not a pie chart).
@@ -116,6 +208,28 @@ function KeyWedge({
   const label = isMinor ? meta.tonic.toLowerCase() + "m" : meta.tonic;
   const isHome = depth >= 5;
 
+  // A wedge in the selected key's I/IV/V/vi set gets an accent outline so the
+  // four relatives read as one group, plus a roman-numeral badge placed just
+  // beyond the wedge (outside the outer arc for majors, inside for the vi minor).
+  const highlighted = role != null;
+  const badgeR = isMinor ? rInner - 13 : rOuter + 14;
+  const bx = r(badgeR * Math.cos(midA));
+  const by = r(badgeR * Math.sin(midA) + 4);
+  // The wheel has one wedge per pitch class, so a chord can land on a wedge whose
+  // canonical name is the OTHER enharmonic (F#'s V is the C# chord, but it sits on
+  // the wheel's "Db" wedge). When the in-key spelling differs from the wedge's own
+  // label, append it to the badge ("V · C#") so the wheel teaches the right
+  // enharmonic and never contradicts the chord grid / audio.
+  const showSpelling = highlighted && roleSpelling != null && roleSpelling !== label;
+  const badgeText = showSpelling ? `${role} · ${roleSpelling}` : role;
+
+  // Outline: the tapped I already shows via `selected`; the other three (and the
+  // I if not the selected wedge) get an accent ring at role-stroke weight.
+  const stroke = selected || highlighted
+    ? "var(--instrument-accent)"
+    : isHome ? "var(--instrument-accent-deep)" : "var(--bg-rule)";
+  const strokeWidth = selected ? 2.5 : highlighted ? 2 : isHome ? 2 : 0.75;
+
   return (
     <g
       onClick={onClickAction}
@@ -129,14 +243,25 @@ function KeyWedge({
       <path
         d={d}
         fill={fill}
-        stroke={selected ? "var(--instrument-accent)" : isHome ? "var(--instrument-accent-deep)" : "var(--bg-rule)"}
-        strokeWidth={selected ? 2.5 : isHome ? 2 : 0.75}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
         className={isHome ? "home-ring" : undefined}
         style={isHome ? { stroke: "var(--instrument-accent)" } : undefined}
       />
       <text x={lx} y={ly} textAnchor="middle" style={{ fontSize: isMinor ? "11px" : "13px", fontFamily: "var(--font-serif)", fontWeight: 600, fill: depth >= 3 ? "#fff" : "var(--ink-2)" }}>
         {label}
       </text>
+      {highlighted && (
+        <text
+          x={bx}
+          y={by}
+          textAnchor="middle"
+          aria-hidden
+          style={{ fontSize: "11px", fontFamily: "var(--font-serif)", fontStyle: "italic", fontWeight: 700, fill: "var(--instrument-accent-deep)" }}
+        >
+          {badgeText}
+        </text>
+      )}
     </g>
   );
 }

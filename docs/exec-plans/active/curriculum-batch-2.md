@@ -10,7 +10,10 @@ fresh-build QA (VERIFY served BUILD_ID — see CLAUDE.md QA note) → merge to m
 
 ## Build order
 
-### #3 — Taught, interactive Circle of Fifths (effort M) — the owner's explicit Q2, do FIRST
+### #3 — Taught, interactive Circle of Fifths (effort M) — the owner's explicit Q2 — DONE (feat/curriculum-batch-2)
+_Shipped on branch `feat/curriculum-batch-2` (3 commits): `circleNeighbors()` pure helper + 8 unit-test pins in `music.ts`/`music.test.ts`; a "Circle of Fifths" glossary entry; KeyMap renamed + I/IV/V/vi wheel highlight + playable chord grid + teaching caption. Gate green (tsc 0, 657 tests, build 0). Awaiting consolidated browser QA + merge.
+NOTE for the next batch: the audit's #6 flat-key spelling bug (Q4) is ALREADY FIXED in `music.ts` (letter-aware `spelledScaleNames` + `keyPrefersFlats`), and `fingeringsForKey`/`songsForKey` are already wired into KeyDetailPanel — the audit text is stale on those points. Re-verify before acting on #6/#7._
+
 The KeyMap wheel (`src/components/KeyMap.tsx`) ALREADY renders a correct circle of fifths (majors outer / relative
 minors inner, clockwise) — it's just never named or taught. KeyDetailPanel already generates AND plays the I-IV-V
 progression. So this is labeling + a highlight overlay + a glossary entry on existing data, NOT new infra.

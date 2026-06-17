@@ -7,6 +7,9 @@ import {
   progressionChords,
   pentatonic,
   pitchMidi,
+  circleNeighbors,
+  CIRCLE_MAJORS,
+  CIRCLE_MINORS,
 } from "./music";
 import type { KeyId } from "./types";
 
@@ -179,6 +182,110 @@ describe("progressionChords derives preferFlats from the key", () => {
     expect(chords[1]).toEqual(["Eb", "G", "Bb"]); // IV = Eb
     expect(chords[2]).toEqual(["F", "A", "C"]); // V = F
     expect(chords.flat().join(" ")).not.toContain("#");
+  });
+});
+
+// Circle-of-fifths I / IV / V / vi neighbour derivation (#3). The tapped key is
+// I; its clockwise outer neighbour is V; counter-clockwise outer neighbour is IV;
+// the relative minor directly inside is vi. These four are adjacent on the circle
+// and are the Pop-Formula core, so the derivation must be exactly right — incl.
+// the wraparound at both ends of the 12-key ring.
+describe("circleNeighbors", () => {
+  it("C → I=C, IV=F, V=G, vi=am (the canonical pin)", () => {
+    expect(circleNeighbors("C")).toEqual({ I: "C", IV: "F", V: "G", vi: "am" });
+  });
+  it("G → I=G, IV=C, V=D, vi=em", () => {
+    expect(circleNeighbors("G")).toEqual({ I: "G", IV: "C", V: "D", vi: "em" });
+  });
+  it("F → I=F, IV=Bb, V=C, vi=dm (F is last in the ring — V wraps to C)", () => {
+    // F sits at index 11; its clockwise neighbour wraps to index 0 (C).
+    expect(circleNeighbors("F")).toEqual({ I: "F", IV: "Bb", V: "C", vi: "dm" });
+  });
+  it("C → IV wraps from index 0 back to F (index 11)", () => {
+    // C sits at index 0; its counter-clockwise neighbour wraps to index 11 (F).
+    expect(circleNeighbors("C")!.IV).toBe("F");
+  });
+  it("F# (Fs, index 6 — the bottom of the circle) → IV=B, V=Db, vi=dsm", () => {
+    expect(circleNeighbors("Fs")).toEqual({ I: "Fs", IV: "B", V: "Db", vi: "dsm" });
+  });
+  it("returns null for a minor key (the adjacency is a major-key teaching)", () => {
+    expect(circleNeighbors("am")).toBeNull();
+    expect(circleNeighbors("em")).toBeNull();
+  });
+
+  it("for EVERY major circle key: I/IV/V are majors, vi is its relative minor", () => {
+    for (let i = 0; i < CIRCLE_MAJORS.length; i++) {
+      const key = CIRCLE_MAJORS[i];
+      const n = circleNeighbors(key)!;
+      expect(n, key).not.toBeNull();
+      // I, IV, V are all on the outer (majors) ring.
+      expect(CIRCLE_MAJORS, `${key} I`).toContain(n.I);
+      expect(CIRCLE_MAJORS, `${key} IV`).toContain(n.IV);
+      expect(CIRCLE_MAJORS, `${key} V`).toContain(n.V);
+      // vi is the inner-ring key at the SAME index, and is the key's relative minor.
+      expect(n.vi, `${key} vi index`).toBe(CIRCLE_MINORS[i]);
+      expect(n.vi, `${key} vi relative`).toBe(KEY_META[key].relative);
+    }
+  });
+
+  it("V is always a perfect fifth (7 semitones) above I, and IV a fourth (5)", () => {
+    // The circle IS the fifths relationship — verify it acoustically, not just by
+    // array position, so a re-ordering of CIRCLE_MAJORS could never pass silently.
+    for (const key of CIRCLE_MAJORS) {
+      const n = circleNeighbors(key)!;
+      const pcUp = (a: string, b: string) =>
+        ((pitchMidi(b + "4") - pitchMidi(a + "4")) % 12 + 12) % 12;
+      expect(pcUp(KEY_META[n.I].tonic, KEY_META[n.V].tonic), `${key} I→V`).toBe(7);
+      expect(pcUp(KEY_META[n.I].tonic, KEY_META[n.IV].tonic), `${key} I→IV`).toBe(5);
+    }
+  });
+});
+
+// The Circle-of-Fifths chord-grid cell LABELS (and wheel badge spelling) must be
+// derived from the SOUNDED chord — i.e. the root of progressionChords(key, role)
+// — NOT from KEY_META[neighbor].tonic (the circle array's fixed enharmonic). The
+// two diverge at exactly two keys: F# major's V is C# (not Db), and Db major's IV
+// is Gb (not F#). Labels follow the audio, or a teaching feature teaches wrong
+// theory. This mirrors the `rootName(progressionChords(...))` derivation in
+// KeyMap's CircleChords/spellingByKey.
+describe("circle chord-cell labels match the sounded chord, not the circle-array enharmonic", () => {
+  const ROLE_ORDER = ["I", "IV", "V", "vi"] as const;
+  // Reproduce the component's labelling rule exactly.
+  const cellLabels = (key: KeyId): string[] => {
+    const tones = progressionChords(key, [...ROLE_ORDER]);
+    return ROLE_ORDER.map((role, i) => stripOct(tones[i][0]) + (role === "vi" ? "m" : ""));
+  };
+
+  it("F# major cells read F# / B / C# / D#m (V is C#, not Db)", () => {
+    expect(cellLabels("Fs")).toEqual(["F#", "B", "C#", "D#m"]);
+  });
+  it("Db major cells read Db / Gb / Ab / Bbm (IV is Gb, not F#)", () => {
+    expect(cellLabels("Db")).toEqual(["Db", "Gb", "Ab", "Bbm"]);
+  });
+  it("ordinary keys are unaffected: C → C / F / G / Am, G → G / C / D / Em", () => {
+    expect(cellLabels("C")).toEqual(["C", "F", "G", "Am"]);
+    expect(cellLabels("G")).toEqual(["G", "C", "D", "Em"]);
+  });
+
+  it("the sounded-root label differs from KEY_META[neighbor].tonic at EXACTLY the enharmonic keys", () => {
+    // Locks the regression: only F#'s V and Db's IV may diverge from the circle
+    // array's tonic. Any new divergence is a bug; losing these two means the fix
+    // regressed back to labelling from KEY_META.tonic.
+    const divergences: string[] = [];
+    for (const key of CIRCLE_MAJORS) {
+      const n = circleNeighbors(key)!;
+      const sounded = cellLabels(key); // I, IV, V, vi(+m)
+      const arrayTonic = [
+        KEY_META[n.I].tonic,
+        KEY_META[n.IV].tonic,
+        KEY_META[n.V].tonic,
+        KEY_META[n.vi].tonic + "m",
+      ];
+      ROLE_ORDER.forEach((role, i) => {
+        if (sounded[i] !== arrayTonic[i]) divergences.push(`${key}:${role}`);
+      });
+    }
+    expect(divergences.sort()).toEqual(["Db:IV", "Fs:V"]);
   });
 });
 
