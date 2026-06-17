@@ -18,6 +18,7 @@ import {
 import { levelForXp, localDateKey, updateStreak, xpForSession } from "./progression";
 import { advanceReview, dueReviews, enqueueReview } from "./skillReview";
 import { nextEarLevel, earLevelAdvanced, earLevelLabel, type EarTally } from "./earProgression";
+import { clearedTarget } from "./drillConfig";
 
 export function endSession(
   state: AppState,
@@ -64,6 +65,7 @@ export function endSession(
   // until the tier-2 chain is learned.
   const nodes = getModuleSync(state.instrument)?.skillNodes ?? [];
   const unlockLibrary = getModuleSync(state.instrument)?.unlockLibrary ?? [];
+  const chainDrills = getModuleSync(state.instrument)?.chainDrills ?? [];
   const prevProgress = state.skillProgress ?? {};
   const prevStatus = resolveStatus(nodes, prevProgress);
 
@@ -91,6 +93,24 @@ export function endSession(
     if (!prereqsMet(node, nextProgress)) continue;
     if (!meetsLearnSuccessRate(nextProgress[node.id])) continue;
     nextProgress = markNodeProgress(nextProgress, node.id, { learned: true, now: log.endedAt });
+  }
+
+  // #2 — cross-session ceiling scaling. When this session cleared the authored
+  // target BPM of the drill that ran, bump that drill's node targetClears so the
+  // effective ceiling can rise (drillConfig.bumpedTargetBpm). Runs even for
+  // already-learned nodes — a beaten drill should keep getting harder, not stop.
+  if (log.chainDrillId && q.bpmReached != null) {
+    const ranDrill = chainDrills.find((d) => d.id === log.chainDrillId);
+    if (ranDrill && clearedTarget(ranDrill.bpmLadder ?? null, q.bpmReached)) {
+      const clearedNode = nodes.find((n) => n.chainDrillId === log.chainDrillId);
+      if (clearedNode) {
+        nextProgress = markNodeProgress(nextProgress, clearedNode.id, {
+          reps: 0,
+          now: log.endedAt,
+          targetClearsDelta: 1,
+        });
+      }
+    }
   }
 
   const nextStatus = resolveStatus(nodes, nextProgress);

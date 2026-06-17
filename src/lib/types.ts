@@ -96,6 +96,9 @@ export interface SkillProgress {
   attempts?: number;                  // R3 — total rep attempts recorded
   successes?: number;                 // R3 — successful reps (→ success rate)
   bpmReached?: number;                // R5 — highest tempo cleared on the ladder
+  // Curriculum #2 — count of sessions that cleared the drill's authored target
+  // ceiling. Drives the cross-session targetBpm ceiling bump (drillConfig.ts).
+  targetClears?: number;
   fluent?: boolean;                   // R10 — passed the autonomous fluency test
   fluentAt?: string;                  // R10 — ISO when fluency was reached (distinct from learnedAt)
 }

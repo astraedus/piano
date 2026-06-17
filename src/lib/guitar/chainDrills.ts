@@ -1,4 +1,5 @@
 import type { ChainDrill } from "../types";
+import { withDefaultMotorConfigAll } from "../drillConfig";
 
 // V4 soul-first: `soulName` adds a feel-first heading for each drill (e.g.
 // "Your First Solo" instead of "minor pentatonic: Box 1"), matching the node
@@ -21,7 +22,9 @@ import type { ChainDrill } from "../types";
 //   progression → chord changes / 12-bar
 //   improv → soloing / phrasing
 //   song → the reward riff
-export const GUITAR_CHAIN_DRILLS: ChainDrill[] = [
+// Raw authored guitar drills; augmented below (#2) the same way as piano:
+// micro-rest cadence for all, a default tempo ladder for tempo-relevant drills.
+const RAW_GUITAR_CHAIN_DRILLS: ChainDrill[] = [
   // ───── PHASE 1 — setup + foundations ─────
   {
     id: "g-t0-tuning-chain",
@@ -397,3 +400,5 @@ export const GUITAR_CHAIN_DRILLS: ChainDrill[] = [
     closingNote: "Syncopation is what makes a rhythm part feel alive instead of mechanical.",
   },
 ];
+
+export const GUITAR_CHAIN_DRILLS: ChainDrill[] = withDefaultMotorConfigAll(RAW_GUITAR_CHAIN_DRILLS);

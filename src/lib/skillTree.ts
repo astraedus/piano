@@ -84,6 +84,8 @@ export function markNodeProgress(
     attempts?: number;
     successes?: number;
     bpmReached?: number;
+    // Curriculum #2 — increment to the node's target-clear counter (ceiling bump).
+    targetClearsDelta?: number;
   } = {},
 ): ProgressMap {
   const now = opts.now ?? new Date().toISOString();
@@ -108,6 +110,9 @@ export function markNodeProgress(
   const bpmReached = opts.bpmReached != null
     ? Math.max(prev?.bpmReached ?? 0, opts.bpmReached)
     : prev?.bpmReached;
+  const targetClears = opts.targetClearsDelta
+    ? (prev?.targetClears ?? 0) + Math.max(0, opts.targetClearsDelta)
+    : prev?.targetClears;
 
   const next: SkillProgress = {
     status,
@@ -120,6 +125,7 @@ export function markNodeProgress(
     attempts,
     successes,
     bpmReached,
+    targetClears,
     // Preserve fluency (set via markNodeFluent, a separate dimension).
     fluent: prev?.fluent,
     fluentAt: prev?.fluentAt,

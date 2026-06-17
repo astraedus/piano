@@ -161,6 +161,67 @@ describe("endSession — bookkeeping", () => {
   });
 });
 
+// ───────────── #2 — cross-session BPM ceiling: targetClears increment ─────────────
+// p1-c-major-chain is authored with bpmLadder.targetBpm = 100, linked to node
+// p-key-C. A session whose quality.bpmReached clears that ceiling should bump the
+// node's targetClears so the effective ceiling can rise next session.
+describe("endSession — targetClears (ceiling scaling)", () => {
+  it("increments targetClears when the session clears the authored target BPM", () => {
+    const s = stateWith();
+    const { state: next } = endSession(
+      s,
+      logBase({
+        chainDrillId: "p1-c-major-chain",
+        quality: { attempts: 9, successes: 9, bpmReached: 100, metronomeOn: true, interleaved: false },
+      }),
+      new Date(),
+    );
+    expect(next.skillProgress?.["p-key-C"]?.targetClears).toBe(1);
+  });
+
+  it("does NOT increment when the session stays below the target", () => {
+    const s = stateWith();
+    const { state: next } = endSession(
+      s,
+      logBase({
+        chainDrillId: "p1-c-major-chain",
+        quality: { attempts: 9, successes: 9, bpmReached: 90, metronomeOn: true, interleaved: false },
+      }),
+      new Date(),
+    );
+    expect(next.skillProgress?.["p-key-C"]?.targetClears ?? 0).toBe(0);
+  });
+
+  it("accumulates across sessions", () => {
+    let s = stateWith();
+    const clear = () =>
+      logBase({
+        chainDrillId: "p1-c-major-chain",
+        quality: { attempts: 9, successes: 9, bpmReached: 105, metronomeOn: true, interleaved: false },
+      });
+    s = endSession(s, clear(), new Date()).state;
+    s = endSession(s, clear(), new Date()).state;
+    expect(s.skillProgress?.["p-key-C"]?.targetClears).toBe(2);
+  });
+
+  it("still scales the ceiling for an already-learned node", () => {
+    const s = stateWith({
+      skillProgress: { "p-key-C": { status: "learned", reps: 20, learnedAt: "2026-01-01" } },
+    });
+    const { state: next } = endSession(
+      s,
+      logBase({
+        chainDrillId: "p1-c-major-chain",
+        quality: { attempts: 9, successes: 9, bpmReached: 100, metronomeOn: true, interleaved: false },
+      }),
+      new Date(),
+    );
+    expect(next.skillProgress?.["p-key-C"]?.targetClears).toBe(1);
+    // learned status preserved (the increment passes reps:0).
+    expect(next.skillProgress?.["p-key-C"]?.status).toBe("learned");
+  });
+});
+
 // ───────────────── Gamification (V2 Phase A) — XP / level / streak ─────────────────
 describe("endSession — gamification accrual", () => {
   // A key already at max depth so warmup/chain bumps don't add depth-up XP noise.

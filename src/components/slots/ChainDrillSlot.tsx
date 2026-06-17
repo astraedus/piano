@@ -11,6 +11,7 @@ import { ensureAudio, playProgression, playSequence } from "@/lib/audio";
 import { useAppState } from "@/hooks/useAppState";
 import { RepEngine } from "../RepEngine";
 import { buildRepItems, type RepEngineConfig } from "@/lib/repEngine";
+import { effectiveBpmLadder } from "@/lib/drillConfig";
 import type { InterleavePlan } from "@/lib/chainDrillPicker";
 import { getLesson } from "@/lib/lessons";
 
@@ -90,10 +91,16 @@ export function ChainDrillSlot({
     repBlocks: drill.repBlocks ?? null,
   });
   const interleaved = !!interleave && interleave.drills.length > 1;
+  // #2 — seed the ladder from this skill node's persisted best + scale its
+  // ceiling once cleared across sessions, so the BPM ladder is no longer
+  // amnesiac and the drill keeps getting harder after it's beaten. Falls back to
+  // the authored ladder (or null) when there's no node / progress yet.
+  const nodeProgress = drillNode ? state.skillProgress?.[drillNode.id] : undefined;
+  const seededLadder = effectiveBpmLadder(drill.bpmLadder ?? null, nodeProgress);
   const engineConfig: RepEngineConfig = {
     reps: repItems,
     repBlocks: drill.repBlocks ?? null,
-    bpmLadder: drill.bpmLadder ?? null,
+    bpmLadder: seededLadder,
     interleaved,
   };
 
