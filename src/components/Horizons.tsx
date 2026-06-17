@@ -5,6 +5,7 @@ import { KEY_META } from "@/lib/music";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { nextToLearn } from "@/lib/skillTree";
 import { abilityAxis, generationAxis, patternAxis } from "@/lib/threeAxis";
+import { weekHorizon } from "@/lib/todayPlan";
 import { completionFraction } from "@/lib/skillSummary";
 import { fmtTotalTime } from "@/lib/format";
 import type { Warmup, KeyId, Phase } from "@/lib/types";
@@ -42,6 +43,12 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
   const pieces = (state.pieces ?? []).length;
   const keysTouched = Object.values(state.keyDepths ?? {}).filter((d) => (d ?? 0) > 0).length;
 
+  // #5 — forward horizon: this week's rotation position + next week's key/warmup,
+  // both derived deterministically from the ghost-key rotation over a future Date.
+  const now = new Date();
+  const thisWeek = weekHorizon(state, now, 0);
+  const next = weekHorizon(state, now, 1);
+
   // The three product pillars, each derived from already-persisted state.
   const progress = state.skillProgress ?? {};
   const generation = generationAxis(nodes, progress, state.pieces ?? [], state.arc ?? []);
@@ -63,6 +70,27 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
           </p>
           <p className="text-xs text-[color:var(--ink-3)] italic">
             One key, seven days. The week picks it, so you don't have to.
+            {next.weekInRotation && next.rotationLength
+              ? ` This is week ${thisWeek.weekInRotation} of ${thisWeek.rotationLength} in the rotation.`
+              : ""}
+          </p>
+        </div>
+      </Row>
+
+      {/* #5 — the future is now visible: next week's key + warmup, derived by
+          calling the deterministic ghostKeyFor / warmupForWeek with a +1-week
+          date. Previously only "today" was ever shown. */}
+      <Row label="Next week">
+        <div className="space-y-1">
+          <p>
+            <span className="text-[color:var(--ink)]">Key · {KEY_META[next.key].name}</span>
+            <span className="text-[color:var(--ink-3)]">   ·   </span>
+            <span className="text-[color:var(--ink-2)]">Warmup · {next.warmup?.label ?? "—"}</span>
+          </p>
+          <p className="text-xs text-[color:var(--ink-3)] italic">
+            {next.key === ghostKey
+              ? "Same key carries over — one more week to settle in."
+              : "Coming up. A glimpse of where the week turns next."}
           </p>
         </div>
       </Row>
