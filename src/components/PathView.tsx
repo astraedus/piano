@@ -20,6 +20,8 @@ import { tierLearnedCounts, completionFraction, type TierCount } from "@/lib/ski
 import { getLesson } from "@/lib/lessons";
 import { linkTerms } from "@/components/explain";
 import { LessonMedia } from "@/components/LessonMedia";
+import { ProgressionSongsPanel } from "@/components/ProgressionSongsPanel";
+import { isProgressionContainerNode } from "@/lib/progressionSongs";
 import { UnlockCardModal } from "@/components/UnlockCardModal";
 import type { NodeLesson, SkillNode, SkillNodeStatus } from "@/lib/types";
 
@@ -266,6 +268,12 @@ function StepCard({
           ) : (
             <FallbackContent node={node} />
           )}
+
+          {/* #7 — the Pop-Formula payoff: progression-container nodes
+              (p-t2-pop-formula / g-t1-openDGC) surface the grouped catalog of
+              real songs the learner can now play, inline in the Your Path
+              accordion (the surface users actually open). */}
+          {isProgressionContainerNode(node.id) && <ProgressionSongsPanel />}
 
           {/* Progression controls — mirrors the SkillGraph panel so a user can
               progress without leaving Your Path. */}

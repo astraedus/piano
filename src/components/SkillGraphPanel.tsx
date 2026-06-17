@@ -244,11 +244,7 @@ export function SkillGraphPanel({
         </>
       )}
 
-      {showSongs && (
-        <Section label="songs you can now play">
-          <ProgressionSongsPanel />
-        </Section>
-      )}
+      {showSongs && <ProgressionSongsPanel />}
 
       {/* R3 — difficulty self-assessment from the recorded success rate. Only shown
           once there are enough attempts to judge (verdict !== unknown). */}

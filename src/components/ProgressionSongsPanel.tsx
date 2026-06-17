@@ -12,6 +12,9 @@ export function ProgressionSongsPanel() {
   const groups = songsByProgression();
   return (
     <div data-testid="songs-you-can-play" className="space-y-3">
+      <p className="text-[10px] uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
+        Songs You Can Now Play
+      </p>
       {groups.map(({ meta, songs }) => (
         <div key={meta.progression} className="space-y-1">
           <p
