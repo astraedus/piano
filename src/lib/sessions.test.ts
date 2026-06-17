@@ -209,6 +209,66 @@ describe("endSession — transition nodes are not gameable via drill completion 
   });
 });
 
+// ──────────────────── #7 — Pop-Formula song-unlock cards ────────────────────
+describe("endSession — Pop-Formula song unlocks", () => {
+  // The pop-formula node becoming learned is the trigger. Mirror the cleared-
+  // transition setup so p-t2-pop-formula flips to learned this session.
+  function popFormulaLearnedState(extra: Partial<AppState> = {}): AppState {
+    return stateWith({
+      phase: 2,
+      skillProgress: {
+        "p-t0-keyboard-map": learned(),
+        "p-t0-posture": learned(),
+        "p-key-C": learned(),
+        "p-key-am": learned(),
+        "p-t2-chord-under-melody": learned(),
+        "p-trans-am-F": { status: "learned", reps: 1, bestChanges: 32, learnedAt: "2026-01-01" },
+      },
+      ...extra,
+    });
+  }
+
+  it("fires one song-unlock card per progression when the pop formula is first learned", () => {
+    const { state: next, newUnlocks } = endSession(
+      popFormulaLearnedState(),
+      logBase({ ghostKey: "am", chainDrillId: "p2-am-pop-formula" }),
+      new Date(),
+    );
+    const songCards = newUnlocks.filter((u) => u.id.startsWith("u-song-"));
+    expect(songCards.length).toBe(3); // I-V-vi-IV, I-IV-V, I-vi-IV-V
+    expect(songCards.every((c) => c.title.startsWith("You can now play"))).toBe(true);
+    // Persisted into unlocks + queued as pending (same path as node unlocks).
+    expect(next.unlocks.filter((u) => u.id.startsWith("u-song-")).length).toBe(3);
+    expect(next.pendingUnlocks.filter((u) => u.id.startsWith("u-song-")).length).toBe(3);
+  });
+
+  it("does NOT re-fire song-unlock cards already earned (dedupe)", () => {
+    // Pop formula already learned AND its song cards already in state.unlocks.
+    const s = popFormulaLearnedState({
+      skillProgress: {
+        "p-t0-keyboard-map": learned(),
+        "p-t0-posture": learned(),
+        "p-key-C": learned(),
+        "p-key-am": learned(),
+        "p-t2-chord-under-melody": learned(),
+        "p-trans-am-F": { status: "learned", reps: 1, bestChanges: 32, learnedAt: "2026-01-01" },
+        "p-t2-pop-formula": learned(),
+      },
+      unlocks: [
+        { id: "u-song-I-V-vi-IV", phase: 2, title: "x", tryLine: "x", addedAt: "2026-01-01" },
+        { id: "u-song-I-IV-V", phase: 2, title: "x", tryLine: "x", addedAt: "2026-01-01" },
+        { id: "u-song-I-vi-IV-V", phase: 2, title: "x", tryLine: "x", addedAt: "2026-01-01" },
+      ],
+    });
+    const { newUnlocks } = endSession(
+      s,
+      logBase({ ghostKey: "am", chainDrillId: "p2-am-pop-formula" }),
+      new Date(),
+    );
+    expect(newUnlocks.filter((u) => u.id.startsWith("u-song-"))).toEqual([]);
+  });
+});
+
 // ───────────────────────── endSession bookkeeping ─────────────────────────
 describe("endSession — bookkeeping", () => {
   it("caps recentDrillIds at 5, newest first", () => {
