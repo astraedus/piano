@@ -5,7 +5,7 @@ import { Disclosure } from "./Disclosure";
 import { TermChip, linkTerms } from "../explain";
 import type { ChainDrill, SessionQuality, SkillNode } from "@/lib/types";
 import { drillRepId } from "@/lib/types";
-import { KEY_META, midiToSpn, pitchMidi, progressionChords } from "@/lib/music";
+import { KEY_META, keyPrefersFlats, pentatonic, progressionChords } from "@/lib/music";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { ensureAudio, playProgression, playSequence } from "@/lib/audio";
 import { useAppState } from "@/hooks/useAppState";
@@ -75,9 +75,7 @@ export function ChainDrillSlot({
   const meta = KEY_META[drill.ghostKey];
   const romans = meta.mode === "major" ? ["I", "IV", "V", "I"] : ["i", "iv", "V", "i"];
   const prog = progressionChords(drill.ghostKey, romans);
-  const pentatonicIntervals = meta.mode === "major" ? [0, 2, 4, 7, 9, 12] : [0, 3, 5, 7, 10, 12];
-  const rootMidi = pitchMidi(meta.tonic + "4");
-  const pentatonicNotes = pentatonicIntervals.map((i) => midiToSpn(rootMidi + i));
+  const pentatonicNotes = pentatonic(meta.tonic, meta.mode, 4, keyPrefersFlats(drill.ghostKey));
 
   const rep = state.skillReps?.[drillRepId(drill.id)];
 

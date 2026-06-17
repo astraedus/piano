@@ -4,7 +4,7 @@ import { Slot } from "../Slot";
 import { TermChip } from "../explain";
 import type { Warmup, KeyId } from "@/lib/types";
 import { scaleRepId } from "@/lib/types";
-import { KEY_META, scale } from "@/lib/music";
+import { KEY_META, keyPrefersFlats, scale } from "@/lib/music";
 import { ghostKeyToTermId } from "@/lib/pathFilter";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { Metronome } from "../Metronome";
@@ -90,14 +90,14 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
               {KEY_META[ghostKey].name} scale · 2 octaves
             </div>
             {InstrumentVisual && (
-              <InstrumentVisual notes={scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 2)} rangeStart="C4" octaves={2} />
+              <InstrumentVisual notes={scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 2, 4, keyPrefersFlats(ghostKey))} rangeStart="C4" octaves={2} />
             )}
             <div className="mt-2 flex flex-wrap gap-3 items-center no-print">
               <button
                 type="button"
                 onClick={async () => {
                   await ensureAudio();
-                  await playSequence(scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 1), { noteDurationSec: 0.34 });
+                  await playSequence(scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 1, 4, keyPrefersFlats(ghostKey)), { noteDurationSec: 0.34 });
                 }}
                 className="chip text-xs px-3 py-1"
               >

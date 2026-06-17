@@ -18,11 +18,11 @@ export const KEY_META: Record<KeyId, { name: string; tonic: string; mode: KeyMod
   Fs: { name: "F♯ major", tonic: "F#", mode: "major", sharpsFlats: "♯6", relative: "dsm" },
   Cs: { name: "C♯ major", tonic: "C#", mode: "major", sharpsFlats: "♯7", relative: "asm" },
   F:  { name: "F major",  tonic: "F",  mode: "major", sharpsFlats: "♭1", relative: "dm"  },
-  Bb: { name: "B♭ major", tonic: "A#", mode: "major", sharpsFlats: "♭2", relative: "gm"  },
-  Eb: { name: "E♭ major", tonic: "D#", mode: "major", sharpsFlats: "♭3", relative: "cm"  },
-  Ab: { name: "A♭ major", tonic: "G#", mode: "major", sharpsFlats: "♭4", relative: "fm"  },
-  Db: { name: "D♭ major", tonic: "C#", mode: "major", sharpsFlats: "♭5", relative: "bbm" },
-  Gb: { name: "G♭ major", tonic: "F#", mode: "major", sharpsFlats: "♭6", relative: "ebm" },
+  Bb: { name: "B♭ major", tonic: "Bb", mode: "major", sharpsFlats: "♭2", relative: "gm"  },
+  Eb: { name: "E♭ major", tonic: "Eb", mode: "major", sharpsFlats: "♭3", relative: "cm"  },
+  Ab: { name: "A♭ major", tonic: "Ab", mode: "major", sharpsFlats: "♭4", relative: "fm"  },
+  Db: { name: "D♭ major", tonic: "Db", mode: "major", sharpsFlats: "♭5", relative: "bbm" },
+  Gb: { name: "G♭ major", tonic: "Gb", mode: "major", sharpsFlats: "♭6", relative: "ebm" },
   am: { name: "A minor",  tonic: "A",  mode: "minor", sharpsFlats: "♮",  relative: "C"  },
   em: { name: "E minor",  tonic: "E",  mode: "minor", sharpsFlats: "♯1", relative: "G"  },
   bm: { name: "B minor",  tonic: "B",  mode: "minor", sharpsFlats: "♯2", relative: "D"  },
@@ -35,9 +35,17 @@ export const KEY_META: Record<KeyId, { name: string; tonic: string; mode: KeyMod
   gm: { name: "G minor",  tonic: "G",  mode: "minor", sharpsFlats: "♭2", relative: "Bb" },
   cm: { name: "C minor",  tonic: "C",  mode: "minor", sharpsFlats: "♭3", relative: "Eb" },
   fm: { name: "F minor",  tonic: "F",  mode: "minor", sharpsFlats: "♭4", relative: "Ab" },
-  bbm:{ name: "B♭ minor", tonic: "A#", mode: "minor", sharpsFlats: "♭5", relative: "Db" },
-  ebm:{ name: "E♭ minor", tonic: "D#", mode: "minor", sharpsFlats: "♭6", relative: "Gb" },
+  bbm:{ name: "B♭ minor", tonic: "Bb", mode: "minor", sharpsFlats: "♭5", relative: "Db" },
+  ebm:{ name: "E♭ minor", tonic: "Eb", mode: "minor", sharpsFlats: "♭6", relative: "Gb" },
 };
+
+// True when a key's signature uses flats (so its scale/triad/progression and
+// staff accidentals should be spelled with flats, never sharp enharmonics).
+// Reads the canonical `sharpsFlats` field: a flat key starts with the ♭ glyph.
+// C major / A minor (♮, zero accidentals) prefer sharps by convention.
+export function keyPrefersFlats(key: KeyId): boolean {
+  return KEY_META[key].sharpsFlats.startsWith("♭");
+}
 
 // Circle of fifths, majors outer / minors inner — clockwise starting at C.
 export const CIRCLE_MAJORS: KeyId[] = ["C", "G", "D", "A", "E", "B", "Fs", "Db", "Ab", "Eb", "Bb", "F"];
@@ -78,31 +86,32 @@ export function midiToSpn(midi: number, preferFlats = false): string {
   return noteName(midi % 12, preferFlats) + oct;
 }
 
-export function scale(tonic: string, mode: KeyMode, octaves = 1, startOct = 4): string[] {
+export function scale(tonic: string, mode: KeyMode, octaves = 1, startOct = 4, preferFlats = false): string[] {
   const steps = mode === "major" ? MAJOR_STEPS : NATURAL_MINOR_STEPS;
   const startMidi = pitchMidi(tonic + startOct);
-  const out: string[] = [midiToSpn(startMidi)];
+  const out: string[] = [midiToSpn(startMidi, preferFlats)];
   let cur = startMidi;
   for (let o = 0; o < octaves; o++) {
     for (const s of steps) {
       cur += s;
-      out.push(midiToSpn(cur));
+      out.push(midiToSpn(cur, preferFlats));
     }
   }
   return out;
 }
 
-export function triad(tonic: string, quality: "maj" | "min" | "dim" | "aug", oct = 4): string[] {
+export function triad(tonic: string, quality: "maj" | "min" | "dim" | "aug", oct = 4, preferFlats = false): string[] {
   const rootMidi = pitchMidi(tonic + oct);
   const third = quality === "maj" || quality === "aug" ? 4 : 3;
   const fifth = quality === "aug" ? 8 : quality === "dim" ? 6 : 7;
-  return [midiToSpn(rootMidi), midiToSpn(rootMidi + third), midiToSpn(rootMidi + fifth)];
+  return [midiToSpn(rootMidi, preferFlats), midiToSpn(rootMidi + third, preferFlats), midiToSpn(rootMidi + fifth, preferFlats)];
 }
 
 // Map roman-numeral progressions to chord tones in a given key.
 // Supports: I ii iii IV V vi vii° (major) and i iiø III iv v VI VII (minor)
 export function progressionChords(key: KeyId, romans: string[], oct = 4): string[][] {
   const meta = KEY_META[key];
+  const preferFlats = keyPrefersFlats(key);
   const tonicMidi = pitchMidi(meta.tonic + oct);
   const majSteps = [0, 2, 4, 5, 7, 9, 11];
   const minSteps = [0, 2, 3, 5, 7, 8, 10];
@@ -136,8 +145,8 @@ export function progressionChords(key: KeyId, romans: string[], oct = 4): string
     const rootMidi = tonicMidi + steps[info.degree];
     const third = info.quality === "maj" || info.quality === "aug" ? 4 : 3;
     const fifth = info.quality === "aug" ? 8 : info.quality === "dim" ? 6 : 7;
-    const tones = [midiToSpn(rootMidi), midiToSpn(rootMidi + third), midiToSpn(rootMidi + fifth)];
-    if (r === "V7") tones.push(midiToSpn(rootMidi + 10));
+    const tones = [midiToSpn(rootMidi, preferFlats), midiToSpn(rootMidi + third, preferFlats), midiToSpn(rootMidi + fifth, preferFlats)];
+    if (r === "V7") tones.push(midiToSpn(rootMidi + 10, preferFlats));
     return tones;
   });
 }
@@ -155,8 +164,8 @@ export function romansToEnglish(key: KeyId, romans: string[]): string {
 }
 
 // Pentatonic scale tones (for improv layer).
-export function pentatonic(tonic: string, mode: KeyMode, oct = 4): string[] {
+export function pentatonic(tonic: string, mode: KeyMode, oct = 4, preferFlats = false): string[] {
   const rootMidi = pitchMidi(tonic + oct);
   const intervals = mode === "major" ? [0, 2, 4, 7, 9, 12] : [0, 3, 5, 7, 10, 12];
-  return intervals.map((i) => midiToSpn(rootMidi + i));
+  return intervals.map((i) => midiToSpn(rootMidi + i, preferFlats));
 }

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META, scale, triad, progressionChords } from "@/lib/music";
+import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META, keyPrefersFlats, scale, triad, progressionChords } from "@/lib/music";
 import { DEPTH_MEANINGS, DEPTH_NAMES } from "@/lib/types";
 import type { KeyId, KeyDepth } from "@/lib/types";
 import { useAppState } from "@/hooks/useAppState";
@@ -158,9 +158,10 @@ function depthFill(depth: KeyDepth) {
 function KeyDetailPanel({ keyId, depth }: { keyId: KeyId; depth: KeyDepth }) {
   const { patch, state } = useAppState();
   const meta = KEY_META[keyId];
-  const scaleNotes = scale(meta.tonic, meta.mode, 1);
-  const scaleNotes2 = scale(meta.tonic, meta.mode, 2);
-  const triadNotes = triad(meta.tonic, meta.mode === "major" ? "maj" : "min");
+  const flats = keyPrefersFlats(keyId);
+  const scaleNotes = scale(meta.tonic, meta.mode, 1, 4, flats);
+  const scaleNotes2 = scale(meta.tonic, meta.mode, 2, 4, flats);
+  const triadNotes = triad(meta.tonic, meta.mode === "major" ? "maj" : "min", 4, flats);
   const romans = meta.mode === "major" ? ["I","IV","V","I"] : ["i","iv","V","i"];
   const prog = progressionChords(keyId, romans);
   const piecesInKey = (state.pieces ?? []).filter((p) => p.keyId === keyId);
