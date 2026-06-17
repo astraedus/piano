@@ -124,12 +124,29 @@ describe("scoreTransition — full-window vs early-stop", () => {
     expect(scoreTransition(state, pair)).toEqual({ perMinute: 30, fluent: true });
   });
 
-  it("an early-stop scales by elapsed time", () => {
+  it("an early-stop still reports the scaled rate, but does NOT clear (< 80% window)", () => {
     const state: TransitionDrillState = {
       running: false, elapsedSec: 30, cleanChanges: 18, finished: true, windowSec: 60,
     };
-    // 18 in 30s = 36/min -> fluent
-    expect(scoreTransition(state, pair)).toEqual({ perMinute: 36, fluent: true });
+    // 18 in 30s = 36/min — high rate, but only half the window → not fluent.
+    expect(scoreTransition(state, pair)).toEqual({ perMinute: 36, fluent: false });
+  });
+
+  it("a ~5s burst (3 changes in 5s = 36/min) does NOT clear the gate", () => {
+    const state: TransitionDrillState = {
+      running: false, elapsedSec: 5, cleanChanges: 3, finished: true, windowSec: 60,
+    };
+    const { perMinute, fluent } = scoreTransition(state, pair);
+    expect(perMinute).toBe(36);
+    expect(fluent).toBe(false); // sustained-window guard blocks the sprint
+  });
+
+  it("an early-stop at >=80% of the window CAN clear if the rate is met", () => {
+    const state: TransitionDrillState = {
+      running: false, elapsedSec: 48, cleanChanges: 30, finished: true, windowSec: 60,
+    };
+    // 30 in 48s = 38/min, and 48 >= 60*0.8 → fluent.
+    expect(scoreTransition(state, pair)).toEqual({ perMinute: 38, fluent: true });
   });
 
   it("a slow full run is not fluent", () => {

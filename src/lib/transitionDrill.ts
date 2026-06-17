@@ -127,20 +127,42 @@ export function changesPerMinute(cleanChanges: number, elapsedSec: number): numb
   return Math.round((cleanChanges / elapsedSec) * 60);
 }
 
+/** Minimum fraction of the window that must elapse before a run can count as
+ *  fluent. Stops a ~5s burst (e.g. 3 changes in 5s = 36/min) from clearing the
+ *  song gate; fluency must be SUSTAINED, not a sprint. */
+export const MIN_FLUENT_WINDOW_FRACTION = 0.8;
+
+/**
+ * The elapsed seconds to score by. A finished run with a zero `elapsedSec`
+ * (defensive: e.g. a synthesized "finished" state) is treated as the full
+ * window; otherwise the actual elapsed time (so an early-stop scales honestly).
+ * Pure — the single source of truth used by the scorer and the UI.
+ */
+export function effectiveElapsed(state: TransitionDrillState): number {
+  if (state.finished && state.elapsedSec === 0) return state.windowSec;
+  return state.elapsedSec || state.windowSec;
+}
+
 /** True iff the run met the pair's per-minute target. `target` defaults to the
- *  standard 30/min. Pure. */
+ *  standard 30/min. Pure. NOTE: this is the rate check only — fluency for the
+ *  song gate ALSO requires a near-full window (see scoreTransition). */
 export function isPairFluent(perMinute: number, target = DEFAULT_TARGET_PER_MIN): boolean {
   return perMinute >= target;
 }
 
-/** Convenience: score a finished drill state for a pair, returning the per-minute
- *  rate and whether it cleared the pair's threshold. Pure. */
+/**
+ * Score a drill state for a pair: the per-minute rate and whether it cleared the
+ * pair's fluency threshold. Fluency requires BOTH the rate target AND a near-full
+ * window (>= MIN_FLUENT_WINDOW_FRACTION of windowSec), so a short burst can show a
+ * high rate but does not clear the gate. The single source of truth for scoring —
+ * the UI calls this, never re-deriving the formula. Pure.
+ */
 export function scoreTransition(
   state: TransitionDrillState,
   pair: Pick<TransitionPair, "targetPerMin">,
 ): { perMinute: number; fluent: boolean } {
-  // Use the full window when it ran to completion; otherwise the elapsed time.
-  const elapsed = state.finished && state.elapsedSec === 0 ? state.windowSec : state.elapsedSec;
-  const perMinute = changesPerMinute(state.cleanChanges, elapsed || state.windowSec);
-  return { perMinute, fluent: isPairFluent(perMinute, pair.targetPerMin) };
+  const elapsed = effectiveElapsed(state);
+  const perMinute = changesPerMinute(state.cleanChanges, elapsed);
+  const sustained = elapsed >= state.windowSec * MIN_FLUENT_WINDOW_FRACTION;
+  return { perMinute, fluent: sustained && isPairFluent(perMinute, pair.targetPerMin) };
 }

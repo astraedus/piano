@@ -70,7 +70,7 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
           </p>
           <p className="text-xs text-[color:var(--ink-3)] italic">
             One key, seven days. The week picks it, so you don't have to.
-            {next.weekInRotation && next.rotationLength
+            {thisWeek.weekInRotation && thisWeek.rotationLength
               ? ` This is week ${thisWeek.weekInRotation} of ${thisWeek.rotationLength} in the rotation.`
               : ""}
           </p>

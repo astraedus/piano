@@ -6,7 +6,7 @@ import {
   initTransitionDrill,
   transitionReducer,
   changesPerMinute,
-  isPairFluent,
+  scoreTransition,
   type TransitionPair,
 } from "@/lib/transitionDrill";
 
@@ -40,23 +40,19 @@ export function TransitionDrill({
     return () => clearInterval(iv);
   }, [state.running]);
 
-  // Report the final score exactly once, when the window finishes.
+  // Report the final score exactly once, when the window finishes. scoreTransition
+  // is the single source of truth (rate + the near-full-window fluency guard).
   useEffect(() => {
     if (!state.finished) return;
-    const perMinute = changesPerMinute(state.cleanChanges, state.elapsedSec || state.windowSec);
-    onCompleteAction?.({
-      perMinute,
-      cleanChanges: state.cleanChanges,
-      fluent: isPairFluent(perMinute, pair.targetPerMin),
-    });
+    const { perMinute, fluent } = scoreTransition(state, pair);
+    onCompleteAction?.({ perMinute, cleanChanges: state.cleanChanges, fluent });
     // Fire once on the finished transition; onCompleteAction is stable from caller.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.finished]);
 
   const remaining = Math.max(0, state.windowSec - state.elapsedSec);
   const livePerMin = state.elapsedSec > 0 ? changesPerMinute(state.cleanChanges, state.elapsedSec) : 0;
-  const finalPerMin = changesPerMinute(state.cleanChanges, state.elapsedSec || state.windowSec);
-  const cleared = isPairFluent(finalPerMin, pair.targetPerMin);
+  const { perMinute: finalPerMin, fluent: cleared } = scoreTransition(state, pair);
 
   return (
     <div className="space-y-3 text-sm">
