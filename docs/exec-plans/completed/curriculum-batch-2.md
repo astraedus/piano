@@ -52,6 +52,16 @@ progression. So this is labeling + a highlight overlay + a glossary entry on exi
 - Music content must be theory-correct; a reviewer already caught a fabricated fingering and a bypassable gate — keep
   the adversarial + music-theory review lenses.
 
-## Optional polish carried over from batch-1 QA (taste-level, low priority)
-- The Warmup RH/LH fingering toggle is low-affordance — consider a stronger selected-state.
-- Home horizon italic sub-captions are low-contrast (`--ink-3` on cream) — nudge to `--ink-2`.
+## STATUS: ALL THREE ITEMS SHIPPED & LIVE (2026-06-17)
+- #3 Circle of Fifths — merged `c1653b5`, live.
+- #8 Guitar capo module — merged `7207184`, live.
+- #7 Pop Formula song catalog — merged `deefe0d`, live.
+All adversarially + music-reviewed, QA-verified on fresh builds. Batch 2 complete.
+
+## Polish backlog (taste-level, low priority — not blockers; pick up in a polish pass)
+- Warmup RH/LH fingering toggle is low-affordance — stronger selected-state.
+- Home horizon italic sub-captions low-contrast (`--ink-3` on cream) — nudge to `--ink-2`.
+- Circle of Fifths: in C-major view the IV (F) wedge renders dimmer than its I/V/vi siblings — equalize.
+- Capo chart spells F# (lone sharp) amid otherwise-flat keys — make uniform (F#→Gb) if desired (both valid; F# idiomatic for guitar).
+- Song-chip borders are subtle on cream — a touch more border/elevation so the "look how many songs" abundance hits harder.
+- Song-unlock card (endSession fire path) is unit-tested + bundle-wired but never confirmed by a real session run — verify in a live Just-Play session when convenient.
