@@ -47,10 +47,12 @@ export interface InstrumentVisualProps {
   octaves?: number;
   // #4 — finger-placement hint. `scaleKey` names the key whose SCALE this visual
   // represents; each module derives its own finger guidance from it: piano maps
-  // the canonical scale fingerings (1..5) onto the highlighted keys, guitar plots
-  // the moveable minor-pentatonic Box 1 for that key. Absent → no finger overlay
-  // (the prior notes-only behavior).
+  // the canonical scale fingerings (1..5) onto the highlighted keys + rings the
+  // thumb-tuck note, guitar plots the moveable minor-pentatonic Box 1 for that
+  // key. Absent → no finger overlay (the prior notes-only behavior).
   scaleKey?: KeyId;
+  // Which hand's fingering to show (piano only; guitar ignores). Default "right".
+  scaleHand?: "right" | "left";
 }
 
 export interface NotationVisualProps {
@@ -86,6 +88,12 @@ export interface InstrumentModule {
   focusLabel: (focusId: string) => string;
   /** Which progress-map visual the /tree page should render for this instrument. */
   progressMapKind: "keymap" | "fretboard";
+  /**
+   * #4 — a one-line "when to bring the thumb up" cue for a key's scale on a hand,
+   * surfaced beside the fingered scale view. Piano returns e.g. "thumb tucks under
+   * after the 3rd note"; instruments with no such cue (guitar) leave it undefined.
+   */
+  scaleFingeringCue?: (keyId: KeyId, hand: "right" | "left") => string | null;
   /**
    * Optional per-instrument ear-training rounds. When present, todayPlan pulls
    * ear rounds from here; when absent it falls back to the shared earRounds.ts

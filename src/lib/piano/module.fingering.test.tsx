@@ -1,41 +1,45 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
 import { pianoModule } from "./module";
-import { scale, KEY_META } from "../music";
+import { scale, KEY_META, keyPrefersFlats } from "../music";
 
-// #4 MAJOR regression: the piano InstrumentVisual must only overlay finger
-// numbers for keys with a CANONICAL fingering. Black-key keys (Bb/Eb/Ab/Db/Gb/
-// B/Fs and black-key minors) have no canonical pattern in fingerings.ts, so the
-// visual must show NO finger numbers (notes-only), not the wrong C-major-fallback
-// ones.
+// #4: the piano InstrumentVisual overlays finger numbers for the current key's
+// scale when a scaleKey is passed — for ALL 24 keys now (black-key scales
+// included), since fingerings.ts is the verified source of truth. With no
+// scaleKey it shows notes only.
 
 const Visual = pianoModule.InstrumentVisual;
 
-// The Keyboard renders finger numbers as <text> nodes whose content is the
-// digit; labelNotes is off by default so digits 1..5 only appear as fingerings.
+// Finger numbers render as <text> nodes containing a single digit 1..5
+// (labelNotes is off by default, so digits only appear as fingerings).
 function fingerTexts(container: HTMLElement): string[] {
   return Array.from(container.querySelectorAll("text"))
     .map((t) => t.textContent ?? "")
     .filter((s) => /^[1-5]$/.test(s));
 }
 
-describe("PianoInstrumentVisual fingering overlay is canonical-only", () => {
-  it("shows finger numbers for a canonical key (C major)", () => {
-    const notes = scale(KEY_META.C.tonic, "major", 2, 4);
-    const { container } = render(<Visual notes={notes} rangeStart="C4" octaves={2} scaleKey="C" />);
-    expect(fingerTexts(container).length).toBeGreaterThan(0);
+function renderScale(scaleKey: Parameters<typeof keyPrefersFlats>[0], hand?: "right" | "left") {
+  const meta = KEY_META[scaleKey];
+  const notes = scale(meta.tonic, meta.mode, 2, 4, keyPrefersFlats(scaleKey));
+  return render(<Visual notes={notes} rangeStart="C4" octaves={2} scaleKey={scaleKey} scaleHand={hand} />);
+}
+
+describe("PianoInstrumentVisual overlays scale fingerings for the current key", () => {
+  it("shows finger numbers for a white-key key (C major)", () => {
+    expect(fingerTexts(renderScale("C").container).length).toBeGreaterThan(0);
   });
 
-  it("shows NO finger numbers for a non-canonical black-key key (Bb major)", () => {
-    const notes = scale(KEY_META.Bb.tonic, "major", 2, 4, true);
-    const { container } = render(<Visual notes={notes} rangeStart="C4" octaves={2} scaleKey="Bb" />);
-    expect(fingerTexts(container)).toEqual([]);
+  it("shows finger numbers for a black-key/flat key (Bb major) — no longer gated out", () => {
+    expect(fingerTexts(renderScale("Bb").container).length).toBeGreaterThan(0);
   });
 
-  it("shows NO finger numbers for Eb major (another non-canonical key)", () => {
-    const notes = scale(KEY_META.Eb.tonic, "major", 2, 4, true);
-    const { container } = render(<Visual notes={notes} rangeStart="C4" octaves={2} scaleKey="Eb" />);
-    expect(fingerTexts(container)).toEqual([]);
+  it("shows finger numbers for Eb major and a black-key minor (F# minor)", () => {
+    expect(fingerTexts(renderScale("Eb").container).length).toBeGreaterThan(0);
+    expect(fingerTexts(renderScale("fsm").container).length).toBeGreaterThan(0);
+  });
+
+  it("renders LH fingerings when scaleHand='left'", () => {
+    expect(fingerTexts(renderScale("C", "left").container).length).toBeGreaterThan(0);
   });
 
   it("shows NO finger numbers when no scaleKey is supplied (notes-only)", () => {

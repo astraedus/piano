@@ -139,12 +139,24 @@ export function scale(tonic: string, mode: KeyMode, octaves = 1, startOct = 4, _
   const out: string[] = [];
   for (let o = 0; o < octaves; o++) {
     for (let i = 0; i < steps.length; i++) {
-      out.push(names[i] + (Math.floor(cur / 12) - 1));
+      out.push(spnFor(names[i], cur));
       cur += steps[i];
     }
   }
-  out.push(names[0] + (Math.floor(cur / 12) - 1)); // final octave note
+  out.push(spnFor(names[0], cur)); // final octave note
   return out;
+}
+
+// Attach the octave digit to a spelled note name so its pitchMidi equals `cur`.
+// For most names floor(cur/12)-1 is right, but the enharmonic-wrap names Cb/B#/
+// Fb/E# need an off-by-one correction (e.g. the pitch B4=71 spelled as Cb is
+// "Cb5", not "Cb4"), or the scale would appear to jump down an octave.
+function spnFor(name: string, midi: number): string {
+  const base = Math.floor(midi / 12) - 1;
+  for (const oct of [base, base - 1, base + 1]) {
+    if (pitchMidi(name + oct) === midi) return name + oct;
+  }
+  return name + base; // unreachable for our diatonic names
 }
 
 // Spell a TERTIAN chord (stacked thirds) by letter: the root keeps its letter,

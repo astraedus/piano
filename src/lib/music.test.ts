@@ -6,6 +6,7 @@ import {
   triad,
   progressionChords,
   pentatonic,
+  pitchMidi,
 } from "./music";
 import type { KeyId } from "./types";
 
@@ -70,6 +71,24 @@ describe("scale spelling", () => {
     expect(scale("Gb", "major", 1, 4, true).map(stripOct)).toEqual([
       "Gb", "Ab", "Bb", "Cb", "Db", "Eb", "F", "Gb",
     ]);
+  });
+  it("Gb major Cb is labelled Cb5 (not Cb4) so the scale ascends", () => {
+    // Regression: the octave digit on the enharmonic-wrap note Cb must place it
+    // at the right pitch (B4 = Cb5), or the rendered scale appears to jump down.
+    const gb = scale("Gb", "major", 1, 4, true);
+    expect(gb).toContain("Cb5");
+    expect(gb).not.toContain("Cb4");
+  });
+  it("every key's 2-octave scale is monotonically ASCENDING in pitch (octave labels correct)", () => {
+    // Catches the Cb/B#/E#/Fb octave-labelling bug across all 28 keys.
+    for (const key of ALL_KEYS) {
+      const meta = KEY_META[key];
+      const notes = scale(meta.tonic, meta.mode, 2, 4, keyPrefersFlats(key));
+      const midis = notes.map(pitchMidi);
+      for (let i = 1; i < midis.length; i++) {
+        expect(midis[i], `${key}: ${notes.join(" ")}`).toBeGreaterThan(midis[i - 1]);
+      }
+    }
   });
   it("Eb minor reads Eb F Gb Ab Bb Cb Db Eb (its 6th is Cb, not B)", () => {
     expect(scale("Eb", "minor", 1, 4, true).map(stripOct)).toEqual([

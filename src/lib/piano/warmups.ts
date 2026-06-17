@@ -15,10 +15,12 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
   "weight-transfer": {
     id: "weight-transfer",
     instrument: "piano",
+    // `{fiveFinger}` is substituted with this week's key's five-finger pattern at
+    // render (WarmupSlot.fillWarmupLine) so it is never hardcoded to C.
     label: "weight transfer",
     soulSummary: "Let your arm do the work, no tension",
     lines: [
-      "five-finger pattern — C D E F G F E D C.",
+      "five-finger pattern — {fiveFinger}.",
       "transfer arm weight finger to finger. zero tension between strikes.",
       "or just mash the keys to your favourite song.",
     ],
