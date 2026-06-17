@@ -126,6 +126,14 @@
   --instrument-accent-bg:    #FEF4D8;
   --instrument-accent-glow:  rgba(212, 144, 10, 0.20);
 
+  /* === FOCUS (gold, instrument/phase-independent) ===
+     Form fields in neutral pre-instrument flows (onboarding) must focus to the
+     warm gold accent regardless of the live instrument/phase. Without this they
+     pick up the guitar terracotta (#D45A40) or the phase-2 rose (#D4737F),
+     which reads as a red ERROR state on a plain name input. This token never
+     shifts with data-instrument/data-phase. */
+  --focus-gold:  #C9890C;
+
   /* === LEGACY ALIASES — existing components read these via var() directly ===
      Keep them pointing at the new tokens so nothing visual breaks. */
   --background:   var(--bg-base);
@@ -427,6 +435,10 @@ body > * { position: relative; z-index: 1; }
   font-family: var(--font-serif);
   font-style: italic;
   color: var(--instrument-accent-deep);
+  /* Lining + tabular figures: Fraunces defaults to oldstyle (text) figures,
+     which makes a leading count read as a glyph rather than a digit. Force
+     full-height, evenly-spaced numerals so counts are unmistakably numbers. */
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 /* Slot expand transitions. Slow, warm. */

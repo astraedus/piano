@@ -16,6 +16,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { resolveStatus, nextToLearn, markNodeProgress, isFluent } from "@/lib/skillTree";
+import { tierLearnedCounts, completionFraction, type TierCount } from "@/lib/skillSummary";
 import { getLesson } from "@/lib/lessons";
 import { linkTerms } from "@/components/explain";
 import { LessonMedia } from "@/components/LessonMedia";
@@ -54,7 +55,7 @@ const STATUS_COLOR: Record<SkillNodeStatus, string> = {
   locked: "var(--ink-3)",
   available: "var(--instrument-accent-deep)",
   "in-progress": "var(--instrument-accent)",
-  learned: "var(--color-success)",
+  learned: "var(--success)",
 };
 
 // ── Topological sort within a tier ─────────────────────────────────────────
@@ -479,6 +480,35 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   );
 }
 
+// ── Per-tier completion bar ──────────────────────────────────────────────────
+// A quiet fraction + fill bar under a tier heading, so the user sees how complete
+// each section is at a glance. Reads only Warm Studio tokens.
+
+function TierBar({ tier, count }: { tier: number; count: TierCount }) {
+  const pct = Math.round(completionFraction(count) * 100);
+  return (
+    <div data-testid={`path-tier-bar-${tier}`} className="mt-2 flex items-center gap-3">
+      <div
+        className="h-1.5 flex-1 rounded-full overflow-hidden"
+        style={{ background: "var(--surface-2)" }}
+        role="progressbar"
+        aria-valuenow={count.learned}
+        aria-valuemin={0}
+        aria-valuemax={count.total}
+        aria-label={`${count.learned} of ${count.total} learned`}
+      >
+        <div
+          className="h-full rounded-full transition-[width] duration-300"
+          style={{ width: `${pct}%`, background: "var(--instrument-accent)" }}
+        />
+      </div>
+      <span className="text-[11px] tabular-nums text-[color:var(--ink-3)] whitespace-nowrap">
+        {count.learned} / {count.total}
+      </span>
+    </div>
+  );
+}
+
 // ── Main PathView ────────────────────────────────────────────────────────────
 
 export function PathView() {
@@ -535,6 +565,12 @@ export function PathView() {
     [patch, state.skillProgress, module],
   );
 
+  // Per-tier learned/total fractions for the completion bars.
+  const tierCounts = useMemo(
+    () => new Map(tierLearnedCounts(nodes, progress).map((c) => [c.tier, c])),
+    [nodes, progress],
+  );
+
   // Group nodes by tier, topologically sorted within each tier
   const tiers = useMemo(() => {
     const byTier = new Map<number, SkillNode[]>();
@@ -562,6 +598,7 @@ export function PathView() {
 
       {tiers.map(({ tier, nodes: tierNodes }) => {
         const label = tierLabel(tier);
+        const count = tierCounts.get(tier);
         return (
           <section key={tier} data-testid={`path-tier-${tier}`}>
             <div className="mb-4">
@@ -575,6 +612,7 @@ export function PathView() {
               {label.subtitle && (
                 <p className="text-xs text-[color:var(--ink-3)] mt-0.5">{label.subtitle}</p>
               )}
+              {count && count.total > 0 && <TierBar tier={tier} count={count} />}
               <div className="mt-2 h-px" style={{ background: "var(--rule)" }} />
             </div>
 

@@ -381,3 +381,79 @@ describe("PIANO_NODES unlock linkage is explicit and resolvable", () => {
     }
   });
 });
+
+// ───────────────────── earLevel auto-advance (Pattern Recognition) ─────────────────────
+describe("endSession — earLevel auto-advance", () => {
+  // A session log carrying an ear result tally.
+  function earLog(correct: number, wrong: number): Omit<SessionLog, "id"> {
+    return logBase({
+      earResults: {
+        correctIds: Array.from({ length: correct }, (_, i) => `c${i}`),
+        wrongIds: Array.from({ length: wrong }, (_, i) => `w${i}`),
+      },
+    });
+  }
+  // Prior sessions already in state (as full SessionLogs).
+  function priorEarSession(idn: number, correct: number, wrong: number): SessionLog {
+    return { id: `prior-${idn}`, ...earLog(correct, wrong) };
+  }
+
+  it("advances earLevel one step after a strong recent window", () => {
+    const state = stateWith({
+      earLevel: 2,
+      sessions: [priorEarSession(1, 3, 0), priorEarSession(2, 3, 0)],
+    });
+    // This session adds 3 more correct → 9/9 over the window → advance L2 → L3.
+    const { state: next } = endSession(state, earLog(3, 0), new Date("2026-06-07T10:30:00Z"));
+    expect(next.earLevel).toBe(3);
+    expect(next.arc.some((e) => e.kind === "ear-level-up")).toBe(true);
+  });
+
+  it("holds earLevel when recent accuracy is below threshold", () => {
+    const state = stateWith({
+      earLevel: 2,
+      sessions: [priorEarSession(1, 1, 2), priorEarSession(2, 1, 2)],
+    });
+    const { state: next } = endSession(state, earLog(1, 2), new Date("2026-06-07T10:30:00Z"));
+    expect(next.earLevel).toBe(2);
+    expect(next.arc.some((e) => e.kind === "ear-level-up")).toBe(false);
+  });
+
+  it("never advances past L5 (content cap)", () => {
+    const state = stateWith({
+      earLevel: 5,
+      sessions: [priorEarSession(1, 3, 0), priorEarSession(2, 3, 0)],
+    });
+    const { state: next } = endSession(state, earLog(3, 0), new Date("2026-06-07T10:30:00Z"));
+    expect(next.earLevel).toBe(5);
+    expect(next.arc.some((e) => e.kind === "ear-level-up")).toBe(false);
+  });
+
+  it("graces a single bad round inside an otherwise-strong window", () => {
+    const state = stateWith({
+      earLevel: 3,
+      sessions: [priorEarSession(1, 3, 0), priorEarSession(2, 3, 0)],
+    });
+    // 8 correct, 1 wrong over the window = 0.888 ≥ 0.8 → advance.
+    const { state: next } = endSession(state, earLog(2, 1), new Date("2026-06-07T10:30:00Z"));
+    expect(next.earLevel).toBe(4);
+  });
+
+  it("advances by AT MOST one level per endSession across consecutive calls (ratchet guard)", () => {
+    // The windowed history never "resets", so a very strong run must still step
+    // L2 → L3 → L4 one level at a time — never L2 → L4 in a single session, even
+    // though every prior round in the window was correct.
+    let state = stateWith({
+      earLevel: 2,
+      sessions: [priorEarSession(1, 3, 0), priorEarSession(2, 3, 0)],
+    });
+
+    const first = endSession(state, earLog(3, 0), new Date("2026-06-07T10:30:00Z"));
+    expect(first.state.earLevel).toBe(3); // +1, not +2
+    state = first.state;
+
+    const second = endSession(state, earLog(3, 0), new Date("2026-06-08T10:30:00Z"));
+    expect(second.state.earLevel).toBe(4); // exactly one more, never skips to 5
+    expect(second.state.earLevel - first.state.earLevel).toBe(1);
+  });
+});

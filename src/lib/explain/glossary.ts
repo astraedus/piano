@@ -20,6 +20,7 @@ import {
   ensureAudio,
   playBend,
   playChord,
+  playInterval,
   playMutedChug,
   playProgression,
   playSequence,
@@ -129,6 +130,16 @@ export const GLOSSARY: GlossaryEntry[] = [
   },
 
   // ---- Scales (Cluster 2) ----
+  {
+    id: "interval",
+    title: "Interval",
+    aliases: ["intervals", "distance between notes", "the gap between two notes"],
+    what: "The distance in pitch between two notes — the building block under every melody and chord.",
+    why: "Naming intervals by ear lets you work out melodies and harmonies without sheet music.",
+    hear: () => hear(() => playInterval("C4", "G4")),
+    seeKind: "keyboard",
+    seeNotes: ["C4", "G4"],
+  },
   {
     id: "scale",
     title: "Scale",

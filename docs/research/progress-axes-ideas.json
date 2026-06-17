@@ -1,0 +1,590 @@
+{
+  "evaluation": {
+    "ranked": [
+      {
+        "title": "Three-Axis Progress Summary Card in Horizons",
+        "pillar": "PROGRESS VISIBILITY",
+        "impact": 5,
+        "effort": "M",
+        "score": 96,
+        "recommendation": "mvp-now",
+        "rationale": "This IS the owner's explicit ask, mapped 1:1 to the product thesis. Reads only already-persisted, Neon-synced AppState (skillProgress, earLevel, sessions, pieces) — zero new tracking, zero schema risk. Names Generation/Ability/Pattern-Recognition for the first time anywhere in the UI and gives earLevel its first real surface. Slightly prefer the Horizons home (M) over the heavier ThreeAxisCard variant because Horizons already exists and renders every load. The single highest-leverage progress move."
+      },
+      {
+        "title": "Ear Level Visibility + Auto-Advance — surface earLevel and increment it on session success",
+        "pillar": "PROGRESS VISIBILITY",
+        "impact": 5,
+        "effort": "M",
+        "score": 93,
+        "recommendation": "mvp-now",
+        "rationale": "Verified in code: earLevel exists (1-7) but sessions.ts never advances it and it renders nowhere outside Settings — a dead progression axis. This fixes the single worst progression bug AND makes it visible, in the same place XP/streak update. Without this, the Pattern Recognition pillar has no live signal at all. Auto-advance reads sessions.slice(-3) earResults already logged. Cap at L5 (only L1-L5 have authored rounds) is the correct, honest constraint."
+      },
+      {
+        "title": "Skill-learned count badge on the /tree header and PathView",
+        "pillar": "PROGRESS VISIBILITY",
+        "impact": 4,
+        "effort": "S",
+        "score": 90,
+        "recommendation": "mvp-now",
+        "rationale": "Directly closes audit Gap 1 (verified: tree header shows time/sessions/pieces, never a learned-skill count; PathView has no aggregate). Pure derivation from skillProgress + node list, S effort, turns the tree from an audit tool into a trophy wall. Per-tier fractions make every tier feel completable. The cleanest, lowest-risk visibility win. Note: overlaps the PathView tier-bar idea and the header-pill idea — fold those in here rather than shipping all three."
+      },
+      {
+        "title": "Interval Training Rounds (fill the gap in earRounds.ts)",
+        "pillar": "PATTERN RECOGNITION",
+        "impact": 5,
+        "effort": "M",
+        "score": 88,
+        "recommendation": "mvp-now",
+        "rationale": "Verified: the 'interval' EarRoundType is in the union but generateEarRound never emits it. Intervals are the atomic unit of hearing — the weakest pillar's most fundamental missing rung. Gives earLevel real content to advance THROUGH (pairs with the auto-advance idea), and the post-answer TermChip reveal it bundles closes the theory-to-practice loop. Highest-impact actual learning-content addition in the pool. M effort, fully additive to existing slot."
+      },
+      {
+        "title": "Imitation Round — 'Hear it, steal it' step type in existing drills",
+        "pillar": "GENERATION",
+        "impact": 5,
+        "effort": "S",
+        "score": 82,
+        "recommendation": "v2",
+        "rationale": "Strongest Generation idea: imitation is how musicians actually learn to generate, and it bridges passive ear training to active production. S effort, reuses playSequence + existing echo-ear node for tracking. Held to v2 only because the MVP batch is intentionally progress+pattern-recognition focused; this is the first thing to add once visibility lands. Genuinely makes learning easier for a beginner."
+      },
+      {
+        "title": "Improv Constraint Cards — rotating prompt in the improv step",
+        "pillar": "GENERATION",
+        "impact": 4,
+        "effort": "S",
+        "score": 78,
+        "recommendation": "v2",
+        "rationale": "Excellent pedagogy: blank improv time is where beginners freeze; a micro-constraint removes decision paralysis and teaches phrase craft without theory. S effort, pure client-side. Best paired with the Imitation Round as a Generation batch. v2 because Generation isn't the MVP focus, but this is a near-free high-value follow-up."
+      },
+      {
+        "title": "Motor Config Backfill — Add repBlocks + bpmLadder to Every Technique Drill",
+        "pillar": "TECHNICAL ABILITY",
+        "impact": 5,
+        "effort": "M",
+        "score": 80,
+        "recommendation": "v2",
+        "rationale": "High impact: ~88% of drills currently run as flat 'mark done' with the RepEngine's motor-learning science (BPM ladder, micro-rest, contextual interference) never firing. Pure data edit, no logic. The reason it's v2 not MVP: it's content-tuning grind (44 drills, each BPM hand-calibrated) and needs the BPM-PB ticker to make its output visible. Do it as a focused Technical-Ability batch with the PB ticker."
+      },
+      {
+        "title": "BPM Personal-Best Ticker on the Home Screen",
+        "pillar": "TECHNICAL ABILITY",
+        "impact": 4,
+        "effort": "S",
+        "score": 74,
+        "recommendation": "v2",
+        "rationale": "Surfaces bpmReached/maxBpm which are stored but never shown after a drill — converts invisible motor gains into felt achievement. S effort. v2 because its data is thin until the Motor Config Backfill gives every drill a ladder; ship the two together as the Technical-Ability batch."
+      },
+      {
+        "title": "Difficulty Verdict Chip on the Drill Slot Header",
+        "pillar": "TECHNICAL ABILITY",
+        "impact": 4,
+        "effort": "S",
+        "score": 72,
+        "recommendation": "v2",
+        "rationale": "difficultyVerdict is already exported from skillTree.ts but only visible 3 clicks deep. A 0-click 'Flowing/Building/Stretch' chip answers 'am I ready to move on?' and nudges BPM bumps. S effort, real feedback-loop value. v2: a clean follow-up to the Technical-Ability batch."
+      },
+      {
+        "title": "Post-answer theory reveal: auto-open the TermChip after ear rounds",
+        "pillar": "PATTERN RECOGNITION",
+        "impact": 4,
+        "effort": "S",
+        "score": 76,
+        "recommendation": "v2",
+        "rationale": "Closes the theory-to-practice loop at the moment of peak attention (right after answering), using the existing useExplain imperative open + EarChoice.termId pattern. S effort. Recommend FOLDING this into the Interval Training idea (which already bundles the same mechanic) rather than shipping separately — as a standalone it's thin, as part of the ear-round upgrade it's the right finish."
+      },
+      {
+        "title": "Session-End 'See What You Built' CTA — link to newly unlocked nodes post-session",
+        "pillar": "PROGRESS VISIBILITY",
+        "impact": 4,
+        "effort": "S",
+        "score": 75,
+        "recommendation": "v2",
+        "rationale": "Routes the biggest motivational moment (session end, +XP) to the visible-growth surface (/tree?highlight). newUnlocks already exists in endSession return. S effort, good loop-closer. v2 because the MVP first needs the destination (/tree count + axis card) to be worth landing on; ship right after the visibility batch."
+      },
+      {
+        "title": "Fluency Challenge Card in the Free Slot",
+        "pillar": "TECHNICAL ABILITY",
+        "impact": 3,
+        "effort": "S",
+        "score": 62,
+        "recommendation": "v2",
+        "rationale": "Surfaces fluencyTest prompts in-session while motor memory is warm (better science than the current 3-clicks-deep placement). S effort. Lower priority: fluencyTest is defined on only a handful of nodes, so reach is limited until more are authored. Reasonable v2 polish."
+      },
+      {
+        "title": "Creation Score — visible per-session and lifetime Generation axis",
+        "pillar": "GENERATION",
+        "impact": 5,
+        "effort": "M",
+        "score": 70,
+        "recommendation": "cut",
+        "rationale": "Strong intent but REDUNDANT with the Three-Axis Progress Card, which already names and quantifies Generation from existing state without inventing a new generationScore field. Adding a bespoke composite counter is extra persisted state and a second source of truth for the same axis. Express Generation through the three-axis card; don't ship a parallel scoring system."
+      },
+      {
+        "title": "First Creation Skill Node — 'Made Something Real' DAG milestone",
+        "pillar": "GENERATION",
+        "impact": 4,
+        "effort": "M",
+        "score": 58,
+        "recommendation": "cut",
+        "rationale": "Depends on the cut generationScore field for its gate, and a single hand-authored milestone node is low-leverage relative to effort across both instruments' node files + unlocks. The recognition it offers is better delivered by the three-axis card's named Generation axis and the existing first-improv arc event. Cut to avoid coupling to a rejected dependency."
+      },
+      {
+        "title": "Phrase-Builder — guided 4-bar composition in the Free Slot",
+        "pillar": "GENERATION",
+        "impact": 4,
+        "effort": "M",
+        "score": 60,
+        "recommendation": "cut",
+        "rationale": "Good pedagogy but overlaps heavily with the simpler, higher-rated Imitation Round and Improv Constraint Cards as the Generation entry point, and it adds new state (phrasesBuilt) + a new arc kind + XP award for a feature the Free Slot's unstructured nature half-covers. Pick the imitation+constraint pair as the Generation wedge; revisit a guided builder only if those prove the appetite."
+      },
+      {
+        "title": "Mood Prompt — expressive direction label on every improv step",
+        "pillar": "GENERATION",
+        "impact": 3,
+        "effort": "S",
+        "score": 56,
+        "recommendation": "cut",
+        "rationale": "Pleasant but the thinnest idea: a static display word with no logic, no tracking, no progress tie-in beyond existing expression-node coloring. Redundant with the Three Moods drills already in the data. Nice-to-have decoration, not a learning mechanic worth a slot in any focused batch."
+      },
+      {
+        "title": "Fretboard Shape-Spotting Rounds (guitar Pattern Recognition gap)",
+        "pillar": "PATTERN RECOGNITION",
+        "impact": 4,
+        "effort": "M",
+        "score": 64,
+        "recommendation": "v2",
+        "rationale": "Genuinely fills a real gap (guitar pattern recognition is visual/shape-based and audio-only ear training ignores it; Fretboard + GuitarMap components already exist). M effort, requires a new visual-only audio.kind. v2: ship AFTER the piano-side ear upgrades prove the round-extension pattern, since it's guitar-only and touches more components."
+      },
+      {
+        "title": "Ear Score Dashboard — surface the hidden earResults aggregate",
+        "pillar": "PATTERN RECOGNITION",
+        "impact": 4,
+        "effort": "S",
+        "score": 68,
+        "recommendation": "cut",
+        "rationale": "Largely SUBSUMED by the Three-Axis Card (which already shows ear accuracy/level) and the Ear Level Visibility idea (which surfaces earLevel + advance). Shipping a third ear-stats surface duplicates the Pattern Recognition axis display. Fold its 7-day accuracy sparkline into the three-axis card if wanted; don't ship standalone."
+      },
+      {
+        "title": "Scale Speed Timeline — Per-Key BPM History Sparkline on the Key Map",
+        "pillar": "TECHNICAL ABILITY",
+        "impact": 4,
+        "effort": "M",
+        "score": 54,
+        "recommendation": "cut",
+        "rationale": "Requires a NEW scaleBpmHistory array inside skillReps and changes to bumpRep — the only idea here adding genuinely new per-rep tracking. Nice visualization but buried 2 clicks deep in /tree → Key Map, and the BPM-PB ticker delivers most of the felt 'I got faster' value at S effort with zero new storage. High effort, low surface visibility. Cut in favor of the PB ticker."
+      },
+      {
+        "title": "Three-Axis Progress Card on the home page",
+        "pillar": "PATTERN RECOGNITION",
+        "impact": 5,
+        "effort": "S",
+        "score": 85,
+        "recommendation": "cut",
+        "rationale": "DUPLICATE of 'Three-Axis Progress Summary Card in Horizons' — same three bars from the same state. Keep ONE three-axis implementation. This variant claims S but adds tap-to-navigate-tab wiring and a mobile/desktop split; the Horizons variant is the cleaner home. Cut as a duplicate, merging its tap-to-tab idea into the chosen one."
+      },
+      {
+        "title": "Skill Count Header Badge — 'N skills learned' always visible",
+        "pillar": "PROGRESS VISIBILITY",
+        "impact": 4,
+        "effort": "S",
+        "score": 59,
+        "recommendation": "cut",
+        "rationale": "Redundant with the /tree header+PathView count idea and risks crowding an already-busy header (audit notes the compact XPBar is only 64px). One canonical skill-count surface (the tree header + a home stat) is enough; a third tiny header pill is clutter. Cut and consolidate."
+      },
+      {
+        "title": "Persistent 'Your Progress' mini-panel on the PracticeStand home page",
+        "pillar": "PROGRESS VISIBILITY",
+        "impact": 4,
+        "effort": "S",
+        "score": 71,
+        "recommendation": "v2",
+        "rationale": "Solves a REAL mobile gap the others don't: the rich StatsStrip lives in a desktop-only aside, so mobile users open to almost no progress signal. A 3-number above-the-fold strip (Level / skills / streak) is the mobile counterpart to the three-axis card. v2 because it partially overlaps the three-axis card; if that card is made mobile-above-fold it may absorb this — decide at build time. Keep as the mobile-visibility backstop."
+      },
+      {
+        "title": "PathView Tier Completion Bar — 'N of M learned' per tier section header",
+        "pillar": "PROGRESS VISIBILITY",
+        "impact": 4,
+        "effort": "S",
+        "score": 73,
+        "recommendation": "v2",
+        "rationale": "Strong and cheap, but it's the same data and surface as the chosen 'Skill-learned count on /tree header and PathView' idea — fold the per-tier bars INTO that build rather than treating them as a separate feature. As part of the count idea it's a natural inclusion; as a standalone it's a fragment. Recommend merging."
+      },
+      {
+        "title": "Session Technique Report Card — Persistent Post-Session Quality Summary",
+        "pillar": "TECHNICAL ABILITY",
+        "impact": 4,
+        "effort": "M",
+        "score": 63,
+        "recommendation": "v2",
+        "rationale": "Real value: the RepEngine's clean-hit % vanishes once you mark Done, breaking the cross-session feedback loop. Reads existing SessionQuality. M effort. v2 as part of the Technical-Ability batch (with backfill + PB ticker + verdict chip) — together those four form a coherent 'see your technique improve' upgrade; alone it's incomplete."
+      }
+    ],
+    "mvpSet": [
+      "Three-Axis Progress Summary Card in Horizons",
+      "Ear Level Visibility + Auto-Advance — surface earLevel and increment it on session success",
+      "Skill-learned count badge on the /tree header and PathView",
+      "Interval Training Rounds (fill the gap in earRounds.ts)"
+    ],
+    "cutList": [
+      "Creation Score — a visible per-session and lifetime Generation axis on the home page",
+      "First Creation Skill Node — 'Made Something Real' DAG milestone",
+      "Phrase-Builder — a guided 4-bar composition in the Free Slot",
+      "Mood Prompt — expressive direction label on every improv step",
+      "Ear Score Dashboard — surface the hidden earResults aggregate",
+      "Scale Speed Timeline — Per-Key BPM History Sparkline on the Key Map",
+      "Three-Axis Progress Card on the home page",
+      "Skill Count Header Badge — \"N skills learned\" always visible"
+    ],
+    "synthesis": "THE THROUGH-LINE: The owner's explicit ask — make progress OBVIOUS, mapped to the three pillars — and the app's single worst real bug (earLevel is a dead axis: it exists 1-7, is never advanced by sessions.ts, and renders nowhere outside Settings; verified in code) are the SAME problem. The MVP batch makes the three thesis axes (Generation / Ability / Pattern Recognition) visible AND fixes the one pillar that currently has no live signal at all. It reads from already-persisted, Neon-synced AppState — almost no new schema, so it's low-risk and ships as one coherent 'now you can SEE how far you've come' upgrade rather than scattered features.\\n\\nWHY THESE FOUR HANG TOGETHER: (1) The Three-Axis Card names and quantifies all three pillars in one place — the owner's literal ask. (2) Ear Level Visibility + Auto-Advance turns the dead Pattern Recognition axis live, giving that card a real number to show and a reason to advance. (3) The Skill-learned count fills audit Gap 1 (the tree header verifiably shows time/sessions/pieces but never a skill count) and feeds the Ability axis. (4) Interval Training gives earLevel actual content to climb through (the 'interval' EarRoundType is in the union but never generated — confirmed) and bundles the post-answer TermChip reveal to close the theory loop. Together: every axis is named, every axis moves, every axis is backed by account state. One thoughtful upgrade.\\n\\nRECOMMENDED BUILD ORDER:\\n1. Skill-learned count on /tree header + PathView (S, pure derivation, lowest risk) — FOLD IN the PathView Tier Completion Bar here; do not ship it separately. Warm-up win that proves the read-from-skillProgress pattern.\\n2. Ear Level Visibility + Auto-Advance (M) — touches sessions.ts (where XP/streak already update) and adds the ear-level-up arc event. Do this before the card so the card has a live earLevel to display.\\n3. Interval Training Rounds (M) — extend earRounds.ts with the existing 'interval' type, gate by earLevel, FOLD IN the post-answer TermChip auto-reveal. Now earLevel has content to advance through.\\n4. Three-Axis Progress Summary Card in Horizons (M) — built LAST so it reads the now-live earLevel, the new interval accuracy, and the skill count. This is the owner's headline deliverable; landing it last means it shows real, moving numbers on day one.\\n\\nDEDUPE NOTES FOR THE BUILDER: there are three near-duplicate three-axis/skill-count/ear-stats clusters in the pool — ship ONE of each. Use the Horizons three-axis card (not the separate home ThreeAxisCard), ONE skill-count surface (tree header + tier bars merged), and let the three-axis card subsume the standalone Ear Score Dashboard and the Skill Count Header pill.\\n\\nAFTER MVP, two coherent v2 batches: (A) GENERATION wedge — Imitation Round + Improv Constraint Cards (both S, both teach a beginner to produce music, both reuse playSequence/client RNG). (B) TECHNICAL-ABILITY wedge — Motor Config Backfill + BPM Personal-Best Ticker + Difficulty Verdict Chip + Session Report Card, shipped together so the backfill's new BPM data has surfaces to show it. The mobile 'Your Progress' strip is the visibility backstop if the three-axis card doesn't render above the fold on mobile.\\n\\nCUTS were duplicates (second three-axis card, header skill pill, ear dashboard), features coupled to a rejected new field (Creation Score and the First Creation node both depend on a bespoke generationScore that the three-axis card makes unnecessary), or high-effort/low-visibility (per-key BPM sparkline needs genuinely new per-rep storage for a 2-clicks-deep surface). Mood Prompt is decoration, not a mechanic."
+  },
+  "allIdeas": [
+    {
+      "title": "Improv Constraint Cards — rotating prompt in the improv step",
+      "whatItDoes": "Every `ChainStep` with `type: \"improv\"` already renders a plain instruction string. Add a `constraints: string[]` optional array to `ChainStep` (in `src/lib/types.ts`) and a small client-only picker in `ChainDrillSlot.tsx` that shows one randomly-drawn constraint card at the start of the improv timer — e.g. 'Use only 3 notes', 'Start every phrase on the beat', 'End on silence', 'Play the melody backwards'. The user taps 'New constraint' to redraw. No backend needed; constraints live in a static table in a new `src/lib/improvConstraints.ts`.",
+      "whyEasierLearning": "Blank improv time ('noodle for 120s') is where beginners freeze. A concrete micro-constraint removes decision paralysis and teaches phrase craft without theory — the learner generates something real, not just random notes. Each constraint is a generation skill in disguise (call-and-response, motivic development, dynamics).",
+      "progressVisibilityTieIn": "Add an `improvConstraintsUsed: number` counter to `AppState` (persisted, cloud-synced). Surface it in `Horizons.tsx` next to the existing 'Totals' row as 'N improv challenges taken'. On reaching milestones (10, 50, 100) fire a small `UnlockCard` ('You've shaped 50 ideas') — using the existing `pendingUnlocks` / `UnlockCardModal` pipeline so it shows post-session with no new modal code.",
+      "filesAffected": [
+        "src/lib/types.ts",
+        "src/lib/improvConstraints.ts",
+        "src/components/slots/ChainDrillSlot.tsx",
+        "src/components/Horizons.tsx",
+        "src/lib/sessions.ts",
+        "src/lib/piano/unlocks.ts"
+      ],
+      "effort": "S",
+      "impact": 4,
+      "pillar": "GENERATION — the ability to MAKE/PRODUCE music: improvise, compose, create riffs/progressions, call-and-response, \"play something that sounds like X\""
+    },
+    {
+      "title": "Phrase-Builder — a guided 4-bar composition in the Free Slot",
+      "whatItDoes": "Replace the three static bullets in `FreeSlot.tsx` with an optional 'Build a phrase' mode: a small stateful card that walks the user through four 15-second steps (Pick a starting note → Play a 2-bar idea → Play it back changed → Add an ending). Each step is a short instruction plus a 'Done' tap. On completion the session log records a `phraseBuilt: true` flag in the free-slot `detail` field of `SessionSlotLog`, and the `endSession` function in `src/lib/sessions.ts` awards XP via a new `perPhraseBuilt` award in `XP_AWARDS` (in `src/lib/progression.ts`).",
+      "whyEasierLearning": "Generation requires structure to start. A 4-step scaffold makes the blank free-slot non-intimidating: the learner produces a real shaped phrase (not just 'played whatever') in under 2 minutes. Each step teaches a compositional principle (repetition, variation, cadence) without naming it.",
+      "progressVisibilityTieIn": "Accumulate `phrasesBuilt` count in `AppState` and show it as a stat in the post-session `sessionLine` (in `src/lib/doneLines.ts`) when ≥1 phrase was built that session — 'You built a phrase tonight.' Add a `/tree → Your Arc` event (`kind: 'first-improv'` already exists; add `kind: 'first-phrase'` to the `ArcEventKind` union in `src/lib/types.ts`) when the first phrase is ever completed, so it appears permanently in the Arc timeline.",
+      "filesAffected": [
+        "src/components/slots/FreeSlot.tsx",
+        "src/lib/types.ts",
+        "src/lib/sessions.ts",
+        "src/lib/progression.ts",
+        "src/lib/doneLines.ts"
+      ],
+      "effort": "M",
+      "impact": 4,
+      "pillar": "GENERATION — the ability to MAKE/PRODUCE music: improvise, compose, create riffs/progressions, call-and-response, \"play something that sounds like X\""
+    },
+    {
+      "title": "Imitation Round — 'Hear it, steal it' step type in existing drills",
+      "whatItDoes": "Add a new `ChainStepType` value `'imitate'` to the union in `src/lib/types.ts`. In `ChainDrillSlot.tsx`, when a step has `type: 'imitate'`, render a 'Hear the phrase' button that calls `playSequence` (already in `src/lib/audio.ts`) to play a short melodic fragment from the drill's key, then shows 'Now steal it — play what you just heard' with a 15-second countdown. Wire this into two existing drills: add an `imitate` step to `p1-echo-ear` (already a transcription drill in `src/lib/piano/chainDrills.ts`) and one to each guitar `g-t2-pentatonic-box1-chain` entry. The note sequences are static arrays defined on the step (`notes: string[]`).",
+      "whyEasierLearning": "Imitation is how every musician actually learns to generate: hear something, reproduce it, own it. This closes the loop between passive ear training (EarMomentSlot) and active generation — the learner is making music by reproducing a real fragment, not exercising abstract theory.",
+      "progressVisibilityTieIn": "The `p-t1-echo-ear` skill node (in `src/lib/piano/skillNodes.ts`) already exists with status tracking via `skillProgress`. When the user completes the updated `p1-echo-ear` drill (which now includes the imitate step), `endSession` in `src/lib/sessions.ts` marks that node `learned` as before. Surfacing: add a badge on the `/tree → Your Path` node row when `status === 'learned'` showing the learn date — this already exists via `learnedAt` in `SkillProgress`, it just needs a rendered date line in `PathView.tsx`.",
+      "filesAffected": [
+        "src/lib/types.ts",
+        "src/lib/piano/chainDrills.ts",
+        "src/lib/guitar/chainDrills.ts",
+        "src/components/slots/ChainDrillSlot.tsx",
+        "src/components/PathView.tsx"
+      ],
+      "effort": "S",
+      "impact": 5,
+      "pillar": "GENERATION — the ability to MAKE/PRODUCE music: improvise, compose, create riffs/progressions, call-and-response, \"play something that sounds like X\""
+    },
+    {
+      "title": "Creation Score — a visible per-session and lifetime Generation axis on the home page",
+      "whatItDoes": "Add a `generationScore: number` field to `AppState` (in `src/lib/types.ts`). `endSession` in `src/lib/sessions.ts` increments it by tallying generation-specific events: +1 per improv step completed, +2 per phrase built (Idea 2), +2 per imitate step completed (Idea 3), +3 when a `category: 'expression'` skill node is newly learned, +5 when a piece reaches `status: 'yours'`. In `Horizons.tsx`, add a 'Generation' stat line next to the existing Totals block: 'N ideas made · M pieces yours'. On the `/tree` page header (in `src/app/tree/page.tsx`) add a third pill alongside the existing 'Xh · N sessions' subtext: '+ N ideas made'.",
+      "whyEasierLearning": "The three-pillar thesis (Generation / Ability / Pattern Recognition) has no named dashboard. Making Generation a named, counted axis tells the learner 'you are a creator' from session 3, not session 300. Counting small acts (completing an improv step) keeps the number moving and reinforces the habit of generating.",
+      "progressVisibilityTieIn": "The `generationScore` persists to Neon via the existing full-blob cloud sync (`src/lib/cloudSync.ts`). Show the lifetime score prominently in `Horizons.tsx` and in the post-session `sessionLine` when it crosses round-number milestones (10, 25, 50, 100) — e.g. 'You've made 25 musical ideas.' Add a `level-up`-style Arc event (`kind: 'generation-milestone'` added to `ArcEventKind` in `src/lib/types.ts`) at those milestones so it appears in `YourArc.tsx`.",
+      "filesAffected": [
+        "src/lib/types.ts",
+        "src/lib/sessions.ts",
+        "src/components/Horizons.tsx",
+        "src/app/tree/page.tsx",
+        "src/lib/doneLines.ts",
+        "src/components/YourArc.tsx"
+      ],
+      "effort": "M",
+      "impact": 5,
+      "pillar": "GENERATION — the ability to MAKE/PRODUCE music: improvise, compose, create riffs/progressions, call-and-response, \"play something that sounds like X\""
+    },
+    {
+      "title": "Mood Prompt — expressive direction label on every improv step",
+      "whatItDoes": "Add an optional `mood?: string` field to `ChainStep` in `src/lib/types.ts`. Populate it on the `improv` step of expression-pillar drills in `src/lib/piano/chainDrills.ts` — e.g. `p1-three-moods-lite` gets moods ['tender', 'restless', 'resigned'] cycled by session index, `p1-c-tone-chain` gets 'whisper-quiet', `p2-e-minor-mood` gets 'cinematic'. In `ChainDrillSlot.tsx`, when `step.mood` is present, render a single large-type mood word above the instruction (using the existing `font-serif` token, instrument-accent color) — like a performance direction on a score. No logic, pure display.",
+      "whyEasierLearning": "Generation collapses when the learner has no emotional target. A single evocative word ('restless') creates immediate creative intent without theory: the learner stops thinking 'what notes?' and starts thinking 'what feeling?'. This directly implements the Three Moods concept already in the skill nodes but generalises it to every improv step across both instruments.",
+      "progressVisibilityTieIn": "When a drill with a `mood` step is completed, `endSession` in `src/lib/sessions.ts` checks if the linked node has `category: 'expression'` and tracks it in `skillProgress` as normal. The existing `SkillGraph.tsx` already colours expression nodes differently (category-based coloring). Add a tooltip or label to expression nodes in `PathView.tsx` showing 'Expressive — you chose how to play this' to reinforce that these completions represent generation progress, not just technical reps.",
+      "filesAffected": [
+        "src/lib/types.ts",
+        "src/lib/piano/chainDrills.ts",
+        "src/lib/guitar/chainDrills.ts",
+        "src/components/slots/ChainDrillSlot.tsx",
+        "src/components/PathView.tsx"
+      ],
+      "effort": "S",
+      "impact": 3,
+      "pillar": "GENERATION — the ability to MAKE/PRODUCE music: improvise, compose, create riffs/progressions, call-and-response, \"play something that sounds like X\""
+    },
+    {
+      "title": "First Creation Skill Node — 'Made Something Real' DAG milestone",
+      "whatItDoes": "Add a new `SkillNode` to `src/lib/piano/skillNodes.ts` with `id: 'p-t1-first-creation'`, `category: 'expression'`, `tier: 1`, `prereqs: ['p-t1-first-improv']`, `chainDrillId: 'p1-three-moods-lite'`. The mastery condition: complete the three-moods drill AND have `generationScore >= 5` (checked in `endSession` via the new `generationScore` field from Idea 4). When earned, fire an `UnlockCard` ('You made something. That's the whole game.') via the existing `unlockCardId` + `pendingUnlocks` pipeline. Mirror with a guitar node `g-t1-first-creation` in `src/lib/guitar/skillNodes.ts` gated on the box-1 improv drill.",
+      "whyEasierLearning": "There is currently no skill node that explicitly names 'I generated music' as an achievement — only technique and ear nodes. Adding a named DAG node for the first creative act gives the learner a clear moment of recognition: the skill tree itself says 'you are a creator now', not just 'you completed an exercise'. This is the hardest conceptual barrier in music learning.",
+      "progressVisibilityTieIn": "The node appears in `SkillGraph.tsx` (category 'expression', visible on play-with-soul and go-deep paths) and `PathView.tsx` immediately. When it reaches `learned`, it fires the UnlockCard modal and adds a `learnedAt` timestamp to `skillProgress` — making it permanently visible in the DAG as a colored (learned) node. The `/tree` page header's 'N skills' count (once Gap 1 from the audit is fixed, showing learned/total) will include it.",
+      "filesAffected": [
+        "src/lib/piano/skillNodes.ts",
+        "src/lib/guitar/skillNodes.ts",
+        "src/lib/piano/unlocks.ts",
+        "src/lib/guitar/unlocks.ts",
+        "src/lib/sessions.ts",
+        "src/lib/types.ts"
+      ],
+      "effort": "M",
+      "impact": 4,
+      "pillar": "GENERATION — the ability to MAKE/PRODUCE music: improvise, compose, create riffs/progressions, call-and-response, \"play something that sounds like X\""
+    },
+    {
+      "title": "BPM Personal-Best Ticker on the Home Screen",
+      "whatItDoes": "Reads `skillReps[scale:*].maxBpm` (already stored per warmup) and `skillProgress[*].bpmReached` (stored per drill) and renders a compact 'Personal Bests' row in the existing Horizons section, showing the ghost key's current scale PB and the active drill's BPM high-water mark. A new `bpmBests` derived selector reads these two maps and returns the top 3 recent PBs. Each entry shows the skill name, current best, and a small sparkline-style delta badge when the PB improved this session.",
+      "whyEasierLearning": "Speed gains are invisible right now — `bpmReached` is stored but never shown after the drill ends. A learner who bumped from 80 to 95 BPM over 2 weeks has no idea. Making the number visible on the home screen converts invisible motor gains into a felt achievement, which is the core motivator for repetitive technical practice.",
+      "progressVisibilityTieIn": "Each PB is per-account (in `AppState.skillReps` and `skillProgress`, synced to Neon). The delta badge fires the session the PB is broken, so the 'how far you've come' signal is immediate and tied to that day's session.",
+      "filesAffected": [
+        "src/components/Horizons.tsx",
+        "src/lib/types.ts",
+        "src/lib/progression.ts"
+      ],
+      "effort": "S",
+      "impact": 4,
+      "pillar": "TECHNICAL ABILITY — finger technique, accuracy, timing/rhythm, speed ramps, motor learning"
+    },
+    {
+      "title": "Motor Config Backfill — Add repBlocks + bpmLadder to Every Technique Drill",
+      "whatItDoes": "Adds `repBlocks: { repsPerBlock: 3, restSec: 12 }` and a tuned `bpmLadder` to the 26 piano and 18 guitar drills currently running as flat sequences. Each drill gets a `startBpm` calibrated to its complexity (chord-change drills: 60→100; scale/run drills: 70→120; rhythm drills: 80→140). No new logic needed — the RepEngine already handles all of this; it just degrades gracefully when config is absent. This is a data edit across two files.",
+      "whyEasierLearning": "Without BPM laddering and micro-rest blocks, the motor-learning science already in the RepEngine never fires for 88% of drills. A learner practicing `p2-left-hand-loop` or `g-t2-bend-vibrato-chain` gets a flat 'did you do it?' prompt with no progressive overload, no rest consolidation, and no speed target. Adding config turns every drill into a real motor-learning session instead of a checkbox.",
+      "progressVisibilityTieIn": "`bpmReached` only populates when a drill has a BPM ladder. Once all drills have one, the BPM Personal-Best Ticker (above) gains data for every drill the user has ever practiced, showing a complete per-skill speed history per account.",
+      "filesAffected": [
+        "src/lib/piano/chainDrills.ts",
+        "src/lib/guitar/chainDrills.ts"
+      ],
+      "effort": "M",
+      "impact": 5,
+      "pillar": "TECHNICAL ABILITY — finger technique, accuracy, timing/rhythm, speed ramps, motor learning"
+    },
+    {
+      "title": "Fluency Challenge Card in the Free Slot",
+      "whatItDoes": "In `FreeSlot.tsx`, after the existing spaced-review 'Bring these back' cards, add a 'Prove it's automatic' section. It reads all `learned` nodes that have a `fluencyTest` prompt and are NOT yet `fluent` (from `skillProgress`) and surfaces the highest-priority one (most recently learned). The card shows the `fluencyTest.prompt`, a brief framing line ('Knowing it and owning it are different things'), and a single 'I Did It Automatically' button that calls `markNodeFluent`. The Free Slot is the ideal home because it is unstructured time — the prompt fits naturally as an optional challenge, not an assignment.",
+      "whyEasierLearning": "Fluency tests (the R10 autonomous-stage check) currently require 3 clicks to find: nav → /tree → tap node → find the fluency check section. During practice, when the skill is warm, the learner never sees the prompt. Surfacing it in the same session where the drill was just played means the test is taken while the motor memory is active — which is both better science and far more likely to actually happen.",
+      "progressVisibilityTieIn": "Completing a fluency test marks `skillProgress[id].fluent = true` (synced to Neon). The `/tree → PathView` already renders a gold 'Fluent' badge on fluent nodes. A future summary count of 'X skills fluent' becomes meaningful once more learners actually complete the test.",
+      "filesAffected": [
+        "src/components/slots/FreeSlot.tsx",
+        "src/lib/skillTree.ts"
+      ],
+      "effort": "S",
+      "impact": 3,
+      "pillar": "TECHNICAL ABILITY — finger technique, accuracy, timing/rhythm, speed ramps, motor learning"
+    },
+    {
+      "title": "Session Technique Report Card — Persistent Post-Session Quality Summary",
+      "whatItDoes": "After `handleDone` fires in `PracticeStand.tsx`, augment the existing ephemeral `sessionLine` text with a persistent collapsible 'Technique this session' panel. It reads `chainQuality` (already captured in state as `SessionQuality`) and `bpmAdvanced` (already computed in `endSession`) and renders: clean-hit rate as a donut-style arc (e.g. '78% clean'), peak BPM if a ladder was active, and a one-line verdict ('Solid — node gated at 70%, you hit 78%. Ready to advance.'). The panel persists until the user navigates away (same lifecycle as `sessionLine`) and links to the relevant skill node on `/tree`.",
+      "whyEasierLearning": "The RepEngine's `DonePanel` already shows 'X of Y clean · Z%' but it only appears inside the slot while practice is in progress — once the user scrolls past or marks Done, the signal is gone. A learner has no way to know if they are improving across sessions without manually tracking. A post-session report closes the feedback loop that motor learning depends on: attempt → measure → know where you stand.",
+      "progressVisibilityTieIn": "Each session's quality summary is derived from `SessionLog.quality` which is already persisted to Neon per-account. The verdict line ('your clean rate improved from 65% to 78% vs last week') can be computed from `state.sessions.slice(-7)` without any new storage.",
+      "filesAffected": [
+        "src/components/PracticeStand.tsx",
+        "src/lib/doneLines.ts",
+        "src/lib/sessions.ts"
+      ],
+      "effort": "M",
+      "impact": 4,
+      "pillar": "TECHNICAL ABILITY — finger technique, accuracy, timing/rhythm, speed ramps, motor learning"
+    },
+    {
+      "title": "Difficulty Verdict Chip on the Drill Slot Header",
+      "whatItDoes": "In `ChainDrillSlot.tsx`, read `difficultyVerdict(state.skillProgress?.[drillNode?.id])` (already exported from `skillTree.ts`) and render a small verdict chip directly on the slot's `summary` line — e.g. a green 'Flowing' chip for too-easy, an amber 'Building' chip for just-right, a red 'Stretch' chip for too-hard. The chip only renders once `attempts >= MIN_ATTEMPTS_FOR_VERDICT` (3) so it never shows for first-timers. A 'too-easy' chip also injects a one-line nudge inside the slot: 'This is flowing — bump the BPM or try the next drill.'",
+      "whyEasierLearning": "A learner who has been at 78% success rate for 10 sessions on `p1-c-major-chain` is ready to move on but has no signal. The difficulty verdict is computed from real rep data but only visible 3 clicks deep in the skill graph panel. Showing it on the slot header makes the answer to 'am I getting better at this?' visible in 0 clicks.",
+      "progressVisibilityTieIn": "`difficultyVerdict` reads `skillProgress[id].attempts` and `.successes` — both synced to Neon per-account. As the verdict shifts from 'Stretch' to 'Flowing' over weeks, the chip color change is the most direct visible evidence of technical growth at that skill.",
+      "filesAffected": [
+        "src/components/slots/ChainDrillSlot.tsx",
+        "src/lib/skillTree.ts"
+      ],
+      "effort": "S",
+      "impact": 4,
+      "pillar": "TECHNICAL ABILITY — finger technique, accuracy, timing/rhythm, speed ramps, motor learning"
+    },
+    {
+      "title": "Scale Speed Timeline — Per-Key BPM History Sparkline on the Key Map",
+      "whatItDoes": "In `KeyMap.tsx` (the `/tree → Key Map` tab), add a per-key detail panel that fires when a key is tapped. The panel already exists as `KeyDetailPanel` (partially — the component currently shows depth label + meaning text). Extend it with a mini sparkline chart using the `skillReps[scale:${keyId}:hs].count` and `maxBpm` fields across sessions. Since `skillReps` doesn't record per-session BPM history, store the last 8 BPM readings for a scale in a new `scaleBpmHistory?: number[]` field inside the `skillReps` entry. `bumpRep` in `useAppState.tsx` appends to this array (capped at 8). The sparkline renders as 8 small bars showing the BPM progression from first attempt to now.",
+      "whyEasierLearning": "A learner who started C major at 60 BPM and is now playing it at 100 BPM has demonstrable proof of motor progress — but only if they can see it. The Key Map is the most visually satisfying place in the app to show this because it maps directly to the instrument. Tapping a key you play well and seeing a rising sparkline is the 'how far I've come' moment the owner explicitly wants to be obvious.",
+      "progressVisibilityTieIn": "`scaleBpmHistory` lives inside `skillReps` which is part of `AppState` (synced to Neon). The sparkline is per-account and per-key, making each key's speed curve a unique visible record of that user's technical journey on that key.",
+      "filesAffected": [
+        "src/components/KeyMap.tsx",
+        "src/hooks/useAppState.tsx",
+        "src/lib/types.ts"
+      ],
+      "effort": "M",
+      "impact": 4,
+      "pillar": "TECHNICAL ABILITY — finger technique, accuracy, timing/rhythm, speed ramps, motor learning"
+    },
+    {
+      "title": "Interval Training Rounds (fill the gap in earRounds.ts)",
+      "whatItDoes": "Adds a new `generateIntervalRound` function to `lib/earRounds.ts` using the `\"interval\"` EarRoundType that already exists in the type union but is never generated. Plays two notes sequentially (using the existing `playInterval` from `lib/audio.ts`), asks the learner to name the interval (minor 2nd through perfect 8th, gated by `earLevel`). Gates: L1=P5/P8 (the most recognisable), L2 adds M3/m3, L3 adds M2/m2/tritone. Answer feedback auto-opens the matching glossary TermChip via `useExplain` (following the V4 `termId` pattern already on `EarChoice`). `earLevel` is incremented by `endSession` in `lib/sessions.ts` when the session's ear-correct ratio crosses a threshold (fixing the gap where `earLevel` never advances). The per-session correct count (`earResults.correctIds`) is already logged and available to `endSession` — no new state shape needed.",
+      "whyEasierLearning": "Intervals are the atomic unit of hearing any melody or chord — once you can name an interval you start hearing songs in pieces rather than as undifferentiated sound. Filling this gap means Pattern Recognition has a real progression ladder instead of stalling at L5 progressions.",
+      "progressVisibilityTieIn": "earLevel (currently static and invisible) becomes a live counter. A new `EarLevelBadge` component — mirroring the existing `LevelBadge` in `XPBar.tsx` — renders in the `StatsStrip` of `PracticeStand.tsx` beside the XPBar and StreakFlame, showing \"Ear L3\" with a small filled pip track (7 pips for L1–L7). The first time earLevel advances, an arc event `\"ear-level-up\"` is appended to `state.arc`, making it visible in the `YourArc` timeline on `/tree`.",
+      "filesAffected": [
+        "src/lib/earRounds.ts",
+        "src/lib/sessions.ts",
+        "src/lib/types.ts",
+        "src/components/slots/EarMomentSlot.tsx",
+        "src/components/PracticeStand.tsx"
+      ],
+      "effort": "M",
+      "impact": 5,
+      "pillar": "PATTERN RECOGNITION — hearing and seeing patterns: intervals, chords, scales, shapes on the keyboard/fretboard, theory that clicks"
+    },
+    {
+      "title": "Ear Score Dashboard — surface the hidden `earResults` aggregate",
+      "whatItDoes": "Computes a rolling ear accuracy stat from `state.sessions[].earResults` (already persisted in every `SessionLog` — zero new state needed) and surfaces it as a compact card in `Horizons.tsx` (the existing 'Where You Are' section at the bottom of `PracticeStand`). Shows: current `earLevel`, total rounds attempted, lifetime accuracy %, and a 7-day sparkline of correct/wrong counts. Also adds a new 'Ear' row to the `TreeShell` header stats line in `src/app/tree/page.tsx` (currently only shows time, sessions, pieces) — 'Ear L2 · 74% accuracy' in the same `text-sm text-ink-3` style already used. On the `/tree → Your Arc` tab, `ear-level-up` arc events already fire when earLevel advances (from idea 1) and appear here naturally.",
+      "whyEasierLearning": "Learners who cannot see their ear improving have no evidence to stay motivated on a skill that feels intangible. A concrete '74% accurate, up from 60% last week' makes the invisible axis of Pattern Recognition as real and trackable as the skill tree.",
+      "progressVisibilityTieIn": "The stat reads directly from persisted `SessionLog.earResults` — no new DB schema needed. It syncs to Neon on the next auto-push (the whole `AppState` blob) so it appears on every device the user signs into. It is shown in the always-visible `Horizons` section (below the practice stand) and in the `/tree` page header — two surfaces the user already visits.",
+      "filesAffected": [
+        "src/components/Horizons.tsx",
+        "src/app/tree/page.tsx",
+        "src/lib/sessions.ts"
+      ],
+      "effort": "S",
+      "impact": 4,
+      "pillar": "PATTERN RECOGNITION — hearing and seeing patterns: intervals, chords, scales, shapes on the keyboard/fretboard, theory that clicks"
+    },
+    {
+      "title": "Fretboard Shape-Spotting Rounds (guitar Pattern Recognition gap)",
+      "whatItDoes": "Extends `lib/guitar/earRounds.ts` with a new `shapeSpotRound` generator for L3+. Instead of playing audio, it renders a `Fretboard` highlight (the component already exists at `lib/guitar/components/Fretboard.tsx`) showing a pentatonic box or chord shape on a randomly chosen root, and asks 'Which box is this?' with 2–3 position choices (e.g. 'Box 1 (Am shape)', 'Box 2 (G shape)', 'Box 3 (Em shape)'). The `EarRound` type's `audio.kind` union is extended with `\"visual-only\"` so `playEarRound` in `lib/audio.ts` is a no-op for this round type (the Fretboard IS the stimulus). `EarMomentSlot` detects `audio.kind === \"visual-only\"` and renders the fretboard visual instead of the Play button. The `cagedShape` field already exists on `SkillNode` — the round can cross-reference the node the user is currently working on in the chain drill for tonal consistency with the session.",
+      "whyEasierLearning": "Guitarists must recognise shapes on the neck by sight — this is the entire CAGED/pentatonic visual system. Audio-only ear training ignores a fundamental axis of guitar Pattern Recognition. Connecting the visual shape to the session's current drill makes the ear and eye train in the same tonal context.",
+      "progressVisibilityTieIn": "Shape-spot rounds are tagged `type: \"interval\"` with a `cagedShape` field; correct answers increment a new `shapeSpotCorrect` counter persisted on `SessionLog.earResults.detail`. The existing `GuitarMap` component on `/tree → Neck Map` can render box positions as 'spotted N times' overlays, turning a static reference into a live mastery map. This surfaces on the same tab the user already visits to see territory.",
+      "filesAffected": [
+        "src/lib/guitar/earRounds.ts",
+        "src/lib/types.ts",
+        "src/lib/audio.ts",
+        "src/components/slots/EarMomentSlot.tsx",
+        "src/components/GuitarMap.tsx"
+      ],
+      "effort": "M",
+      "impact": 4,
+      "pillar": "PATTERN RECOGNITION — hearing and seeing patterns: intervals, chords, scales, shapes on the keyboard/fretboard, theory that clicks"
+    },
+    {
+      "title": "Three-Axis Progress Card on the home page",
+      "whatItDoes": "Adds a compact `ThreeAxisCard` component rendered at the top of the `PracticeStand` info rail (the `<aside>` that already holds `StatsStrip`) on desktop and as a collapsible row above the Horizons section on mobile. Shows three horizontal bars — one per product thesis axis — each computed from existing state: Ability = `learnedCount / totalNodes` from `skillProgress`; Pattern Recognition = `earLevel / 7` combined with 7-day ear accuracy from `sessions[].earResults`; Generation = count of expression-category nodes learned + pieces with `status === 'yours'` normalised over a soft max. Each bar shows a label, fill, and a one-word milestone ('First Note', 'Phrase Maker', 'Improviser') drawn from the existing `LEVEL_TITLES` logic in `progression.ts`. Tapping any bar navigates to the relevant `/tree` tab (Skill Graph for Ability, Your Arc for Generation, a new Ear tab or the existing arc for Pattern Recognition).",
+      "whyEasierLearning": "The product has three named axes but the UI shows only one (the XP level, which is a blend). Giving each axis a bar makes the learner's relative strengths visible at a glance and surfaces which pillar to focus on — reducing the decision cost of 'what should I work on today'.",
+      "progressVisibilityTieIn": "All three bars read from already-persisted `AppState` fields (no new tracking needed). The card is above-the-fold on desktop where most practice happens, so 'how far you've come' is answered before the user even starts a session. Cloud sync means the bars match across devices the moment the session closes.",
+      "filesAffected": [
+        "src/components/PracticeStand.tsx",
+        "src/lib/skillTree.ts",
+        "src/lib/progression.ts"
+      ],
+      "effort": "S",
+      "impact": 5,
+      "pillar": "PATTERN RECOGNITION — hearing and seeing patterns: intervals, chords, scales, shapes on the keyboard/fretboard, theory that clicks"
+    },
+    {
+      "title": "Skill-learned count badge on the `/tree` header and PathView",
+      "whatItDoes": "Computes `learnedCount` and `totalNodes` from `state.skillProgress` and the instrument's node list, and renders 'N of M skills learned' as a prominent stat in the `/tree` page header (next to the existing 'Xh · N sessions · N pieces' line) and as a sticky progress bar at the top of `PathView.tsx` above the tier-grouped list. The bar is a simple `<progress>`-styled track in the Warm Studio accent colour with a fraction label. Also adds a 'N learned' aggregate count to each tier section header in `PathView` (currently only tier names like 'Foundations' and 'Getting Real' appear — no count). This requires reading `resolveStatus` (already imported in `PathView`) and grouping `\"learned\"` counts per tier.",
+      "whyEasierLearning": "Without a count, the user cannot answer 'how many skills have I actually learned?' without mentally counting dots in the graph. A top-level fraction and per-tier count makes progress undeniable and motivating, especially as the number grows — turning the skill tree from an audit tool into a trophy wall.",
+      "progressVisibilityTieIn": "The data is already in `state.skillProgress` and synced to Neon on every session end. The header stat appears immediately on opening `/tree` — no tab navigation required. Per-tier counts make every tier feel completable rather than open-ended, which directly serves the owner's requirement that 'how far you've come' must be obvious.",
+      "filesAffected": [
+        "src/app/tree/page.tsx",
+        "src/components/PathView.tsx",
+        "src/lib/skillTree.ts"
+      ],
+      "effort": "S",
+      "impact": 4,
+      "pillar": "PATTERN RECOGNITION — hearing and seeing patterns: intervals, chords, scales, shapes on the keyboard/fretboard, theory that clicks"
+    },
+    {
+      "title": "Post-answer theory reveal: auto-open the TermChip after ear rounds",
+      "whatItDoes": "After the user answers any ear round, the existing `picked` state in `EarMomentSlot.tsx` triggers a 1200ms feedback delay before moving to the next round. During that window, the correct answer's `termId` (already defined on most `EarChoice` entries via the V4 pattern) is passed to `useExplain`'s `open(termId)` method to programmatically slide open the glossary panel for the correct term. For wrong answers the correct term opens with a 'This is what you heard:' prefix line. For right answers the panel opens with 'You heard it.' The glossary panel (`Explain.tsx` / `useExplain.tsx`) already supports imperative open/close via context — this just wires an `onPick` callback in `EarMomentSlot` to call `open(correctTermId)` after the feedback delay. New `termId` entries are added to cadence and progression choices (currently missing from `cadenceRound` and `progressionRound` choices in `earRounds.ts`).",
+      "whyEasierLearning": "Right now the learner hears 'Correct.' and moves on — the moment of maximum attention (just after answering) is wasted. Auto-opening the theory definition at that exact moment closes the theory-to-practice loop: the label, the sound, and the explanation all arrive together, making the pattern stick in one micro-cycle instead of remaining disconnected vocabulary.",
+      "progressVisibilityTieIn": "Each time a new glossary term is auto-revealed, a `termsSeen` counter (a new lightweight field on `AppState`, or computed from `sessions[].earResults.detail`) increments. The `Horizons` 'Totals' row (already in `Horizons.tsx`) gains a 'Terms' stat alongside Keys and Unlocks. This is small but makes the vocabulary-building axis of Pattern Recognition quantified and visible.",
+      "filesAffected": [
+        "src/components/slots/EarMomentSlot.tsx",
+        "src/components/explain/useExplain.tsx",
+        "src/lib/earRounds.ts",
+        "src/components/Horizons.tsx",
+        "src/lib/types.ts"
+      ],
+      "effort": "S",
+      "impact": 4,
+      "pillar": "PATTERN RECOGNITION — hearing and seeing patterns: intervals, chords, scales, shapes on the keyboard/fretboard, theory that clicks"
+    },
+    {
+      "title": "Skill Count Header Badge — \"N skills learned\" always visible",
+      "whatItDoes": "Add a small '14 learned' pill next to the XPBar compact indicator in the AppShell header. Derives directly from `Object.values(state.skillProgress).filter(p => p.status === 'learned').length` — one line of computed state, zero new storage. The pill uses the same `xp-badge` CSS class for visual coherence and sits between the XPBar and StreakFlame. On mobile it collapses to the number only (no label) to save header space.",
+      "whyEasierLearning": "The biggest gap in the current app: a user cannot answer 'how many skills have I learned?' without mentally counting dots on a distant tab. Making a concrete skill count ALWAYS visible in the header turns diffuse practice into a clear accumulation — every session where you learn a node you see the number tick up, which directly rewards the learning behavior.",
+      "progressVisibilityTieIn": "Reads `state.skillProgress` (persisted to Neon on every state change via `cloudSync.ts`); the number is the same across every device the account logs into. It is the most direct numeric proxy for how far you've come on the Technical Ability and Generation pillars.",
+      "filesAffected": [
+        "src/components/AppShell.tsx",
+        "src/components/XPBar.tsx"
+      ],
+      "effort": "S",
+      "impact": 4,
+      "pillar": "PROGRESS VISIBILITY — making \"how far I've come\" SEEN and OBVIOUS, backed by account-tracked progression"
+    },
+    {
+      "title": "Session-End 'See What You Built' CTA — link to newly unlocked nodes post-session",
+      "whatItDoes": "After `handleDone` fires in `PracticeStand.tsx`, the existing `sessionLine` footer gains a second line: a link to `/tree?highlight=<nodeId>` for each newly learned node (from `newUnlocks` returned by `endSession`). If no nodes were learned, it falls back to a plain 'See your path →' link to `/tree`. The `?highlight` param is read by `PathView` or `SkillGraphView` to scroll + briefly ring the node. No new state needed — `newUnlocks` already exists in the `endSession` return value and is used for the `UnlockCardModal` queue.",
+      "whyEasierLearning": "Right now the post-session moment celebrates 'you earned +65 XP' but gives no path to SEE what that means in the skill tree. Inserting a direct route from the biggest motivational moment in the session to the progress view closes the loop between action and visible growth — the learner sees what they built while they still care.",
+      "progressVisibilityTieIn": "The link routes to per-node data in `state.skillProgress` (Neon-synced). The highlighted node is a permanent account record — returning the next day on a different device still shows the node as learned.",
+      "filesAffected": [
+        "src/components/PracticeStand.tsx",
+        "src/app/tree/page.tsx",
+        "src/components/PathView.tsx"
+      ],
+      "effort": "S",
+      "impact": 4,
+      "pillar": "PROGRESS VISIBILITY — making \"how far I've come\" SEEN and OBVIOUS, backed by account-tracked progression"
+    },
+    {
+      "title": "Three-Axis Progress Summary Card in Horizons",
+      "whatItDoes": "Replace or extend the Horizons 'Totals' row with a compact three-axis summary card showing: Ability (N skills learned + highest BPM reached across all nodes), Ear (current `state.earLevel` L1–L7 + total ear rounds correct across all sessions), Generation (N improv/expression nodes learned + N pieces with status 'yours'). Each axis shows a one-line label and its two numbers. The data is all already in `AppState` — `skillProgress`, `earLevel`, `sessions` (for ear correct totals), `pieces`. No new fields required.",
+      "whyEasierLearning": "The product thesis explicitly defines three axes but currently shows none of them as named dimensions anywhere in the UI. A user who has been practicing 6 weeks has no idea they are at Ear Level 3, have 8 expression nodes, and have 2 pieces they own. Naming the axes makes the growth legible — and makes it easier to know which axis to focus on next.",
+      "progressVisibilityTieIn": "All three axes pull from Neon-synced `AppState` fields (`skillProgress`, `earLevel`, `pieces`). Cross-device visibility is automatic. The `earLevel` value, currently invisible except in Settings, gets its first real UI surface here.",
+      "filesAffected": [
+        "src/components/Horizons.tsx",
+        "src/lib/types.ts"
+      ],
+      "effort": "M",
+      "impact": 5,
+      "pillar": "PROGRESS VISIBILITY — making \"how far I've come\" SEEN and OBVIOUS, backed by account-tracked progression"
+    },
+    {
+      "title": "PathView Tier Completion Bar — 'N of M learned' per tier section header",
+      "whatItDoes": "Add a small completion fraction and a thin fill bar to each tier section header in `PathView.tsx`. The count reads directly from `statusMap` (already computed in the `PathView` render for each node): `learnedCount / tierNodes.length`. The bar uses the existing `xp-track`/`xp-fill` CSS classes for visual consistency. A tier at 100% gets a muted checkmark badge on the section header. No new state, no new data — purely derived from the already-resolved `statusMap`.",
+      "whyEasierLearning": "The Your Path tab is the most content-rich progress view in the app, but currently shows zero aggregate completion information. Without a per-tier percentage, a learner scrolling through tier 1's 9 nodes can't tell if they are 2/9 or 8/9 through it. Per-tier completion fractions give the learner an unambiguous sense of momentum and make 'which tier am I closest to finishing?' answerable at a glance.",
+      "progressVisibilityTieIn": "Derives from `state.skillProgress` (Neon-synced) via the existing `resolveStatus` call already in `PathView`. Per-tier progress is per-account and updates immediately on any device after a cloud sync.",
+      "filesAffected": [
+        "src/components/PathView.tsx"
+      ],
+      "effort": "S",
+      "impact": 4,
+      "pillar": "PROGRESS VISIBILITY — making \"how far I've come\" SEEN and OBVIOUS, backed by account-tracked progression"
+    },
+    {
+      "title": "Ear Level Visibility + Auto-Advance — surface earLevel and increment it on session success",
+      "whatItDoes": "Two connected changes: (1) Show the current `state.earLevel` (L1–L7) in Horizons under a new 'Ear' row — e.g., 'Ear Level 3 · Chord quality' — with a one-line description of what that level trains. (2) In `sessions.ts:endSession`, add an auto-advance rule: if `earResults.correct / earResults.total >= 0.8` across the last 3 sessions at the current level (readable from `state.sessions.slice(-3)`), increment `state.earLevel` by 1 and push an arc event `{ kind: 'ear-level-up', label: 'Ear Level 4 unlocked' }`. The advance is capped at the highest level with authored rounds (currently 5).",
+      "whyEasierLearning": "Ear level is the ONLY progression axis that currently never moves — it is frozen at whatever was picked at onboarding and never shown anywhere. A learner doing ear training every session has no idea they have been at L1 for 40 sessions. Making it visible gives the pattern recognition pillar its own progress signal; making it advance gives learners a reason to take ear training seriously, which directly improves musicianship.",
+      "progressVisibilityTieIn": "`earLevel` is part of `AppState` and therefore synced to Neon on every save. The arc event for level-up appears in YourArc timeline (already handles arbitrary arc event kinds). The advance happens in `endSession` — the same place streak and XP update.",
+      "filesAffected": [
+        "src/components/Horizons.tsx",
+        "src/lib/sessions.ts",
+        "src/lib/types.ts"
+      ],
+      "effort": "M",
+      "impact": 5,
+      "pillar": "PROGRESS VISIBILITY — making \"how far I've come\" SEEN and OBVIOUS, backed by account-tracked progression"
+    },
+    {
+      "title": "Persistent 'Your Progress' mini-panel on the PracticeStand home page — above the fold on mobile",
+      "whatItDoes": "Add a compact (max 120px tall) progress strip between the stage header and the slot list, always visible on the home page without scrolling. It shows three numbers in a row: 'Level N', 'N skills', 'N-day streak' — with small accent-colored labels. On mobile this renders as a horizontal three-stat strip inside the stage-card's padding, ABOVE the MentalPracticeCard and StartHereCard. On desktop the existing info-rail `StatsStrip` (which already shows XPBar + StreakFlame) gains just the skill count. Tapping any stat navigates to `/tree`.",
+      "whyEasierLearning": "The current `StatsStrip` with full XPBar and StreakFlame lives in the `<aside>` which is desktop-only in the lg+ two-column layout. On mobile, the first thing a user sees is the practice header with ghost key info — the closest progression signal is the tiny 64px compact XPBar in the app header. Moving three concrete numbers above the fold on mobile makes every session open with visible evidence of cumulative progress, which is the strongest motivation to continue.",
+      "progressVisibilityTieIn": "Reads `state.xp`, `state.streak`, and `state.skillProgress` — all Neon-synced. Level is derived from `levelForXp(state.xp)` (already imported in `PracticeStand.tsx`). Skill count is `Object.values(state.skillProgress ?? {}).filter(p => p.status === 'learned').length`. No new state.",
+      "filesAffected": [
+        "src/components/PracticeStand.tsx",
+        "src/components/XPBar.tsx"
+      ],
+      "effort": "S",
+      "impact": 4,
+      "pillar": "PROGRESS VISIBILITY — making \"how far I've come\" SEEN and OBVIOUS, backed by account-tracked progression"
+    }
+  ]
+}

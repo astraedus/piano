@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { Slot } from "../Slot";
-import { TermChip } from "../explain";
+import { TermChip, useExplain } from "../explain";
+import { lookupTerm } from "@/lib/explain/glossary";
 import type { EarRound } from "@/lib/types";
 import { ensureAudio, playEarRound } from "@/lib/audio";
 import { clsx } from "clsx";
@@ -10,6 +11,25 @@ import { clsx } from "clsx";
 // R2 — a short consolidation pause between ear rounds. Ear rounds are the slot's
 // "reps"; a brief rest between them gives the just-heard interval a beat to settle.
 const EAR_REST_SEC = 8;
+
+// Delay before the correct answer's glossary card auto-opens, so the answer
+// feedback paints first. The card then stays until the user taps Continue.
+const TERM_REVEAL_DELAY_MS = 450;
+
+/**
+ * Where tapping Continue/Finish from an answered round goes. Pure so the
+ * advance behaviour is testable without rendering:
+ * - on the last round → "done" (advance past the end → the all-done view)
+ * - otherwise → "rest" (the consolidation beat before the next round)
+ * The matching button label is "Finish" on the last round, else "Continue".
+ */
+export function earAdvanceTarget(
+  roundIndex: number,
+  total: number,
+): { next: "rest" | "done"; label: "Continue" | "Finish" } {
+  const isLast = roundIndex >= total - 1;
+  return isLast ? { next: "done", label: "Finish" } : { next: "rest", label: "Continue" };
+}
 
 export function EarMomentSlot({
   rounds, muted, printAlways, isNow, status, onResultAction,
@@ -22,12 +42,14 @@ export function EarMomentSlot({
   onResultAction?: (correctIds: string[], wrongIds: string[]) => void;
 }) {
   const reduce = useReducedMotion();
+  const { open, close } = useExplain();
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [resting, setResting] = useState(false);
   const [correct, setCorrect] = useState<string[]>([]);
   const [wrong, setWrong] = useState<string[]>([]);
   const playedRef = useRef(false);
+  const choicesRef = useRef<HTMLDivElement>(null);
 
   const round = rounds[i];
 
@@ -64,14 +86,29 @@ export function EarMomentSlot({
       setWrong(next);
       onResultAction?.(correct, next);
     }
-    // After feedback, a brief micro-rest before the next round (R2), unless this
-    // was the last round.
-    const isLast = i >= rounds.length - 1;
-    setTimeout(() => {
-      setPicked(null);
-      if (isLast) { setI((v) => v + 1); return; }
-      setResting(true);
-    }, 1200);
+    // Close the theory loop: auto-reveal the glossary card for the CORRECT
+    // answer's term (the "ear → theory" bridge the audit flagged as missing).
+    // Anchored to the choices grid; only fires when the correct choice carries a
+    // real glossary term, so it never opens an empty card.
+    const correctChoice = round.choices.find((c) => c.id === round.correctId);
+    const entry = correctChoice?.termId ? lookupTerm(correctChoice.termId) : undefined;
+    if (entry && choicesRef.current) {
+      const anchor = choicesRef.current;
+      setTimeout(() => open(entry, anchor), TERM_REVEAL_DELAY_MS);
+    }
+    // No auto-advance timer: the round now HOLDS on the answer (with the revealed
+    // glossary term on screen) until the user taps Continue. Pedagogically the
+    // term must stay long enough to actually read — a fixed timer left it up for
+    // under a second. The Continue affordance below drives advancement.
+  };
+
+  // Advance off the answered state — to the next round (via the rest beat) or,
+  // on the last round, to the "done" view. Closes any open glossary card first.
+  const advance = () => {
+    close();
+    setPicked(null);
+    if (earAdvanceTarget(i, rounds.length).next === "done") { setI((v) => v + 1); return; }
+    setResting(true);
   };
 
   if (resting) {
@@ -98,7 +135,7 @@ export function EarMomentSlot({
           <button type="button" onClick={play} className="chip chip-accent text-xs px-3 py-1">Play</button>
           <span className="text-xs text-[color:var(--ink-3)]">You'll hear it twice.</span>
         </div>
-        <div className="grid grid-cols-2 gap-2 no-print">
+        <div ref={choicesRef} className="grid grid-cols-2 gap-2 no-print">
           {round.choices.map((c) => {
             const isPicked = picked === c.id;
             const isRight = picked && c.id === round.correctId;
@@ -130,9 +167,18 @@ export function EarMomentSlot({
           </p>
         )}
         {picked && (
-          <p className="text-xs text-[color:var(--ink-3)] italic fade-in">
-            {picked === round.correctId ? "Correct. " + round.choices.find((c) => c.id === round.correctId)?.label + "." : "Not quite. It was " + round.choices.find((c) => c.id === round.correctId)?.label + ". Next one."}
-          </p>
+          <div className="space-y-2 fade-in no-print">
+            <p className="text-xs text-[color:var(--ink-2)] italic">
+              {picked === round.correctId
+                ? "Correct. " + round.choices.find((c) => c.id === round.correctId)?.label + "."
+                : "Not quite. It was " + round.choices.find((c) => c.id === round.correctId)?.label + "."}
+            </p>
+            {/* Hold here — the revealed glossary term stays up until the user is
+                ready, so there's time to actually read and learn from it. */}
+            <button type="button" onClick={advance} className="chip chip-accent text-xs px-3 py-1">
+              {earAdvanceTarget(i, rounds.length).label}
+            </button>
+          </div>
         )}
       </div>
     </Slot>

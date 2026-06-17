@@ -296,7 +296,8 @@ export interface SessionLog {
 
 export type ArcEventKind =
   | "instrument-begins" | "phase-begins" | "unlock" | "piece-yours" | "first-improv" | "piece-started"
-  | "level-up"; // gamification: surfaced on the Arc when XP crosses a level threshold
+  | "level-up"  // gamification: surfaced on the Arc when XP crosses a level threshold
+  | "ear-level-up"; // pattern-recognition: surfaced when earLevel auto-advances
 
 export interface ArcEvent {
   id: string;
