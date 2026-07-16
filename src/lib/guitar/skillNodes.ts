@@ -230,6 +230,23 @@ export const GUITAR_NODES: SkillNode[] = [
     pathTags: ["go-deep"],
     theory: true,
   },
+  {
+    id: "g-t1-amp",
+    instrument: "guitar",
+    title: "Amp & Gain Basics",
+    tier: 1,
+    category: "setup",
+    // Batch 3a — zero amp/gain content existed despite being tested from Grade 3-4.
+    // Not a hard prereq of power/palm-mute (those are learnable unplugged); the
+    // pedagogical tie lives in the lesson prose. pathTags omitted = every path.
+    prereqs: ["g-t0-posture", "g-t0-anatomy"],
+    masteryDrill: "Dial gain low and volume moderate for home base, then push gain past three-quarters and name what changed.",
+    unlock: "Can set an honest practice tone from cold and explain what gain, volume, and the pickup selector each do to the sound.",
+    viz: "animation",
+    chainDrillId: "g-t1-amp-chain",
+    soulTitle: "Clean or Mean",
+    keepTitle: "Amp & Gain Basics",
+  },
 
   // ───── Tier 2 — early intermediate ─────
   {
@@ -343,7 +360,10 @@ export const GUITAR_NODES: SkillNode[] = [
     title: "Barre Chords — E Shape",
     tier: 2,
     category: "chords",
-    prereqs: ["g-t1-openEM", "g-t1-power"],
+    // Batch 3a: +g-t2-fretboard-notes (the barre lesson names F/G roots it never
+    // taught) and +g-t2-mini-barre (the two-string scaffold before the full six),
+    // so the single most common quit point stops being a one-step cliff.
+    prereqs: ["g-t1-openEM", "g-t1-power", "g-t2-fretboard-notes", "g-t2-mini-barre"],
     masteryDrill: "F barre fret1 all 6 ring; 1-min Bm↔F#m ≥15",
     unlock: "Every major/minor chord via one shape",
     viz: "chord_diagram",
@@ -369,6 +389,61 @@ export const GUITAR_NODES: SkillNode[] = [
     soulTitle: "Any Key, Any Fret",
     keepTitle: "Barre Chords (A Shape)",
     pathTags: ["just-play", "play-with-soul", "go-deep"],
+  },
+  {
+    id: "g-t2-fretboard-notes",
+    instrument: "guitar",
+    title: "Fretboard Note Names (Low E and A Strings)",
+    tier: 2,
+    category: "notation",
+    // Batch 3a — power chords, barre chords, and the capo all secretly rely on
+    // knowing which note sits at which fret. Feeds g-t2-barre-E. category notation
+    // (teaches a map, no new physical motion). pathTags omitted = every path.
+    prereqs: ["g-t1-power"],
+    masteryDrill: "Name any fret 0 to 12 on the low E and A strings, both directions, 10 for 10.",
+    unlock: "Can name any natural note on the low E and A strings on sight, and find its octave using the octave shape.",
+    viz: "fretboard_map",
+    chainDrillId: "g-t2-fretboard-notes-chain",
+    fluencyTest: { prompt: "With no visual fretboard reference, call out the note at five random frets on the low E string and five on the A string, under three seconds each, eight of ten correct." },
+    soulTitle: "Know Where You Are",
+    keepTitle: "Fretboard Note Names (Low E and A Strings)",
+  },
+  {
+    id: "g-t2-noise-control",
+    instrument: "guitar",
+    title: "Noise Control Under Gain",
+    tier: 2,
+    category: "technique",
+    // Batch 3a — a two-hand resting habit that keeps idle strings silent under
+    // gain. A PEER of g-t2-pent-box1 (where squeal first bites), not a gate.
+    // pathTags match pent-box1 (lead/expression territory, not just-play).
+    prereqs: ["g-t1-palmmute", "g-t1-fretting"],
+    masteryDrill: "One minute of a driven single note pentatonic line, fretting hand and picking hand quietly muting the whole time, with zero extra string noise creeping in.",
+    unlock: "Can play a driven single note line with total silence around every note, no stray string noise sneaking through.",
+    viz: "animation",
+    chainDrillId: "g-t2-noise-control-chain",
+    fluencyTest: { prompt: "Play a driven single note riff while glancing away from your hands for a few bars. No string noise sneaks in even when you are not watching your own muting hands." },
+    soulTitle: "Kill the Squeal",
+    keepTitle: "Noise Control Under Gain",
+    pathTags: ["play-with-soul", "go-deep"],
+  },
+  {
+    id: "g-t2-mini-barre",
+    instrument: "guitar",
+    title: "Fmaj7 and the Small F",
+    tier: 2,
+    category: "chords",
+    // Batch 3a — the two-string scaffold (Fmaj7 then the small F) before the full
+    // six-string barre, the single most common quit point. Feeds g-t2-barre-E.
+    // pathTags omitted = every path (just-play learners hit F just as often).
+    prereqs: ["g-t1-openDGC", "g-t1-power"],
+    masteryDrill: "Roll from Fmaj7 into the small F and back ten times in a row, both top strings ringing clean every time, no buzz.",
+    unlock: "Can lay one finger flat across two strings for a real, song ready barre, the exact flat finger feel the full six string barre needs next.",
+    viz: "chord_diagram",
+    chordShape: [-1, -1, 3, 2, 1, 1],
+    chainDrillId: "g-t2-mini-barre-chain",
+    soulTitle: "Two Strings, First Barre",
+    keepTitle: "Fmaj7 and the Small F",
   },
 
   // ───── Tier 3 — intermediate rewards ─────

@@ -895,4 +895,137 @@ export const GUITAR_LESSONS: Record<string, NodeLesson> = {
       "note": "That relentless, muted, off-beat chuck is pure syncopation and muting. Lock this pattern in and you can drive a groove like that with one guitar."
     }
   },
+
+  // ── Batch 3a — missing fundamentals ───────────────────────────────────────
+  "g-t1-amp": {
+    "what": "Your amp has two knobs that do completely different jobs. The gain knob controls how hard the amp is being pushed, which decides how much growl or distortion gets stacked into your tone. The volume knob controls how loud that tone comes out of the speaker. Learn the difference and every plugged in choice you make finally makes sense.",
+    "why": "Palm mutes only chug and power chords only crunch when the gain is set right, and cranking gain too high hides sloppy fretting behind fuzz instead of fixing it. Build the habit of an honest practice tone now, and every riff you go on to learn starts sounding like a real electric guitar instead of a wall of noise.",
+    "steps": [
+      {
+        "do": "Find your amp's gain knob and its volume knob, usually two separate dials sitting near each other. Gain is sometimes labeled drive or distortion instead, same control. On a headphone amp or an amp simulator, look for the exact same two knobs, they work identically.",
+        "feel": "Two dials, two completely different jobs: one shapes the tone, the other shapes the loudness."
+      },
+      {
+        "do": "Turn the gain knob down low and the volume knob up to about half. This is your home base, the honest setting you practice on until you have earned a reason to add more.",
+        "feel": "A clean tone that lets every string ring true, not a whisper and not a wall of buzz."
+      },
+      {
+        "do": "Strum all six open strings together at home base, then push the gain knob up past three-quarters and strum the open strings again.",
+        "feel": "Home base rings clear and articulate. High gain turns the same strum into thick, buzzing distortion."
+      },
+      {
+        "do": "Flip through your pickup selector switch while strumming and holding all six open strings ringing. The bridge pickup, closest to where the strings anchor, sounds brighter and sharper. The neck pickup, closest to the headstock, sounds warmer and rounder.",
+        "feel": "Bridge bites and cuts, neck sings and rounds off, same open strings both times."
+      },
+      {
+        "do": "Rest the fleshy edge of your picking hand lightly on the low E and A strings right where they meet the bridge, this is palm muting, then strum them together at home base. Play the same muted strum again at the high gain setting from before.",
+        "feel": "High gain smooths over a messy strum and hides mistakes. Home base tells the truth about what your hands are actually doing."
+      }
+    ],
+    "goodWhen": "You can find gain, volume, and the pickup selector on any amp or amp sim in under a minute, and dial in a clean home base tone from cold every time you plug in.",
+    "watchOut": "The most common mistake is cranking gain all the way up because it sounds exciting. It buries every mistake in fuzz and trains your ear to a wall of noise instead of a real chord. Practice at home base and save max gain for one special song.",
+    "song": {
+      "name": "Enter Sandman (Metallica)",
+      "note": "The song opens on a clean, chiming tone, then the exact same guitar kicks into a thick, driven tone for the main riff, the clearest before and after of clean versus driven you will ever hear."
+    }
+  },
+
+  "g-t2-fretboard-notes": {
+    "what": "Every fret on your two thickest strings is a real, named note, not just a number you memorized for one shape. This node teaches the natural letter names up the low E and A strings, plus a simple octave shape that finds the same note again higher up the neck.",
+    "why": "Power chords, barre chords, and the capo all secretly rely on knowing which note sits at which fret, so right now you are moving shapes by memorized feel alone. Learn the names and you finally know WHY you slide to fret 3 for a G, plus you gain a real escape route off the one pentatonic box you already know.",
+    "steps": [
+      {
+        "do": "Say the natural notes up the low E string while touching each fret: open is E, fret 1 is F, fret 3 is G, fret 5 is A, fret 7 is B, fret 8 is C, fret 10 is D, and fret 12 is E again.",
+        "feel": "The dots at frets 3, 5, and 7 are handrails. Land on a dot and you already know the note."
+      },
+      {
+        "do": "Now walk the same pattern up the A string: open is A, fret 2 is B, fret 3 is C, fret 5 is D, fret 7 is E, fret 8 is F, fret 10 is G, and fret 12 is A again.",
+        "feel": "Same shape of gaps, new starting letter. Every jump is two frets except two spots that are only one fret apart."
+      },
+      {
+        "do": "Drill the anchor frets alone, skipping the run up each time. On the low E string, call out frets 3, 5, and 7 straight from the dots. Do the same on the A string at frets 3, 5, and 7.",
+        "feel": "Landing cold on a dot and knowing the note is the real goal, not reciting letters in order every single time."
+      },
+      {
+        "do": "Try the octave shape: fret 5 on the low E string is A. Skip the A string entirely and land two frets higher on the D string, fret 7. That is the same note, A, one octave up. Test it from two or three other anchor frets.",
+        "feel": "Two strings up, two frets up, same letter, just higher. That jump is now a tool you own, not a trick you half remember."
+      },
+      {
+        "do": "Test yourself blind: look away, land a finger on any fret from 0 to 12 on either string, and say the note out loud before you check it against an anchor fret.",
+        "feel": "The moment this stops needing a hunt, the whole lower half of the neck stops being fog."
+      }
+    ],
+    "goodWhen": "You can name the note at any fret from 0 to 12 on the low E and A strings within about two seconds, and use the octave shape to find the same note higher up without hesitating.",
+    "watchOut": "The most common mixup is forgetting the two single fret gaps, E to F and B to C, and treating every letter as two frets apart. Fix it by anchoring on the dots at 3, 5, and 7 first, then filling in the letters between them, instead of always counting up from the open string.",
+    "song": {
+      "name": "Smoke on the Water (Deep Purple)",
+      "note": "The whole iconic riff is just four notes sliding across two adjacent low strings in one simple shape. Once you can name the frets, you know exactly which notes you are playing, not just which numbers you are counting."
+    }
+  },
+
+  "g-t2-noise-control": {
+    "what": "With any distortion or overdrive turned on, every string you are not deliberately playing wants to ring, hum, and squeal along for the ride. Noise control is a pair of resting habits, one for each hand, that keeps every idle string dead silent so only the note you actually want comes through.",
+    "why": "Under gain a clean solo and a mess are the exact same fingers, played with different amounts of unwanted string noise behind them. Master this and every driven line you play sounds like the record instead of a swarm of humming strings underneath it.",
+    "steps": [
+      {
+        "do": "Turn on some gain and fret one note high on the neck. Play it, then relax your whole hand and just listen to what the other strings do without you touching them.",
+        "feel": "You will hear them hum, buzz, or howl along even though you never picked them. That noise is the enemy you are about to silence."
+      },
+      {
+        "do": "Rest the flat pad of your first finger lightly across the thinner strings above the one you are fretting, no pressing, just resting there. Play the same note again and compare.",
+        "feel": "A light constant touch, like a hand resting on a tabletop, not a press. The thinner strings above your note go dead quiet."
+      },
+      {
+        "do": "Add the picking hand: rest the fleshy edge of your palm near the bridge across the thicker strings below your note. Hold both resting touches at once and play the note again.",
+        "feel": "This is a resting touch that never lifts, unlike the on off chug of your palm mute. Both hands are now quietly babysitting the strings you are not using."
+      },
+      {
+        "do": "Play slowly up and down your Am pentatonic box, one note at a time, keeping both resting touches in place the entire way and only lifting a finger to move to the next note.",
+        "feel": "Every single note should snap out clean and alone, like it is the only string on the guitar."
+      },
+      {
+        "do": "Add a little more gain and play a short lick from a solo you love. Listen hard for total silence around every note, nothing ringing that you did not ask for.",
+        "feel": "The habit should feel automatic now, both hands quietly working the whole time without you thinking about them."
+      }
+    ],
+    "goodWhen": "You can play a single note pentatonic line at moderate gain with zero string noise between notes, both hands quietly muting the whole time.",
+    "watchOut": "The number one mistake is muting with only one hand and assuming that is enough. Fix it: the fretting hand mutes the thinner strings above your note, the picking hand mutes the thicker strings below it, together, every single time, not just when you remember.",
+    "song": {
+      "name": "Eruption (Van Halen)",
+      "note": "Eddie Van Halen's solo runs at heavy gain with almost no rest between notes. Without disciplined hand muting the noise from five idle strings would swallow the piece whole."
+    }
+  },
+
+  "g-t2-mini-barre": {
+    "what": "This is a two step ladder from the open chords you already know up to your very first real barre. Fmaj7 needs no barre at all. The small F asks only one finger to lie flat across two strings, not all six. Both chords use almost the exact same hand shape, just one small roll of a single finger apart.",
+    "why": "The jump straight from open chords to a full six string F is where more beginners quit than anywhere else on the guitar. This scaffold builds the flat finger strength and feel on two easy strings first, so when the full barre shows up next it already feels familiar instead of impossible.",
+    "steps": [
+      {
+        "do": "Mute the low E and A strings by resting your fretting hand away from them. Put your third finger on the D string third fret, second finger on the G string second fret, and first finger on the B string first fret. Let the high E string ring open.",
+        "feel": "Warm and a little dreamy, nothing forced yet."
+      },
+      {
+        "do": "Strum from the D string down through the open high E string and just listen. This chord is Fmaj7, a real chord that real songs use on its own, not only a stepping stone.",
+        "feel": "Brighter and softer than a plain major chord, almost jazzy."
+      },
+      {
+        "do": "Keep your third, second, and first fingers exactly where they are. Now roll your first finger slightly onto its side so it presses down both the B string and the high E string at the first fret, instead of only the B string.",
+        "feel": "Your finger tips over from standing straight up to leaning like a tiny roof across two strings."
+      },
+      {
+        "do": "Strum the same four strings again. Both the B string and the high E string should ring out clean. That chord is F major, often called the small F, and that flat finger is your first real barre.",
+        "feel": "If the high E string sounds dead or muffled, roll the finger a hair further onto its bony outer edge and press again."
+      },
+      {
+        "do": "Roll back and forth between Fmaj7, finger standing up on one string, and the small F, finger flat across two strings, ten times in a row, slow and unhurried.",
+        "feel": "The same hand shape the whole time. Only that one small roll of the first finger changes anything."
+      }
+    ],
+    "goodWhen": "Ten clean rolls in a row between Fmaj7 and the small F, with both the B string and the high E string ringing every single time on the small F, no buzz.",
+    "watchOut": "The number one mistake is flattening the finger with its soft pad instead of its bony outer edge, which deadens the high E string. Fix it by rolling the finger further onto its side, toward the headstock, and pressing exactly behind the fret wire rather than on top of it.",
+    "song": {
+      "name": "Let It Be (The Beatles)",
+      "note": "Its instantly recognizable C, G, Am, F progression leans on this exact F chord. Play it with the small F shape you just learned and the whole song is already in your hands."
+    }
+  },
 };

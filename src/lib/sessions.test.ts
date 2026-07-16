@@ -198,6 +198,8 @@ describe("endSession — transition nodes are not gameable via drill completion 
         "p-key-am": learned(),
         "p-t2-chord-under-melody": learned(),
         "p-trans-am-F": { status: "learned", reps: 1, bestChanges: 32, learnedAt: "2026-01-01" },
+        // Batch 3a made p-t2-inversions a pop-formula prereq; learn it so the gate opens.
+        "p-t2-inversions": learned(),
       },
     });
     const { state: next } = endSession(
@@ -223,6 +225,8 @@ describe("endSession — Pop-Formula song unlocks", () => {
         "p-key-am": learned(),
         "p-t2-chord-under-melody": learned(),
         "p-trans-am-F": { status: "learned", reps: 1, bestChanges: 32, learnedAt: "2026-01-01" },
+        // Batch 3a made p-t2-inversions a pop-formula prereq; learn it so the gate opens.
+        "p-t2-inversions": learned(),
       },
       ...extra,
     });
