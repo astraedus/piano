@@ -28,6 +28,22 @@ function rootName(chordTones: string[]): string {
   return (chordTones[0] ?? "").replace(/-?\d+$/, "");
 }
 
+/**
+ * The circle-of-fifths summary line under the map. Mirrors GuitarMap's territory
+ * language: an intro before anything is charted, an honest count while filling in,
+ * and an all-covered celebration once every key is charted. Pure — tested without
+ * rendering the SVG.
+ */
+export function keyMapSummaryLine(touched: number, total: number): string {
+  if (touched === 0) {
+    return "Clockwise goes up a fifth. Majors outside, relative minors inside.";
+  }
+  if (total > 0 && touched === total) {
+    return `All ${total} keys charted — the whole circle is yours. Reviews keep it alive.`;
+  }
+  return `${touched} key${touched === 1 ? "" : "s"} charted so far. It only grows.`;
+}
+
 export function KeyMap() {
   const { state } = useAppState();
   const [selected, setSelected] = useState<KeyId | null>("C");
@@ -37,6 +53,8 @@ export function KeyMap() {
 
   const depths = state.keyDepths ?? {};
   const touched = Object.values(depths).filter((d) => (d ?? 0) > 0).length;
+  const totalKeys = majors.length + minors.length;
+  const allCovered = totalKeys > 0 && touched === totalKeys;
 
   const sel = selected ? KEY_META[selected] : null;
 
@@ -111,10 +129,12 @@ export function KeyMap() {
             <text textAnchor="middle" y={18} className="fill-[color:var(--ink-2)]" style={{ fontSize: "12px", fontFamily: "var(--font-serif)", fontStyle: "italic" }}>Fifths</text>
           </svg>
         </div>
-        <p className="text-xs text-[color:var(--ink-muted)] italic mt-3 text-center">
-          {touched === 0
-            ? "Clockwise goes up a fifth. Majors outside, relative minors inside."
-            : `${touched} key${touched === 1 ? "" : "s"} charted so far. It only grows.`}
+        <p
+          data-testid={allCovered ? "keymap-all-covered" : undefined}
+          className="text-xs italic mt-3 text-center"
+          style={{ color: allCovered ? "var(--instrument-accent-deep)" : "var(--ink-muted)" }}
+        >
+          {keyMapSummaryLine(touched, totalKeys)}
         </p>
         {neighbors && selected && <CircleChords keyId={selected} neighbors={neighbors} />}
       </div>

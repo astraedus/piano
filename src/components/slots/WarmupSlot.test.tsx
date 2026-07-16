@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { WarmupSlot } from "./WarmupSlot";
+import { WarmupSlot, warmupReferenceLabel } from "./WarmupSlot";
 import { AppStateProvider } from "@/hooks/useAppState";
 import { pianoModule } from "@/lib/piano/module";
 import { WARMUPS } from "@/lib/piano/warmups";
@@ -71,5 +71,26 @@ describe("#3 — warmup five-finger content derives from the ghost key, not hard
     const body = document.body.textContent ?? "";
     expect(body).toContain("A B C# D E D C# B A");
     expect(body).not.toContain("C D E F G F E D C"); // the old hardcoded C line
+  });
+});
+
+describe("warmupReferenceLabel — instrument-aware week reference", () => {
+  it("piano (key focus) reads as the week's scale", () => {
+    expect(warmupReferenceLabel("key", "C major")).toBe("This week's scale · C major · 2 octaves");
+  });
+  it("guitar (chord focus) reads as the week's SHAPE, never a literal scale", () => {
+    expect(warmupReferenceLabel("chord", "A minor")).toBe("This week's shape · A minor");
+  });
+  it("defaults to the scale wording when focus kind is unknown", () => {
+    expect(warmupReferenceLabel(undefined, "G major")).toBe("This week's scale · G major · 2 octaves");
+  });
+});
+
+describe("WarmupSlot renders the instrument-aware week-reference label", () => {
+  it("piano warmup shows the scale label for the current key", () => {
+    renderWarmup("free", "A");
+    const label = screen.getByTestId("warmup-week-label").textContent ?? "";
+    expect(label).toContain("This week's scale");
+    expect(label).toContain("A major");
   });
 });
