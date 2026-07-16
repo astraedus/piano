@@ -138,3 +138,27 @@ export function currentSlot(done: Partial<Record<SlotKey, boolean>>): SlotKey {
   }
   return SLOT_ORDER[SLOT_ORDER.length - 1];
 }
+
+/** Where tonight sits in the plan: the NOW slot plus its 1-based position among
+ *  the slots actually PRESENT tonight. `present` is the ordered subset of
+ *  SLOT_ORDER shown this session (e.g. first-back drops chain + ear). NOW is the
+ *  first present slot not yet done; when all are done it is the last present slot,
+ *  so the "Block N of M" cue never points past the end. Pure. */
+export interface SlotProgress {
+  now: SlotKey;
+  index: number; // 1-based position of `now` among present slots
+  total: number; // count of present slots
+}
+export function slotProgress(
+  present: SlotKey[],
+  done: Partial<Record<SlotKey, boolean>>,
+): SlotProgress {
+  const ordered = SLOT_ORDER.filter((s) => present.includes(s));
+  const total = ordered.length || 1;
+  let now: SlotKey = ordered[ordered.length - 1] ?? SLOT_ORDER[SLOT_ORDER.length - 1];
+  for (const slot of ordered) {
+    if (!done[slot]) { now = slot; break; }
+  }
+  const index = Math.max(0, ordered.indexOf(now)) + 1;
+  return { now, index, total };
+}
