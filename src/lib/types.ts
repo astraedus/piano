@@ -348,6 +348,10 @@ export interface AppState {
   grade: Grade;
   earLevel: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   currentPieceId?: string;
+  // Per-instrument snapshot of the current piece, so switching instruments never
+  // surfaces (say) a piano piece while guitar is active. Reconciled in the header
+  // instrument switcher via lib/pieces.reconcileCurrentPieceForSwitch.
+  currentPieceByInstrument?: Partial<Record<Instrument, string>>;
   pieces: Piece[];
   keyDepths: Partial<Record<KeyId, KeyDepth>>;
   sessions: SessionLog[];

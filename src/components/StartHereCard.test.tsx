@@ -6,7 +6,7 @@
 // no Next.js routing mocks needed, no browser APIs, no flakiness.
 
 import { describe, it, expect } from "vitest";
-import { resolveStatus } from "@/lib/skillTree";
+import { shouldShowStartHere } from "@/lib/startHere";
 import type { SkillNode, SkillProgress } from "@/lib/types";
 
 // Minimal setup (tier-0) nodes for the assertions below.
@@ -43,16 +43,21 @@ const pianoSetup: SkillNode = {
   unlock: "Find any note.",
 };
 
-// Helper that mirrors the showStartHere derivation in PracticeStand.
+// Delegates to the REAL predicate the app uses (no local re-implementation), with
+// zero sessions logged — the state every assertion below is scoped to. A separate
+// test pins the "hides after a session" branch.
 function showStartHere(allNodes: SkillNode[], progress: Record<string, SkillProgress>): boolean {
-  const setupNodes = allNodes.filter((n) => n.tier === 0 && n.category === "setup");
-  const nodeStatus = resolveStatus(allNodes, progress);
-  return setupNodes.some((n) => nodeStatus.get(n.id) !== "learned");
+  return shouldShowStartHere(allNodes, progress, 0);
 }
 
 describe("Start-Here card visibility logic", () => {
   it("shows for a brand-new guitar user with no progress", () => {
     expect(showStartHere([tuningNode, postureNode], {})).toBe(true);
+  });
+
+  it("hides once a session has been logged, even with setup unlearned", () => {
+    // Any logged session means the learner is oriented — the Welcome card retires.
+    expect(shouldShowStartHere([tuningNode, postureNode], {}, 1)).toBe(false);
   });
 
   it("shows when the setup node is in-progress but not yet learned", () => {

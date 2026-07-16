@@ -33,7 +33,7 @@ import {
   type RepSessionSnapshot,
   type SlotKey,
 } from "./slots/repResume";
-import { resolveStatus } from "@/lib/skillTree";
+import { shouldShowStartHere } from "@/lib/startHere";
 
 export function PracticeStand() {
   const router = useRouter();
@@ -87,14 +87,17 @@ export function PracticeStand() {
   const piece = state.pieces.find((p) => p.id === state.currentPieceId);
   const printing = false;
 
-  // V5 Start-Here card — show when any tier-0 setup node for the active instrument
-  // is not yet learned. This fires for brand-new users who haven't touched Setup &
-  // Orientation, nudging them to /tree rather than dropping them into warmup + drills
-  // with zero context. Disappears once all setup nodes are learned (never nags again).
+  // V5 Start-Here card — a single Welcome pointer for a brand-new learner who has
+  // not yet oriented (a tier-0 setup node still unlearned) AND has logged no
+  // session. The predicate lives in lib/startHere so the app and its test assert
+  // the same rule; it self-hides after the first session or once setup is done, so
+  // it never competes with the stand's own "what's next" signals.
   const allNodes = module?.skillNodes ?? [];
-  const setupNodes = allNodes.filter((n) => n.tier === 0 && n.category === "setup");
-  const nodeStatus = resolveStatus(allNodes, state.skillProgress ?? {});
-  const showStartHere = setupNodes.some((n) => nodeStatus.get(n.id) !== "learned");
+  const showStartHere = shouldShowStartHere(
+    allNodes,
+    state.skillProgress ?? {},
+    state.sessions?.length ?? 0,
+  );
   const instrumentDisplayName = module?.displayName ?? state.instrument;
 
   // ── V4 resume UX: derive per-slot done-state, the current "NOW" slot, and any
@@ -349,7 +352,15 @@ function Header({ ghostName, ghostKey, instrumentLabel, mode, firstBackMessage, 
         <p className="text-sm text-[color:var(--ink-2)] italic mt-2 fade-in">{firstBackMessage}</p>
       )}
       {mode === "just-play" && (
-        <p className="text-sm text-[color:var(--ink-2)] italic mt-2">Free play. Anything you want.</p>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <p className="text-sm text-[color:var(--ink-2)] italic">Free play. Anything you want.</p>
+          <Link
+            href="/"
+            className="text-sm font-medium text-[color:var(--accent-deep)] underline decoration-1 underline-offset-2 hover:opacity-80"
+          >
+            Back to tonight&apos;s plan
+          </Link>
+        </div>
       )}
     </header>
   );

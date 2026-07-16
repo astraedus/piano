@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { JustPlayButton } from "./JustPlayButton";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
+import { reconcileCurrentPieceForSwitch } from "@/lib/pieces";
 import { setRootAttrs } from "@/lib/domAttrs";
 import type { Instrument } from "@/lib/types";
 import { XPBar } from "./XPBar";
@@ -50,7 +51,11 @@ export function AppShell({ children, hideNav = false }: { children: ReactNode; h
                 <StreakFlame streak={state.streak ?? emptyStreak()} compact />
               </div>
               <ProfileChip />
-              <JustPlayButton />
+              {/* useSearchParams (for the free-play toggle state) needs a Suspense
+                  boundary here since AppShell sits above the page's own boundary. */}
+              <Suspense fallback={null}>
+                <JustPlayButton />
+              </Suspense>
             </div>
           </nav>
         </header>
@@ -93,7 +98,16 @@ function InstrumentSwitcher({ current }: { current: Instrument }) {
 
   const switchTo = (id: Instrument) => {
     if (id !== current) {
-      patch({ instrument: id });
+      // Reconcile the current piece so switching instruments never surfaces a
+      // piece from the other one (a piano piece must not show while on guitar).
+      const { currentPieceId, currentPieceByInstrument } = reconcileCurrentPieceForSwitch(
+        current,
+        id,
+        state.currentPieceId,
+        state.currentPieceByInstrument,
+        state.pieces ?? [],
+      );
+      patch({ instrument: id, currentPieceId, currentPieceByInstrument });
       // Re-apply the accent immediately (phase/theme unchanged).
       setRootAttrs({ instrument: id, phase: state.phase, theme: state.theme });
     }

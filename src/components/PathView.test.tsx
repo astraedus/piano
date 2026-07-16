@@ -527,3 +527,105 @@ describe("topoSortTier — unit", () => {
     expect(sorted[1].id).toBe("z-node");
   });
 });
+
+// ── V4 path treatment + all-done (PathView now honors the chosen path) ────────
+
+function mockStateWithPath(
+  instrument: "guitar" | "piano",
+  learningPath: AppState["learningPath"],
+  theoryEnabled: boolean,
+  skillProgress: Record<string, SkillProgress> = {},
+): void {
+  (useAppState as ReturnType<typeof vi.fn>).mockReturnValue({
+    state: {
+      instrument,
+      skillProgress,
+      sessions: [],
+      pieces: [],
+      learningPath,
+      theoryEnabled,
+    } as Partial<AppState>,
+    ready: true,
+    setState: vi.fn(),
+    patch: vi.fn(),
+    dismissUnlock: vi.fn(),
+    dismissLevelUp: vi.fn(),
+    bumpRep: vi.fn(),
+    reviewSkill: vi.fn(),
+    markFluent: vi.fn(),
+  });
+}
+
+describe("PathView — learning-path treatment + all-done", () => {
+  const onPathNode: SkillNode = {
+    id: "g-t0-anatomy",
+    instrument: "guitar",
+    title: "Guitar Anatomy & Tuning",
+    tier: 0,
+    category: "setup",
+    prereqs: [],
+    masteryDrill: "tune",
+    unlock: "tuned",
+    soulTitle: "Your Guitar's Names",
+    keepTitle: "Guitar Anatomy & Tuning",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
+  };
+  const offPathNode: SkillNode = {
+    id: "g-t2-deep-only",
+    instrument: "guitar",
+    title: "Deep Only",
+    tier: 2,
+    category: "technique",
+    prereqs: [],
+    masteryDrill: "deep",
+    unlock: "deep",
+    soulTitle: "Deep Only",
+    keepTitle: "Deep Only",
+    pathTags: ["go-deep"],
+  };
+  const theoryNode: SkillNode = {
+    id: "g-theory-1",
+    instrument: "guitar",
+    title: "Theory Node",
+    tier: 1,
+    category: "technique",
+    prereqs: [],
+    masteryDrill: "theory",
+    unlock: "theory",
+    theory: true,
+  };
+
+  beforeAll(() => {
+    registerInstrumentModule({ ...guitarModule, skillNodes: [onPathNode, offPathNode, theoryNode] });
+  });
+
+  it("dims off-path steps but keeps them visible + expandable", () => {
+    mockStateWithPath("guitar", "just-play", false);
+    render(<PathView />);
+    expect(
+      screen.getByTestId(`path-step-${onPathNode.id}`).getAttribute("data-treatment"),
+    ).toBe("on-path");
+    const off = screen.getByTestId(`path-step-${offPathNode.id}`);
+    expect(off.getAttribute("data-treatment")).toBe("off-path");
+    // Still expandable — the toggle affordance is present.
+    expect(screen.getByTestId(`path-step-toggle-${offPathNode.id}`)).toBeTruthy();
+  });
+
+  it("hides theory steps until the theory toggle is turned on", () => {
+    mockStateWithPath("guitar", "just-play", false);
+    render(<PathView />);
+    expect(screen.queryByTestId(`path-step-${theoryNode.id}`)).toBeNull();
+    fireEvent.click(screen.getByTestId("pv-theory-toggle").querySelector("input")!);
+    expect(screen.getByTestId(`path-step-${theoryNode.id}`)).toBeTruthy();
+  });
+
+  it("shows the all-done celebration when every visible step is learned", () => {
+    const progress: Record<string, SkillProgress> = {
+      [onPathNode.id]: { status: "learned", reps: 5, learnedAt: "2026-01-01" },
+      [offPathNode.id]: { status: "learned", reps: 5, learnedAt: "2026-01-01" },
+    };
+    mockStateWithPath("guitar", "just-play", false, progress);
+    render(<PathView />);
+    expect(screen.getByTestId("path-all-done")).toBeTruthy();
+  });
+});

@@ -16,6 +16,8 @@ import { useState, useMemo, useCallback } from "react";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { resolveStatus, nextToLearn, markNodeProgress, isFluent } from "@/lib/skillTree";
+import { nodePathTreatment } from "@/lib/pathFilter";
+import type { LearningPath } from "@/lib/pathFilter";
 import { tierLearnedCounts, completionFraction, type TierCount } from "@/lib/skillSummary";
 import { getLesson } from "@/lib/lessons";
 import { linkTerms } from "@/components/explain";
@@ -126,6 +128,8 @@ interface StepCardProps {
   instrument: "piano" | "guitar";
   expanded: boolean;
   fluent: boolean;
+  /** Off the chosen learning path → rendered dimmed but still expandable. */
+  offPath: boolean;
   /** Titles of prereqs not yet learned, for the locked-card explanation. */
   unmetPrereqTitles: string[];
   onToggle: () => void;
@@ -141,6 +145,7 @@ function StepCard({
   instrument,
   expanded,
   fluent,
+  offPath,
   unmetPrereqTitles,
   onToggle,
   onAddToday,
@@ -164,6 +169,7 @@ function StepCard({
   return (
     <div
       data-testid={`path-step-${node.id}`}
+      data-treatment={offPath ? "off-path" : "on-path"}
       className="rounded-xl border transition-shadow"
       style={{
         borderColor: isYouAreHere ? "var(--instrument-accent)" : "var(--rule)",
@@ -171,7 +177,7 @@ function StepCard({
         boxShadow: isYouAreHere
           ? "0 0 0 2px var(--instrument-accent), var(--shadow-card)"
           : "var(--shadow-card)",
-        opacity: isLocked ? 0.6 : 1,
+        opacity: offPath ? 0.55 : isLocked ? 0.6 : 1,
       }}
     >
       {/* Card header — always visible. Locked cards toggle an inline reason
@@ -225,6 +231,9 @@ function StepCard({
             style={{ color: STATUS_COLOR[status] }}
           >
             {STATUS_LABEL[status]}
+            {offPath && (
+              <span className="ml-2 normal-case tracking-normal text-[color:var(--ink-3)]">· off your path</span>
+            )}
           </p>
         </div>
 
@@ -530,10 +539,41 @@ export function PathView() {
   const nodes = module?.skillNodes ?? [];
   const progress = state.skillProgress ?? {};
 
-  // Resolve statuses and find the "you are here" frontier node (first available)
-  const statusMap = useMemo(() => resolveStatus(nodes, progress), [nodes, progress]);
-  const frontier = useMemo(() => nextToLearn(nodes, progress, 1), [nodes, progress]);
+  // V4 Soul-First — honor the chosen learning path here just like the Skill Graph
+  // does. Local view state defaulting to the saved intent (so the walk opens on
+  // the user's path), switchable without persisting. Go Deep implies theory on.
+  const [pathFilter, setPathFilter] = useState<LearningPath | null>(state.learningPath ?? null);
+  const [theoryEnabled, setTheoryEnabled] = useState<boolean>(state.theoryEnabled ?? false);
+  const selectPath = useCallback((next: LearningPath | null) => {
+    setPathFilter(next);
+    if (next === "go-deep") setTheoryEnabled(true);
+  }, []);
+
+  // Treatment per node: theory-hidden nodes drop out of the walk entirely;
+  // off-path nodes stay (rendered dimmed) so the shape of the path is preserved
+  // and every step is still expandable — matching the Skill Graph's philosophy.
+  const treatmentById = useMemo(() => {
+    const m = new Map<string, "on-path" | "off-path">();
+    for (const n of nodes) {
+      const t = nodePathTreatment(n, pathFilter ?? undefined, theoryEnabled);
+      if (t !== "theory-hidden") m.set(n.id, t);
+    }
+    return m;
+  }, [nodes, pathFilter, theoryEnabled]);
+  const visibleNodes = useMemo(
+    () => nodes.filter((n) => treatmentById.has(n.id)),
+    [nodes, treatmentById],
+  );
+
+  // Resolve statuses and find the "you are here" frontier node (first available),
+  // both over the visible set so the marker never lands on a hidden node.
+  const statusMap = useMemo(() => resolveStatus(visibleNodes, progress), [visibleNodes, progress]);
+  const frontier = useMemo(() => nextToLearn(visibleNodes, progress, 1), [visibleNodes, progress]);
   const youAreHereId = frontier[0]?.id ?? null;
+
+  // All-done: every visible step is learned. Drives the honest celebration below.
+  const allDone = visibleNodes.length > 0
+    && visibleNodes.every((n) => statusMap.get(n.id) === "learned");
 
   // Title lookup for naming prereqs (used by the locked-card explanation).
   const titleById = useMemo(
@@ -579,10 +619,11 @@ export function PathView() {
     [nodes, progress],
   );
 
-  // Group nodes by tier, topologically sorted within each tier
+  // Group VISIBLE nodes by tier, topologically sorted within each tier (theory
+  // nodes are filtered out above; off-path nodes remain, just dimmed).
   const tiers = useMemo(() => {
     const byTier = new Map<number, SkillNode[]>();
-    for (const node of nodes) {
+    for (const node of visibleNodes) {
       const bucket = byTier.get(node.tier) ?? [];
       bucket.push(node);
       byTier.set(node.tier, bucket);
@@ -590,7 +631,7 @@ export function PathView() {
     return Array.from(byTier.entries())
       .sort(([a], [b]) => a - b)
       .map(([tier, tierNodes]) => ({ tier, nodes: topoSortTier(tierNodes) }));
-  }, [nodes]);
+  }, [visibleNodes]);
 
   function toggle(id: string) {
     setExpanded((prev) => (prev === id ? null : id));
@@ -603,6 +644,33 @@ export function PathView() {
         Every step here is a step toward playing the songs you want.
         Follow the path, one box at a time.
       </p>
+
+      <PathControls
+        activePath={pathFilter}
+        theoryEnabled={theoryEnabled}
+        onSelectPath={selectPath}
+        onToggleTheory={() => setTheoryEnabled((t) => !t)}
+      />
+
+      {allDone && (
+        <div
+          data-testid="path-all-done"
+          className="rounded-xl border p-5"
+          style={{ borderColor: "var(--rule)", background: "var(--surface)", boxShadow: "var(--shadow-card)" }}
+        >
+          <p
+            className="font-serif text-lg text-[color:var(--ink)]"
+            style={{ fontVariationSettings: "'opsz' 30, 'SOFT' 40" }}
+          >
+            Every step here is learned. Nicely done.
+          </p>
+          <p className="text-sm text-[color:var(--ink-2)] mt-1 leading-relaxed">
+            Nothing new to unlock right now — and that is the good kind of done.
+            Reviews keep it alive: the tree brings each skill back for a light pass
+            before it fades, so what you have earned stays yours.
+          </p>
+        </div>
+      )}
 
       {tiers.map(({ tier, nodes: tierNodes }) => {
         const label = tierLabel(tier);
@@ -641,6 +709,7 @@ export function PathView() {
                     instrument={state.instrument}
                     expanded={expanded === node.id}
                     fluent={isFluent(progress[node.id])}
+                    offPath={treatmentById.get(node.id) === "off-path"}
                     unmetPrereqTitles={unmetPrereqTitles}
                     onToggle={() => toggle(node.id)}
                     onAddToday={addToToday}
@@ -665,6 +734,71 @@ export function PathView() {
       {reward && (
         <UnlockCardModal unlock={reward} onCloseAction={() => setReward(null)} />
       )}
+    </div>
+  );
+}
+
+// ── Path + theory view controls ──────────────────────────────────────────────
+// Mirrors the Skill Graph's pills so the two surfaces filter identically: the
+// path pills dim off-path steps, and the theory toggle reveals theory-only steps
+// (Go Deep turns it on). Local view state only — never persisted.
+
+const PATH_OPTIONS: { id: LearningPath | null; label: string }[] = [
+  { id: null, label: "All" },
+  { id: "just-play", label: "Just Play" },
+  { id: "play-with-soul", label: "Play With Soul" },
+  { id: "go-deep", label: "Go Deep" },
+];
+
+function PathControls({
+  activePath,
+  theoryEnabled,
+  onSelectPath,
+  onToggleTheory,
+}: {
+  activePath: LearningPath | null;
+  theoryEnabled: boolean;
+  onSelectPath: (id: LearningPath | null) => void;
+  onToggleTheory: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="learning path filter">
+        {PATH_OPTIONS.map((opt) => {
+          const isActive = activePath === opt.id;
+          return (
+            <button
+              key={opt.id ?? "all"}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              data-testid={`pv-path-${opt.id ?? "all"}`}
+              onClick={() => onSelectPath(opt.id)}
+              className={
+                "rounded-full border px-3 py-1 text-xs transition-colors " +
+                (isActive
+                  ? "border-[color:var(--instrument-accent)] bg-[color:var(--instrument-accent-bg)] text-[color:var(--instrument-accent-deep)]"
+                  : "border-[color:var(--rule)] text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]")
+              }
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+      <label
+        className="ml-1 inline-flex cursor-pointer select-none items-center gap-1.5 rounded-full border border-[color:var(--rule)] px-3 py-1 text-xs text-[color:var(--ink-2)]"
+        data-testid="pv-theory-toggle"
+      >
+        <input
+          type="checkbox"
+          checked={theoryEnabled}
+          onChange={onToggleTheory}
+          className="accent-[color:var(--instrument-accent)]"
+          aria-label="show music theory steps"
+        />
+        Theory
+      </label>
     </div>
   );
 }

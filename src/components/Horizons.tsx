@@ -33,6 +33,11 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
   const nextUnlock = frontier
     ? { title: frontier.unlock, tryLine: frontierCard?.tryLine ?? frontier.masteryDrill }
     : undefined;
+  // All-done: with no frontier and every node learned, the "Next to learn" row
+  // would silently vanish — instead show an honest celebration + the "reviews
+  // keep it alive" reassurance (spaced review is the ongoing loop).
+  const allLearned = nodes.length > 0
+    && nodes.every((n) => (state.skillProgress ?? {})[n.id]?.status === "learned");
   const phaseUnlockCount = unlockLibrary.filter((u) => u.phase === state.phase).length;
   const phaseUnlockEarned = (state.unlocks ?? []).filter((u) => u.phase === state.phase).length;
   const remaining = Math.max(0, phaseUnlockCount - phaseUnlockEarned);
@@ -104,7 +109,7 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
         </div>
       </Row>
 
-      {nextUnlock && (
+      {nextUnlock ? (
         <Row label="Next to learn">
           <div
             className="rounded-md border-l-[3px] pl-4 pr-4 py-3"
@@ -117,7 +122,23 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
             <p className="text-sm text-[color:var(--ink-2)] italic mt-0.5">{nextUnlock.tryLine}</p>
           </div>
         </Row>
-      )}
+      ) : allLearned ? (
+        <Row label="All learned">
+          <div
+            data-testid="horizons-all-done"
+            className="rounded-md border-l-[3px] pl-4 pr-4 py-3"
+            style={{
+              borderLeftColor: "var(--success)",
+              background: "color-mix(in oklab, var(--success) 8%, transparent)",
+            }}
+          >
+            <p className="font-serif text-[color:var(--ink)] tracking-[-0.01em]">Every skill here is learned.</p>
+            <p className="text-sm text-[color:var(--ink-2)] italic mt-0.5">
+              Reviews keep it alive — spaced practice brings each one back before it fades.
+            </p>
+          </div>
+        </Row>
+      ) : null}
 
       {state.northStar && (
         <Row label="Your goal">
