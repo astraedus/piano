@@ -31,6 +31,13 @@ describe("GoalRail, session progress cue", () => {
     expect(block).toContain("Block 1 of 4");
     expect(block).not.toContain("min in");
   });
+
+  it("the goal card guides without a competing 'Start here' (that lives on the NOW block)", () => {
+    render(<GoalRail nowSlot="warmup" blockIndex={1} blockTotal={4} elapsedMin={0} />);
+    const rail = screen.getByTestId("session-progress-rail").parentElement;
+    expect(rail?.textContent).not.toContain("Start here");
+    expect(rail?.textContent).toContain("flows top to bottom");
+  });
 });
 
 describe("ReviewDueBanner, top-of-stand due surface", () => {

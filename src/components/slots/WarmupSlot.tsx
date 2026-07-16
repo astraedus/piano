@@ -11,6 +11,18 @@ import { Metronome } from "../Metronome";
 import { ensureAudio, playSequence } from "@/lib/audio";
 import { useAppState } from "@/hooks/useAppState";
 
+/**
+ * The "this week's reference" label above the warmup visual. Instrument-aware so it
+ * agrees with the header: piano's weekly focus is a key → its SCALE; guitar's is a
+ * chord/box → the pentatonic SHAPE you play over it. (Honest: the guitar visual is
+ * a pentatonic box, so it reads "shape", never a literal "chord".) Pure — tested.
+ */
+export function warmupReferenceLabel(focusKind: "key" | "chord" | undefined, keyName: string): string {
+  return focusKind === "chord"
+    ? `This week's shape · ${keyName}`
+    : `This week's scale · ${keyName} · 2 octaves`;
+}
+
 export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, isNow, status }: { module?: InstrumentModule; warmup?: Warmup; ghostName: string; ghostKey: KeyId; printAlways?: boolean; isNow?: boolean; status?: "done" | "active" | null }) {
   const { state, bumpRep } = useAppState();
   const [running, setRunning] = useState(false);
@@ -109,8 +121,8 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
             and when to bring the thumb up"). */}
         <div className="pt-2 rounded-lg border border-[color:var(--rule)] bg-[color:var(--bg-surface-2)] px-3 py-3">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
-              This week&apos;s scale · {KEY_META[ghostKey].name} · 2 octaves
+            <div data-testid="warmup-week-label" className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
+              {warmupReferenceLabel(module?.focusKind, KEY_META[ghostKey].name)}
             </div>
             {showFingerGuidance && (
               <div className="flex gap-1 no-print" role="group" aria-label="Hand for fingering">

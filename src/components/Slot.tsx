@@ -91,6 +91,7 @@ export function Slot({ index, title, pillar = "technique", duration, summary, st
         onPointerLeave={cancelLp}
         className="w-full text-left flex items-baseline gap-3 group"
         aria-expanded={open}
+        aria-label={`${title} block, ${open ? "expanded" : "collapsed"}${isNow ? " — start here" : ""}`}
       >
         <span className="font-serif text-sm tabular-nums w-4 shrink-0 text-[color:var(--ink-3)]">
           {isDone ? (

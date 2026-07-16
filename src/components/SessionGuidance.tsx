@@ -37,7 +37,7 @@ export function GoalRail({ nowSlot, blockIndex, blockTotal, elapsedMin }: {
         <p data-testid="session-progress-rail" className="text-xs text-[color:var(--ink-3)] mt-1">
           {blockLine}{minLine}
         </p>
-        <p className="text-xs text-[color:var(--ink-3)] mt-1">Start here, then flow down the stand.</p>
+        <p className="text-xs text-[color:var(--ink-3)] mt-1">The stand flows top to bottom — one block at a time.</p>
       </div>
       <div
         data-testid="mobile-now-line"
