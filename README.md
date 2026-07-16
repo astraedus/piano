@@ -5,7 +5,7 @@ A nightly practice app for learning **piano and electric guitar**. Every time yo
 ## The soul
 
 It deletes two sentences from practice: *"wait, what should I do?"* and *"shit, I forgot that one thing — what was it again?"*
-Inside a session, the stand is tonight's plan — what to do now, what's next, when you're done. On the roadmap, Your Path (the skill tree) shows what you've learned, the one thing to learn next, and the way back to anything you forgot. Honest numbers, real teaching, exact next actions — nothing else.
+Inside a session, the stand is tonight's plan — what to do now, what's next, when you're done. On the roadmap, Your Path (the skill tree) shows what you've learned, the one thing to learn next, and the way back to anything you forgot. Fundamentals-first, plain language, open to anyone — every musical term stays tappable, so a total beginner can follow any lesson cold. Honest numbers, real teaching, exact next actions — nothing else.
 
 ## Live
 

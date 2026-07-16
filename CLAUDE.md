@@ -9,6 +9,9 @@ The app exists to delete two sentences from practice: **"wait, what should I do?
 At every moment, at two zoom levels, it tells you EXACTLY what to do right now and why it matters:
 - **Inside a session**: the stand is tonight's plan — what to do now, what's next, when you're done.
 - **On the roadmap**: Your Path / the skill tree shows what you've learned (which scales/skills, at what tempo), the ONE thing to learn next, and the way back to anything you forgot (spaced review).
+Two more commitments:
+- **Fundamentals first.** Good fundamentals carry a learner extremely far; the curriculum's job is to sequence them honestly and explain WHY each one matters — not to pad with novelty.
+- **Open to anyone.** No unexplained jargon, ever — every musical term stays tappable (TermChip → plain-language glossary). If a lesson can't be followed by a total beginner reading it cold, it isn't done.
 It is not trying to be anything else. No faking: honest progress numbers, real teaching (what/why/how for every node), exact next actions. If a change doesn't make the next action clearer, the record of learned things sharper, or the way-back easier, question whether it belongs.
 
 ## Architecture (read `docs/BUILD.md` for the full story + `docs/research/plan.md` for the design rationale)
