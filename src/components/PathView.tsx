@@ -16,6 +16,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { resolveStatus, nextToLearn, markNodeProgress, isFluent } from "@/lib/skillTree";
+import { bestBpmForNode } from "@/lib/bestBpm";
 import { tierLearnedCounts, completionFraction, type TierCount } from "@/lib/skillSummary";
 import { getLesson } from "@/lib/lessons";
 import { linkTerms } from "@/components/explain";
@@ -40,7 +41,7 @@ const TIER_LABELS: Record<number, { name: string; subtitle: string }> = {
   6: { name: "Beyond", subtitle: "Expert-level depth." },
 };
 
-function tierLabel(tier: number) {
+export function tierLabel(tier: number) {
   return TIER_LABELS[tier] ?? { name: `Tier ${tier}`, subtitle: "" };
 }
 
@@ -126,6 +127,8 @@ interface StepCardProps {
   instrument: "piano" | "guitar";
   expanded: boolean;
   fluent: boolean;
+  /** Best tempo (BPM) recorded for this skill, or undefined when none. */
+  bestBpm?: number;
   /** Titles of prereqs not yet learned, for the locked-card explanation. */
   unmetPrereqTitles: string[];
   onToggle: () => void;
@@ -141,6 +144,7 @@ function StepCard({
   instrument,
   expanded,
   fluent,
+  bestBpm,
   unmetPrereqTitles,
   onToggle,
   onAddToday,
@@ -148,6 +152,9 @@ function StepCard({
   onMarkFluent,
 }: StepCardProps) {
   const lesson = getLesson(instrument, node.id);
+  // Surface the recorded tempo only for skills actually under way (learned or
+  // in-progress) — a brand-new node has nothing honest to show.
+  const showBpm = bestBpm != null && (status === "learned" || status === "in-progress");
   const headline = node.soulTitle ?? node.keepTitle ?? node.title;
   const theoryName = node.keepTitle ?? node.title;
   const hasSubtitle = Boolean(node.soulTitle);
@@ -274,6 +281,20 @@ function StepCard({
               real songs the learner can now play, inline in the Your Path
               accordion (the surface users actually open). */}
           {isProgressionContainerNode(node.id) && <ProgressionSongsPanel />}
+
+          {/* Best tempo recorded for this skill — the "at what tempo?" the app
+              tracks but never showed. Only for skills under way, never "0 BPM". */}
+          {showBpm && (
+            <p
+              data-testid={`path-bpm-${node.id}`}
+              className="text-xs text-[color:var(--ink-3)]"
+            >
+              Best tempo so far:{" "}
+              <span className="font-medium text-[color:var(--instrument-accent-deep)]">
+                {bestBpm} BPM
+              </span>
+            </p>
+          )}
 
           {/* Progression controls — mirrors the SkillGraph panel so a user can
               progress without leaving Your Path. */}
@@ -641,6 +662,7 @@ export function PathView() {
                     instrument={state.instrument}
                     expanded={expanded === node.id}
                     fluent={isFluent(progress[node.id])}
+                    bestBpm={bestBpmForNode(node, progress, state.skillReps)}
                     unmetPrereqTitles={unmetPrereqTitles}
                     onToggle={() => toggle(node.id)}
                     onAddToday={addToToday}
