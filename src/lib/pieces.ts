@@ -5,10 +5,12 @@
 // Rather than tag every Piece with an instrument (and touch every creation site),
 // we snapshot the current piece per instrument at the moment of a switch: leaving
 // piano stashes piano's current piece, and arriving at guitar restores guitar's
-// last piece (or none). AppShell's instrument switcher is the only in-app path
-// that changes `state.instrument`, so reconciling there keeps the two in sync.
+// last piece (or none). Every in-app instrument switch (the header dropdown AND
+// the Settings toggle) MUST go through `instrumentSwitchPatch` below so the two
+// stay in sync — a bare `patch({ instrument })` leaks the other instrument's
+// current piece onto the stand.
 
-import type { Instrument, Piece } from "./types";
+import type { AppState, Instrument, Piece } from "./types";
 
 export interface PieceSwitchResult {
   /** The current piece id for the instrument being switched TO (undefined = none). */
@@ -39,4 +41,27 @@ export function reconcileCurrentPieceForSwitch(
   if (restored && !pieces.some((p) => p.id === restored)) restored = undefined;
 
   return { currentPieceId: restored, currentPieceByInstrument: next };
+}
+
+/**
+ * Build the complete state patch for an instrument switch.
+ *
+ * The single source of truth for what a switch must write: the new `instrument`
+ * PLUS the reconciled current-piece fields. Both switch sites (the header
+ * dropdown and the Settings toggle) call this and `patch(...)` the result, so
+ * neither can drift back to a bare `patch({ instrument })` that would leave the
+ * other instrument's piece on the stand. Pure — reads only the fields it needs.
+ */
+export function instrumentSwitchPatch(
+  to: Instrument,
+  state: Pick<AppState, "instrument" | "currentPieceId" | "currentPieceByInstrument" | "pieces">,
+): { instrument: Instrument } & PieceSwitchResult {
+  const { currentPieceId, currentPieceByInstrument } = reconcileCurrentPieceForSwitch(
+    state.instrument,
+    to,
+    state.currentPieceId,
+    state.currentPieceByInstrument,
+    state.pieces ?? [],
+  );
+  return { instrument: to, currentPieceId, currentPieceByInstrument };
 }

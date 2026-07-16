@@ -5,7 +5,7 @@ import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { JustPlayButton } from "./JustPlayButton";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
-import { reconcileCurrentPieceForSwitch } from "@/lib/pieces";
+import { instrumentSwitchPatch } from "@/lib/pieces";
 import { setRootAttrs } from "@/lib/domAttrs";
 import type { Instrument } from "@/lib/types";
 import { XPBar } from "./XPBar";
@@ -100,14 +100,9 @@ function InstrumentSwitcher({ current }: { current: Instrument }) {
     if (id !== current) {
       // Reconcile the current piece so switching instruments never surfaces a
       // piece from the other one (a piano piece must not show while on guitar).
-      const { currentPieceId, currentPieceByInstrument } = reconcileCurrentPieceForSwitch(
-        current,
-        id,
-        state.currentPieceId,
-        state.currentPieceByInstrument,
-        state.pieces ?? [],
-      );
-      patch({ instrument: id, currentPieceId, currentPieceByInstrument });
+      // The shared helper is the ONE place that defines a switch patch — Settings
+      // uses it too, so the two paths cannot diverge.
+      patch(instrumentSwitchPatch(id, state));
       // Re-apply the accent immediately (phase/theme unchanged).
       setRootAttrs({ instrument: id, phase: state.phase, theme: state.theme });
     }
