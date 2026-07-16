@@ -561,13 +561,26 @@ export function PathView() {
   const progress = state.skillProgress ?? {};
 
   // V4 Soul-First — honor the chosen learning path here just like the Skill Graph
-  // does. Local view state defaulting to the saved intent (so the walk opens on
-  // the user's path), switchable without persisting. Go Deep implies theory on.
-  const [pathFilter, setPathFilter] = useState<LearningPath | null>(state.learningPath ?? null);
-  const [theoryEnabled, setTheoryEnabled] = useState<boolean>(state.theoryEnabled ?? false);
+  // does. These are LOCAL view filters that must stay switchable without
+  // persisting, yet still open on the user's saved intent.
+  //
+  // We derive from state rather than seed a useState initializer: an `undefined`
+  // override means "follow the saved intent" (state.learningPath / theoryEnabled),
+  // so the view re-syncs the moment the persisted profile hydrates in on a fresh
+  // /tree load. (The old useState initializer captured the PRE-hydration value —
+  // usually null — and never re-synced, so the tab opened on "All" with 0 dimmed
+  // even when a path was saved.) Once the user picks a pill or toggles theory the
+  // override takes over — switchable here, never persisted, and never clobbered by
+  // a later hydration. Go Deep implies theory on.
+  const [pathOverride, setPathOverride] = useState<LearningPath | null | undefined>(undefined);
+  const [theoryOverride, setTheoryOverride] = useState<boolean | undefined>(undefined);
+  const pathFilter: LearningPath | null =
+    pathOverride !== undefined ? pathOverride : (state.learningPath ?? null);
+  const theoryEnabled =
+    theoryOverride !== undefined ? theoryOverride : (state.theoryEnabled ?? false);
   const selectPath = useCallback((next: LearningPath | null) => {
-    setPathFilter(next);
-    if (next === "go-deep") setTheoryEnabled(true);
+    setPathOverride(next);
+    if (next === "go-deep") setTheoryOverride(true);
   }, []);
 
   // Treatment per node: theory-hidden nodes drop out of the walk entirely;
@@ -670,7 +683,7 @@ export function PathView() {
         activePath={pathFilter}
         theoryEnabled={theoryEnabled}
         onSelectPath={selectPath}
-        onToggleTheory={() => setTheoryEnabled((t) => !t)}
+        onToggleTheory={() => setTheoryOverride(!theoryEnabled)}
       />
 
       {allDone && (

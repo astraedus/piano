@@ -12,6 +12,7 @@ import { setRootAttrs } from "@/lib/domAttrs";
 import type { Instrument } from "@/lib/types";
 import { learningPathPatch, PATH_OPTIONS } from "@/components/Onboarding";
 import { CloudSync } from "@/components/CloudSync";
+import { instrumentSwitchPatch } from "@/lib/pieces";
 
 const INSTRUMENTS: { id: Instrument; label: string }[] = [
   { id: "piano", label: "Piano" },
@@ -76,8 +77,10 @@ function Settings() {
     // Switching takes effect immediately: the module re-resolves via
     // getModuleSync(state.instrument) on the next render, and the data-instrument
     // accent flips amber <-> crimson. No data is lost — each instrument keeps its
-    // own progress in the same profile.
-    patch({ instrument: id });
+    // own progress in the same profile. Route through the shared helper (same as
+    // the header dropdown) so the current piece is reconciled and this path never
+    // leaves the other instrument's piece on the stand.
+    patch(instrumentSwitchPatch(id, state));
     setRootAttrs({ instrument: id, phase: state.phase, theme: state.theme });
   };
 

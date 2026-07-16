@@ -628,6 +628,59 @@ describe("PathView — learning-path treatment + all-done", () => {
     render(<PathView />);
     expect(screen.getByTestId("path-all-done")).toBeTruthy();
   });
+
+  // ── issue #9: the saved learningPath must be honored on first paint ──────────
+  // On a fresh /tree load the profile hydrates AFTER the first render. The view
+  // must re-sync to the saved path (it previously captured the pre-hydration null
+  // in a useState initializer and opened on "All" with 0 dimmed).
+  it("re-syncs the path filter when learningPath hydrates in after first paint", () => {
+    // First paint: profile not hydrated → learningPath undefined → nothing dimmed.
+    mockStateWithPath("guitar", undefined, false);
+    const { rerender } = render(<PathView />);
+    expect(
+      screen.getByTestId(`path-step-${offPathNode.id}`).getAttribute("data-treatment"),
+    ).toBe("on-path");
+
+    // Hydration lands with a saved path — the off-path node must now dim.
+    mockStateWithPath("guitar", "just-play", false);
+    rerender(<PathView />);
+    expect(
+      screen.getByTestId(`path-step-${offPathNode.id}`).getAttribute("data-treatment"),
+    ).toBe("off-path");
+  });
+
+  // The theory toggle carried the identical latent bug — same first-paint sync.
+  it("re-syncs the theory toggle when theoryEnabled hydrates in after first paint", () => {
+    // First paint: theory unknown (false) → the theory step is hidden.
+    mockStateWithPath("guitar", undefined, false);
+    const { rerender } = render(<PathView />);
+    expect(screen.queryByTestId(`path-step-${theoryNode.id}`)).toBeNull();
+
+    // Hydration lands with theory saved on — the theory step must appear.
+    mockStateWithPath("guitar", undefined, true);
+    rerender(<PathView />);
+    expect(screen.getByTestId(`path-step-${theoryNode.id}`)).toBeTruthy();
+  });
+
+  it("does NOT clobber an explicit pill selection when hydration lands afterward", () => {
+    // Pre-hydration, the user proactively taps Go Deep (reveals go-deep nodes +
+    // theory).
+    mockStateWithPath("guitar", undefined, false);
+    const { rerender } = render(<PathView />);
+    fireEvent.click(screen.getByTestId("pv-path-go-deep"));
+    expect(
+      screen.getByTestId(`path-step-${offPathNode.id}`).getAttribute("data-treatment"),
+    ).toBe("on-path"); // off-path node is go-deep-tagged → on-path under go-deep
+    expect(screen.getByTestId(`path-step-${theoryNode.id}`)).toBeTruthy();
+
+    // Now the saved profile hydrates to a DIFFERENT path — the explicit choice wins.
+    mockStateWithPath("guitar", "just-play", false);
+    rerender(<PathView />);
+    expect(
+      screen.getByTestId(`path-step-${offPathNode.id}`).getAttribute("data-treatment"),
+    ).toBe("on-path"); // still go-deep, NOT clobbered to just-play's off-path
+    expect(screen.getByTestId(`path-step-${theoryNode.id}`)).toBeTruthy();
+  });
 });
 
 describe("PathView — best tempo on an expanded step", () => {
