@@ -2,7 +2,7 @@
 
 # piano — multi-instrument practice studio (Anti's personal app)
 
-A nightly practice app for learning instruments. **Piano AND electric guitar** (as of 2026-06-07). Next.js 16 / React 19 / TS / Tailwind v4 / Tone.js (audio) / VexFlow 5 (notation) / svguitar (chord diagrams) / @xyflow/react + dagre (skill graph) / motion (reward animations). Client-side, localStorage persistence. Deployed: https://music.raeduslabs.com (live custom domain) + https://piano-two-blue.vercel.app (Vercel auto-deploys on push to `main`).
+A nightly practice app for learning instruments. **Piano AND electric guitar** (as of 2026-06-07). Next.js 16 / React 19 / TS / Tailwind v4 / Tone.js (audio) / VexFlow 5 (notation) / svguitar (chord diagrams) / @xyflow/react + dagre (skill graph) / motion (reward animations). Client-side, localStorage persistence. Deployed: https://music.raeduslabs.com (canonical URL; Vercel auto-deploys on push to `main`).
 
 ## Product soul — judge every change against this
 The app exists to delete two sentences from practice: **"wait, what should I do?"** and **"shit, I forgot that one thing — what was it again?"**
