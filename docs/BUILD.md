@@ -1,3 +1,5 @@
+> HISTORICAL (2026-06-07 multi-instrument build tracker). Superseded by BUILD-V2 → V5 and docs/research/curriculum-audit-2026-06-17.md. Claims below (test counts, node counts, deploy status) are frozen-in-time; see CLAUDE.md for current state.
+
 # Multi-Instrument Build — Status Tracker
 
 Plan: `docs/research/plan.md`. Reports: `docs/research/{audit,guitar,libs,design}.md`.

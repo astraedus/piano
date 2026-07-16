@@ -1,8 +1,6 @@
-I now have enough research to produce the full curriculum report. Let me compile it.
+# Electric Guitar Curriculum — Research Report
+*Research-backed electric-guitar curriculum and skill tree for the guitar module.*
 
----
-
-# Electric Guitar Learning Content & Skill Tree
 ## Curriculum Design for the Piano Practice App — Guitar Module
 
 *Sources used throughout: JustinGuitar.com beginner-to-intermediate grade structure; Guitar Orb learning roadmap; GuitarHabits beginner/intermediate paths; onlineguitarbooks.com technique guide; Berklee/TrueFire tab pedagogy; School of Rock chord pedagogy; GuitarChalker chord order; applied-guitar-theory CAGED analysis; killerguitarrigs.com easy riff lists; CAGED system primers (Bold Music, StringKick, D'Addario); metalmastermind.com palm muting; justinguitar.com pentatonic positions.*

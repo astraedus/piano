@@ -1,9 +1,5 @@
-Now I have a complete picture. The current app already has Fraunces + Inter, a warm dark palette, and a light parchment mode. The owner wants to flip to warm/vibrant/colorful as the primary experience. Let me write the full design spec.
-
----
-
-# Piano App — Visual Design Spec v1.0
-## "The Warm Studio" — Light-Mode-First, Instrument-Aware, Motivating
+# Warm Studio — Design Spec
+*Light-mode-first, instrument-aware visual design spec — "The Warm Studio."*
 
 ---
 

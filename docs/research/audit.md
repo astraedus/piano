@@ -1,8 +1,5 @@
-Now I have a thorough picture of the entire codebase. Let me produce the report.
-
----
-
-# Piano App — Deep Technical Audit
+# Codebase Audit — pre-multi-instrument (2026-06-07)
+*Deep technical audit of the piano-only codebase taken before the multi-instrument rebuild.*
 
 ## 1. Architecture Map
 

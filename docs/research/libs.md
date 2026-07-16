@@ -1,6 +1,5 @@
-I now have all the data I need. Here is the full recommendation.
-
----
+# Library Selection — Research & Recommendation
+*Library evaluation and picks for the piano + guitar app.*
 
 ## Library Recommendations for the Piano + Guitar App
 

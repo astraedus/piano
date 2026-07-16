@@ -1,3 +1,5 @@
+> NOTE: partially superseded — see "2026-06+ amendments" below. The soul + decision-elimination principles still hold.
+
 # Piano — Builder Brief
 
 Ground truth specs (read these first): `~/Shared/Piano/`
@@ -19,6 +21,15 @@ Ground truth specs (read these first): `~/Shared/Piano/`
 6. **First-session-back protocol:** on 3+ day gap, downshift session, silence ear moment, one warm acknowledgment.
 7. **Decision elimination:** app picks ghost key, warmup, chain drill, ear round. User picks pieces + whether to show up.
 8. **Tone:** thoughtful older sibling, calm warm presence, never preachy, never hype.
+
+## 2026-06+ amendments (current truth)
+
+This brief is the original vision. Shipped reality has moved on it in a few places — these amendments are authoritative where they conflict with the list above.
+
+- **(a) Non-negotiable #2 was deliberately overridden in V2 (2026-06-08, Anti-directed).** Confident gamification is now IN: XP, levels, and a forgiving streak, celebrated at session end. The rewrite was intentional, not drift. What stays banned: shame framing, "you haven't played in N days" guilt, and percent-to-next-grade.
+- **(b) #1's spirit still holds even with gamification.** The language is still permission-giving and never nagging — gamification lives at the reward/end-of-session layer, it does not turn into pressure, guilt, or hype.
+- **(c) Storage is localStorage-first with optional signed-in cloud sync.** localStorage remains the live working copy; a signed-in user gets optional cloud sync (Clerk + Neon) as the durable save. This supersedes "localStorage for persistence (no backend)" in the Stack section.
+- **(d) Everything else in the brief still stands** — the soul, decision elimination, [Just play], accumulation metrics, first-session-back, chain-drills-end-with-a-song, and the tone all remain the contract.
 
 ## Stack
 
