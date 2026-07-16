@@ -10,6 +10,7 @@ import { Keyboard } from "@/lib/piano/components/Keyboard";
 import { Staff } from "@/lib/piano/components/Staff";
 import { fingeringsForKey, tuckNotesFor, tuckCue } from "@/lib/piano/fingerings";
 import { songsForKey } from "@/lib/songs";
+import { bestBpmForKey } from "@/lib/bestBpm";
 
 // Circle of fifths — majors on outer ring, minors on inner.
 // 24 segments total, 30° each.
@@ -296,6 +297,9 @@ function KeyDetailPanel({ keyId, depth }: { keyId: KeyId; depth: KeyDepth }) {
   const prog = progressionChords(keyId, romans);
   const piecesInKey = (state.pieces ?? []).filter((p) => p.keyId === keyId);
   const songs = songsForKey(keyId).slice(0, 6);
+  // The best tempo this key's scale has been played at (WarmupSlot's "I Played It"
+  // records it via scaleRepId). Only shown when a tempo exists — never "0 BPM".
+  const bestScaleBpm = bestBpmForKey(keyId, state.skillReps);
 
   const promoteToHome = () => {
     if (depth >= 5) return;
@@ -309,6 +313,12 @@ function KeyDetailPanel({ keyId, depth }: { keyId: KeyId; depth: KeyDepth }) {
         <p className="text-[color:var(--ink-3)] mt-0.5 text-xs">
           <span className="font-medium text-[color:var(--instrument-accent-deep)]">{DEPTH_NAMES[depth]}</span> · {DEPTH_MEANINGS[depth]}
         </p>
+        {bestScaleBpm && (
+          <p data-testid="keymap-bpm" className="text-xs text-[color:var(--ink-2)] mt-1">
+            Best scale tempo:{" "}
+            <span className="font-medium text-[color:var(--instrument-accent-deep)]">{bestScaleBpm} BPM</span>
+          </p>
+        )}
       </header>
 
       <div>

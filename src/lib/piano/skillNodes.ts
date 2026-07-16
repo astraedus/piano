@@ -140,10 +140,12 @@ export const PIANO_NODES: SkillNode[] = [
     title: "First Improvisation",
     tier: 1,
     category: "expression",
+    // B1: only C major is a real prereq, so the drill stays C-only (a one-chord
+    // vamp), not the C-F-G-C loop that leaned on F/G before they are taught.
     prereqs: ["p-key-C"],
-    masteryDrill: "Loop C–F–G–C with the left hand, noodle C pentatonic with the right.",
+    masteryDrill: "Hold a C chord in the left hand, noodle the C pentatonic (C D E G A) with the right.",
     unlock: "Make something up that sounds good.",
-    chainDrillId: "p1-c-major-chain",
+    chainDrillId: "p1-first-improv",
     unlockCardId: "u-p1-first-improv",
     soulTitle: "Make It Up",
     keepTitle: "First Improvisation",
@@ -169,8 +171,10 @@ export const PIANO_NODES: SkillNode[] = [
     title: "Three Moods",
     tier: 1,
     category: "expression",
+    // B1: reachable with only C major, so the material is a plain C line (C D E F G)
+    // played three ways, not I-vi-IV-V (which needs the Am/F/G chords, not yet taught).
     prereqs: ["p-key-C"],
-    masteryDrill: "Play I–vi–IV–V three ways: tender, restless, resigned. Same notes.",
+    masteryDrill: "Play a simple C line (C D E F G) three ways: tender, restless, resigned. Same notes.",
     unlock: "Touch and timing change the whole feeling.",
     chainDrillId: "p1-three-moods-lite",
     soulTitle: "Same Notes, Three Feelings",

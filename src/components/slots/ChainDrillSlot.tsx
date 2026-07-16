@@ -254,8 +254,9 @@ export function ChainDrillSlot({
 
         <div className="flex items-center gap-3 pt-1 no-print">
           {rep && (
-            <span className="text-xs text-[color:var(--ink-3)] italic">
+            <span data-testid="chain-rep-count" className="text-xs text-[color:var(--ink-3)] italic">
               {rep.count === 1 ? "First time" : `${rep.count} times so far`}
+              {rep.maxBpm ? ` · best ${rep.maxBpm} BPM` : ""}
             </span>
           )}
           <span className="text-[color:var(--ink-3)] italic text-sm ml-auto">↑ {drill.closingNote}</span>

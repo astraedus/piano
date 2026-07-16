@@ -42,6 +42,11 @@ function Timeline() {
                 <div className="flex-1 flex items-baseline gap-3">
                   <span className="text-[color:var(--ink)] tabular-nums text-sm">{r.session.minutes} min</span>
                   <span className="text-[color:var(--ink-3)] text-sm">{KEY_META[r.session.ghostKey]?.name ?? r.session.ghostKey}</span>
+                  {r.session.quality?.bpmReached ? (
+                    <span className="text-[color:var(--ink-3)] text-sm tabular-nums" data-testid="timeline-bpm">
+                      · {r.session.quality.bpmReached} BPM
+                    </span>
+                  ) : null}
                   {r.session.journal && (
                     <span className="text-[color:var(--ink-2)] italic text-sm">· {r.session.journal}</span>
                   )}

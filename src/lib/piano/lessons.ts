@@ -239,19 +239,19 @@ export const PIANO_LESSONS: Record<string, NodeLesson> = {
   },
 
   "p-t1-first-improv": {
-    "what": "This is the moment you stop copying and start creating. With a simple chord loop under your left hand and a handful of safe notes under your right, you can make up music that actually sounds good. No sheet, no rules, just you and the keys having a conversation.",
-    "why": "Improvisation is freedom. It turns the piano from a thing you recite into a thing you speak through. Once you feel that any note in the right group sounds good over your chords, the fear vanishes and playing becomes play. This is the door to writing your own songs, jamming with others, and never being bored at a keyboard again.",
+    "what": "This is the moment you stop copying and start creating. You hold ONE chord you already know, C major, under your left hand, and play a handful of safe notes with your right. That is enough to make up music that actually sounds good. No sheet, no rules, no new chords to learn, just you and the keys having a conversation.",
+    "why": "Improvisation is freedom. It turns the piano from a thing you recite into a thing you speak through. Once you feel that any note in the safe group sounds good over your held chord, the fear vanishes and playing becomes play. This is the door to writing your own songs, jamming with others, and never being bored at a keyboard again.",
     "steps": [
       {
-        "do": "Left hand: loop C, F, G, C as block chords, four slow counts each, around and around. Keep it steady and quiet.",
-        "feel": "A calm, repeating bed of sound. Do not rush it."
+        "do": "Left hand: press and HOLD a C major chord (C, E, G). Let it ring. That single held chord is your whole backing tonight.",
+        "feel": "A calm, steady bed of sound. Nothing else to manage."
       },
       {
         "do": "Right hand, find your safe notes, the C pentatonic: C, D, E, G, A (then back to C). Just five notes.",
-        "feel": "Skip the F and the B. These five can NOT sound wrong over your loop."
+        "feel": "Skip the F and the B. These five can NOT sound wrong over your held C."
       },
       {
-        "do": "Over the looping left hand, play those five notes in any order, slowly, one at a time. Pause. Listen. Pick another.",
+        "do": "Over the held chord, play those five notes in any order, slowly, one at a time. Pause. Listen. Pick another.",
         "feel": "Surprised that it works. Every note lands. That is the pentatonic doing its job."
       },
       {
@@ -259,15 +259,15 @@ export const PIANO_LESSONS: Record<string, NodeLesson> = {
         "feel": "Space is music too. Silence makes the next note matter."
       },
       {
-        "do": "Try landing on C right when your left hand hits the C chord.",
+        "do": "Try landing on C right when you want the phrase to feel finished.",
         "feel": "That coming-home feeling. Resolving on the tonic is how a musical sentence ends."
       }
     ],
-    "goodWhen": "You can keep the C-F-G-C loop steady in your left hand while your right hand noodles freely over the C pentatonic, and it sounds musical, with phrases that breathe and occasionally resolve home to C.",
+    "goodWhen": "You can keep a C chord held in your left hand while your right hand noodles freely over the C pentatonic, and it sounds musical, with phrases that breathe and occasionally resolve home to C.",
     "watchOut": "The biggest beginner mistake is playing too many notes too fast to fill the silence out of nerves. Fix it by deliberately leaving gaps. Play one note, count to two, play another. Space and patience sound far more musical than a flurry.",
     "song": {
       "name": "Someone Like You (Adele)",
-      "note": "Its piano part is a simple repeating chord pattern with a melody floating on top, exactly what you are doing now. Your improvising is the same skill that song is built on."
+      "note": "Its piano part floats a melody on top of held chords, exactly what you are doing now. Your improvising is the same skill that song is built on."
     }
   },
 
@@ -305,23 +305,23 @@ export const PIANO_LESSONS: Record<string, NodeLesson> = {
   },
 
   "p-t1-three-moods": {
-    "what": "Here you discover that the same chords can sound completely different depending on HOW you play them. Touch and timing, not just the notes, carry the emotion. You will take one common four-chord progression and play it three ways: tender, restless, and resigned. Same keys, three different feelings.",
-    "why": "This is the leap from playing notes to playing music. Once you control mood through touch and timing, you can make a happy progression sound heartbroken or a simple loop sound urgent. It is why two people playing the identical chords can sound worlds apart. This is taste, expression, and dynamics, the soul of performance.",
+    "what": "Here you discover that the same notes can sound completely different depending on HOW you play them. Touch and timing, not the notes themselves, carry the emotion. You take one simple line in C major, five notes you already know, and play it three ways: tender, restless, and resigned. Same notes, three different feelings.",
+    "why": "This is the leap from playing notes to playing music. Once you control mood through touch and timing, you can make a bright little line sound heartbroken or make it sound urgent. It is why two people playing the identical notes can sound worlds apart. This is taste, expression, and dynamics, the soul of performance.",
     "steps": [
       {
-        "do": "Learn the progression in C: I-vi-IV-V, which is C, A minor, F, G. Play each as a block chord so the notes are second nature first.",
-        "feel": "Four chords, the backbone of a thousand pop songs. Get them flowing."
+        "do": "Play a simple line in C: C, D, E, F, G, then back down to C. All white keys, one hand. Get it flowing so the notes are second nature first.",
+        "feel": "Easy and familiar. Your hand already knows this shape from C major."
       },
       {
-        "do": "Play it TENDER: very soft, slow, hold each chord full and let it ring, gentle dynamics, no rush.",
-        "feel": "Like a lullaby. Quiet and patient. Let the silence around the chords breathe."
+        "do": "Play it TENDER: very soft, slow, let each note ring into the next, gentle and unhurried.",
+        "feel": "Like a lullaby. Quiet and patient. Let the space around the notes breathe."
       },
       {
-        "do": "Play the SAME chords RESTLESS: faster, a little louder, break each chord into a quick rolling arpeggio (notes one after another, low to high), push the tempo.",
-        "feel": "Anxious, forward-leaning, never quite settling. The arpeggio creates motion."
+        "do": "Play the SAME notes RESTLESS: a little faster, a little brighter and louder, push the tempo forward and never quite settle.",
+        "feel": "Anxious and forward-leaning. The same five notes, now in a hurry."
       },
       {
-        "do": "Play it RESIGNED: slow again, but heavy and a touch flat in feeling, let the chords sag, soft but weary, leave long gaps.",
+        "do": "Play it RESIGNED: slow again, but heavy and weary, let the notes sag, soft, with long gaps between them.",
         "feel": "Like a sigh at the end of a long day. Same notes, all the air let out."
       },
       {
@@ -329,11 +329,11 @@ export const PIANO_LESSONS: Record<string, NodeLesson> = {
         "feel": "The notes never moved. YOU moved them."
       }
     ],
-    "goodWhen": "You can play the same C, A minor, F, G progression three distinct ways (tender, restless, resigned) using only changes in dynamics, speed, and touch, and a listener could feel the difference with their eyes closed.",
-    "watchOut": "The most common mistake is changing the notes or chords to chase a mood instead of changing how you play them. Keep the notes identical every time. The whole lesson is that touch and timing alone carry the feeling. If you need different chords, you have missed the point.",
+    "goodWhen": "You can play the same C, D, E, F, G line three distinct ways (tender, restless, resigned) using only changes in dynamics, speed, and touch, and a listener could feel the difference with their eyes closed.",
+    "watchOut": "The most common mistake is changing the notes to chase a mood instead of changing how you play them. Keep the notes identical every time. The whole lesson is that touch and timing alone carry the feeling. If you reach for different notes, you have missed the point.",
     "song": {
-      "name": "Let It Be (The Beatles)",
-      "note": "Played in its original key of C major it leans on C, A minor, F, and G, this exact family of chords, and the song builds from tender to triumphant using touch and dynamics, not new chords. You are practicing the very technique that gives it its emotional arc."
+      "name": "Ode to Joy (Beethoven)",
+      "note": "Its famous theme uses only these few notes in C major. Play its opening line soft and tender, then bright and restless, and hear the same melody change character with your touch alone."
     }
   },
 

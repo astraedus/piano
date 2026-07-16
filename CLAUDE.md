@@ -47,7 +47,9 @@ These docs live in the repo. Read the relevant one before working on its area; t
 - `docs/exec-plans/completed/progress-three-axis.md` -- Exec Plan — Three-Axis Progress (make progression OBVIOUS)
 - `docs/research/audit.md` -- Codebase Audit — pre-multi-instrument (2026-06-07)
 - `docs/research/curriculum-audit-2026-06-17.md` -- Curriculum Audit, Answers, Corrections, Plan (2026-06-17)
+- `docs/research/curriculum-gaps-2026-07-16.md` -- Curriculum Gaps — Batch-3 Backlog (audit 2026-07-16)
 - `docs/research/design.md` -- Warm Studio — Design Spec
+- `docs/research/grades-mapping.md` -- Grades Mapping — Syllabus Requirements → Our Curriculum DAG
 - `docs/research/guitar.md` -- Electric Guitar Curriculum — Research Report
 - `docs/research/libs.md` -- Library Selection — Research & Recommendation
 - `docs/research/motor-learning.md` -- Motor Learning Science for Instrument Practice Apps

@@ -14,7 +14,7 @@ import { ChainDrillSlot } from "./slots/ChainDrillSlot";
 import { EarMomentSlot } from "./slots/EarMomentSlot";
 import { FreeSlot } from "./slots/FreeSlot";
 import { generateEarRound } from "@/lib/earRounds";
-import { drillRepId, scaleRepId } from "@/lib/types";
+import { drillRepId, scaleRepId, pieceRepId } from "@/lib/types";
 import type { EarRound } from "@/lib/types";
 import { UnlockCardModal } from "./UnlockCardModal";
 import { LevelUpModal } from "./LevelUpModal";
@@ -27,13 +27,15 @@ import { ghostKeyToTermId } from "@/lib/pathFilter";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { emptyStreak, levelForXp, localDateKey, titleForLevel } from "@/lib/progression";
 import {
-  currentSlot,
+  slotProgress,
   hasResumableWork,
   repSessionKey,
   type RepSessionSnapshot,
   type SlotKey,
 } from "./slots/repResume";
 import { shouldShowStartHere } from "@/lib/startHere";
+import { GoalRail, ReviewDueBanner, SessionClosureOverlay, type ClosureData } from "./SessionGuidance";
+import { nextToLearn } from "@/lib/skillTree";
 
 export function PracticeStand() {
   const router = useRouter();
@@ -48,6 +50,8 @@ export function PracticeStand() {
   const [minutes, setMinutes] = useState(0);
   const [sessionLine, setSessionLine] = useState<string | null>(null);
   const [unlocksQueue, setUnlocksQueue] = useState<string[]>([]);
+  // End-of-session closure recap (captured at Done, shown after reward moments).
+  const [closure, setClosure] = useState<ClosureData | null>(null);
 
   useEffect(() => {
     const iv = setInterval(() => {
@@ -107,8 +111,29 @@ export function PracticeStand() {
   // (currentSlot / hasResumableWork) are unit-tested in repResume.test.ts. ──
   const warmupDone = !!(plan.warmup && state.skillReps?.[scaleRepId(plan.ghostKey)]);
   const chainDone = !!(plan.chainDrill && state.skillReps?.[drillRepId(plan.chainDrill.id)]);
-  const slotDone: Partial<Record<SlotKey, boolean>> = { warmup: warmupDone, chain: chainDone };
-  const nowSlot: SlotKey = currentSlot(slotDone);
+  // V5 session-guidance: the piece slot joins the rep model. "I worked on it"
+  // writes a piece rep; its presence marks the slot done so NOW can advance past
+  // it (before this the marker got permanently stuck on the piece).
+  const pieceRep = piece ? state.skillReps?.[pieceRepId(piece.id)] : undefined;
+  const pieceDone = !!pieceRep;
+  const slotDone: Partial<Record<SlotKey, boolean>> = {
+    warmup: warmupDone,
+    // An empty piece slot has nothing to complete, so it never blocks NOW.
+    piece: piece ? pieceDone : true,
+    chain: chainDone,
+  };
+  // The slots actually present tonight, in order, so "Block N of M" + the NOW
+  // marker never count or point at a slot that isn't shown (first-back drops the
+  // chain + ear slots; piece + free always render).
+  const present: SlotKey[] = [
+    ...(plan.warmup ? (["warmup"] as SlotKey[]) : []),
+    "piece",
+    ...(plan.chainDrill ? (["chain"] as SlotKey[]) : []),
+    ...(earRounds.length > 0 ? (["ear"] as SlotKey[]) : []),
+    "free",
+  ];
+  const progress = slotProgress(present, slotDone);
+  const nowSlot: SlotKey = progress.now;
   const slotStatus = (key: SlotKey): "done" | "active" | null =>
     slotDone[key] ? "done" : null;
 
@@ -161,7 +186,7 @@ export function PracticeStand() {
     const newLevel = next.level ?? 1;
     const nodesLearned = Object.values(next.skillProgress ?? {}).filter((p) => p?.learnedAt).length - prevNodes;
     const info = levelForXp(next.xp ?? 0);
-    setSessionLine(doneLineFor({
+    const headline = doneLineFor({
       minutes: logBase.minutes,
       ghostKeyName: ghost.name,
       pieceTitle: piece?.title,
@@ -172,7 +197,34 @@ export function PracticeStand() {
       nodesLearned: Math.max(0, nodesLearned),
       xpToNext: info.xpToNextLevel > 0 ? info.xpToNextLevel : undefined,
       nextTitle: titleForLevel(info.level + 1) !== info.title ? titleForLevel(info.level + 1) : undefined,
-    }));
+    });
+    setSessionLine(headline);
+
+    // Capture tonight's real numbers for the closure recap. Per-session signals we
+    // can trust: chain reps + best BPM (from the rep-engine), ear answers, XP.
+    // Warmup/piece/chain "done" reflect the same flags the stand uses all evening.
+    const earTotal = earCorrect.length + earWrong.length;
+    const reps = chainQuality?.attempts ?? 0;
+    const doneAtEnd: Partial<Record<SlotKey, boolean>> = {
+      warmup: warmupDone,
+      piece: pieceDone,
+      chain: reps > 0 || chainDone,
+      ear: earTotal > 0,
+      free: true,
+    };
+    const nextUp = nextToLearn(module?.skillNodes ?? [], next.skillProgress ?? {}, 1)[0];
+    setClosure({
+      headline,
+      blocksCompleted: present.filter((s) => doneAtEnd[s]).length,
+      blocksTotal: present.length,
+      minutes: logBase.minutes,
+      reps,
+      bestBpm: chainQuality?.bpmReached,
+      earRight: earCorrect.length,
+      earTotal,
+      xpEarned,
+      nextTitle: nextUp?.soulTitle ?? nextUp?.title,
+    });
     if (newUnlocks.length > 0) setUnlocksQueue(newUnlocks.map((u) => u.id));
     // Redirect to home cleared; the session line + unlock modal show over
   };
@@ -204,6 +256,11 @@ export function PracticeStand() {
         </div>
         <UnlockQueue queue={unlocksQueue} onClose={() => setUnlocksQueue((q) => q.slice(1))} unlocks={state.unlocks} />
         <LevelUpQueue pending={state.pendingLevelUps} onClose={dismissLevelUp} />
+        <SessionClosureOverlay
+          data={closure}
+          blocked={unlocksQueue.length > 0 || (state.pendingLevelUps?.length ?? 0) > 0}
+          onClose={() => setClosure(null)}
+        />
       </div>
     );
   }
@@ -227,7 +284,8 @@ export function PracticeStand() {
           <aside className="lg:sticky lg:top-20 space-y-4">
             <StatsStrip xp={state.xp ?? 0} streak={state.streak ?? emptyStreak()} />
             <DailyFramingLine />
-            <GoalRail nowSlot={nowSlot} />
+            <GoalRail nowSlot={nowSlot} blockIndex={progress.index} blockTotal={progress.total} elapsedMin={minutes} />
+            <ReviewDueBanner reviewSkills={plan.reviewSkills} />
           </aside>
 
           <div>
@@ -237,7 +295,7 @@ export function PracticeStand() {
             <MentalPracticeCard firstBack={plan.mode === "first-back"} pieceTitle={piece?.title} />
             <div className="mt-5">
               <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} isNow={nowSlot === "warmup"} status={slotStatus("warmup")} />
-              <PieceSlot module={module} piece={piece} printAlways={printing} isNow={nowSlot === "piece"} status={slotStatus("piece")} />
+              <PieceSlot module={module} piece={piece} printAlways={printing} isNow={nowSlot === "piece"} status={piece && pieceDone ? "done" : null} />
               <ChainDrillSlot
                 module={module}
                 drill={plan.chainDrill ?? null}
@@ -255,7 +313,9 @@ export function PracticeStand() {
                 status={slotStatus("ear")}
                 onResultAction={(correct: string[], wrong: string[]) => { setEarCorrect(correct); setEarWrong(wrong); }}
               />
-              <FreeSlot urlInitial={state.freeSlotUrl} journalInitial={journal} onJournalChange={setJournal} reviewSkills={plan.reviewSkills} printAlways={printing} isNow={nowSlot === "free"} status={slotStatus("free")} />
+              <div id="free-play">
+                <FreeSlot urlInitial={state.freeSlotUrl} journalInitial={journal} onJournalChange={setJournal} reviewSkills={plan.reviewSkills} printAlways={printing} isNow={nowSlot === "free"} status={slotStatus("free")} />
+              </div>
             </div>
           </div>
         </div>
@@ -270,6 +330,11 @@ export function PracticeStand() {
       <Horizons ghostKey={plan.ghostKey} warmup={plan.warmup} />
       <UnlockQueue queue={unlocksQueue} onClose={() => setUnlocksQueue((q) => q.slice(1))} unlocks={state.unlocks} />
       <LevelUpQueue pending={state.pendingLevelUps} onClose={dismissLevelUp} />
+      <SessionClosureOverlay
+        data={closure}
+        blocked={unlocksQueue.length > 0 || (state.pendingLevelUps?.length ?? 0) > 0}
+        onClose={() => setClosure(null)}
+      />
     </div>
   );
 }
@@ -299,25 +364,6 @@ function ResumeBanner({ slotLabel, repN }: { slotLabel: string; repN: number }) 
       <span className="text-[color:var(--ink-2)]">
         Resume: <span className="font-medium text-[color:var(--ink)]">{slotLabel}</span>, rep {repN}
       </span>
-    </div>
-  );
-}
-
-/** A quiet "your goal right now" line in the desktop info rail — names the NOW
- *  slot so the rail reinforces where the stand is pointing the user. */
-function GoalRail({ nowSlot }: { nowSlot: SlotKey }) {
-  const LABELS: Record<SlotKey, string> = {
-    warmup: "Warm up",
-    piece: "Work your piece",
-    chain: "Run the chain drill",
-    ear: "Train your ear",
-    free: "Free play",
-  };
-  return (
-    <div className="hidden lg:block rounded-lg border border-[color:var(--rule)] bg-[color:var(--bg-surface-2)] px-4 py-3">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-1">Your goal</p>
-      <p className="font-serif text-base text-[color:var(--ink)]">{LABELS[nowSlot]}</p>
-      <p className="text-xs text-[color:var(--ink-3)] mt-1">Start here, then flow down the stand.</p>
     </div>
   );
 }

@@ -38,6 +38,28 @@ const RAW_CHAIN_DRILLS: ChainDrill[] = [
     interleavable: true,
   },
   {
+    // B1 fix — First Improvisation is reachable with only C major learned, so it
+    // must stay inside C. A one-chord C vamp (held C chord + C pentatonic noodle)
+    // needs no F/G/Am the learner has not been taught yet. Pure expression: no
+    // tempo ladder (a metronome target on "make it up" is musically wrong).
+    id: "p1-first-improv",
+    instrument: "piano",
+    phase: 1,
+    name: "first improv, one chord",
+    soulName: "Make It Up",
+    minutes: 4,
+    ghostKey: "C",
+    pillar: "expression",
+    steps: [
+      { type: "tone",   durationSec: 30,  instruction: "Left hand: hold a C major chord (C, E, G) and let it ring. That is your whole backing tonight." },
+      { type: "improv", durationSec: 120, instruction: "Right hand: play C, D, E, G, A (the C pentatonic) in any order, slowly. Every one of these five fits over the held C." },
+      { type: "improv", durationSec: 60,  instruction: "Now use space. Hold some notes long, leave gaps of silence, repeat a little 3-note idea." },
+      { type: "improv", durationSec: 30,  instruction: "Land on C whenever you want the phrase to feel home. That is how a musical sentence ends." },
+      { type: "song",   durationSec: 30,  instruction: "Someone Like You (Adele) floats a melody over held chords, exactly what you just did." },
+    ],
+    closingNote: "You made something up and it sounded good. That was you.",
+  },
+  {
     id: "p1-c-tone-chain",
     instrument: "piano",
     phase: 1,
@@ -154,6 +176,9 @@ const RAW_CHAIN_DRILLS: ChainDrill[] = [
     closingNote: "The ear learned something tonight. It won't forget.",
   },
   {
+    // B1 fix — Three Moods is reachable with only C major learned, so the material
+    // stays inside C: a simple C-major line (C D E F G) played three ways. No Am/F/G
+    // chords the learner has not met yet. Pure expression, so no tempo ladder.
     id: "p1-three-moods-lite",
     instrument: "piano",
     phase: 1,
@@ -163,11 +188,11 @@ const RAW_CHAIN_DRILLS: ChainDrill[] = [
     ghostKey: "C",
     pillar: "expression",
     steps: [
-      { type: "progression", durationSec: 30, instruction: "Set up I–vi–IV–V in C (C–Am–F–G), 4 bars." },
-      { type: "moods",       durationSec: 60, instruction: "Play it tender. Soft, close to the keys." },
-      { type: "moods",       durationSec: 60, instruction: "Play it restless. A little forward, a little bright." },
-      { type: "moods",       durationSec: 60, instruction: "Play it resigned. Slow. Step back at the V." },
-      { type: "song",        durationSec: 30, instruction: "Same shape as Let It Be — play its hook once." },
+      { type: "tone",  durationSec: 30, instruction: "Set a simple line in C: play C D E F G, then back down. One hand, all white keys." },
+      { type: "moods", durationSec: 60, instruction: "Play it tender. Soft and slow, let each note ring into the next." },
+      { type: "moods", durationSec: 60, instruction: "Play it restless. A little faster, a little brighter, pushing forward." },
+      { type: "moods", durationSec: 60, instruction: "Play it resigned. Slow and heavy. Leave gaps and let it sag." },
+      { type: "song",  durationSec: 30, instruction: "Ode to Joy opens with just these notes. Play its first line your favourite of the three ways." },
     ],
     closingNote: "Same notes. Different worlds. That was you.",
   },
