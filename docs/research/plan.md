@@ -1,5 +1,3 @@
-All four reports are accurate against the live code. One important note I caught: `chainDrills.ts` uses `type: "improv"` on `ChainStep` (which is valid — `ChainStepType` includes `"improv"`), but Report 1's bug #7 about `pillar: "improv"` is a separate claim about the `pillar` field. Both the `weekId` bug and the depth-4 cap are confirmed exactly as described. I have enough to write the definitive plan.
-
 # Piano → Multi-Instrument Practice Studio — Master Build Plan
 
 **Status:** Execution-ready. Lead architect synthesis of 4 research reports, verified against live code (`~/Projects/piano`, commit-state 2026-06-07).

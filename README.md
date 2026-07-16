@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Piano — multi-instrument practice studio
 
-## Getting Started
+A nightly practice app for learning **piano and electric guitar**. Every time you open it, it tells you exactly what to do next and keeps a sharp record of what you've learned — so practice never stalls on "wait, what should I do?" or "what was that one thing I forgot?"
 
-First, run the development server:
+## The soul
+
+It deletes two sentences from practice: *"wait, what should I do?"* and *"shit, I forgot that one thing — what was it again?"*
+Inside a session, the stand is tonight's plan — what to do now, what's next, when you're done. On the roadmap, Your Path (the skill tree) shows what you've learned, the one thing to learn next, and the way back to anything you forgot. Fundamentals-first, plain language, open to anyone — every musical term stays tappable, so a total beginner can follow any lesson cold. Honest numbers, real teaching, exact next actions — nothing else.
+
+## Live
+
+https://music.raeduslabs.com
+
+## Stack
+
+Next.js 16 / React 19 / TypeScript / Tailwind v4 / Tone.js (audio) / VexFlow (notation) / svguitar (chord diagrams) / @xyflow/react (skill graph). Client-side, localStorage-first with optional signed-in cloud sync.
+
+## Develop
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Gate before any commit:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx tsc --noEmit && npm run test:run && npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Architecture
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [CLAUDE.md](./CLAUDE.md) for the product soul, architecture, and workflow, and [`docs/`](./docs/) for the build history and research reports.
