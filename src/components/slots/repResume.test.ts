@@ -4,8 +4,10 @@ import {
   rehydrateRepState,
   hasResumableWork,
   currentSlot,
+  slotProgress,
   repSessionKey,
   type RepSessionSnapshot,
+  type SlotKey,
 } from "./repResume";
 import { initRepEngine, type RepEngineConfig, type RepEngineState } from "@/lib/repEngine";
 
@@ -143,5 +145,37 @@ describe("currentSlot", () => {
   });
   it("treats missing flags as not-done", () => {
     expect(currentSlot({ warmup: true, chain: true })).toBe("piece");
+  });
+});
+
+describe("slotProgress, Block N of M over the present slots", () => {
+  const full: SlotKey[] = ["warmup", "piece", "chain", "ear", "free"];
+
+  it("points NOW at the first not-done present slot", () => {
+    const p = slotProgress(full, { warmup: true });
+    expect(p.now).toBe("piece");
+    expect(p.index).toBe(2);
+    expect(p.total).toBe(5);
+  });
+
+  it("piece completion advances NOW to the next slot", () => {
+    expect(slotProgress(full, { warmup: true }).now).toBe("piece");
+    const after = slotProgress(full, { warmup: true, piece: true });
+    expect(after.now).toBe("chain");
+    expect(after.index).toBe(3);
+  });
+
+  it("counts only present slots (first-back drops chain + ear)", () => {
+    const present: SlotKey[] = ["warmup", "piece", "free"];
+    const p = slotProgress(present, { warmup: true, piece: true });
+    expect(p.total).toBe(3);
+    expect(p.now).toBe("free");
+    expect(p.index).toBe(3);
+  });
+
+  it("lands on the last present slot when everything is done", () => {
+    const p = slotProgress(full, { warmup: true, piece: true, chain: true, ear: true, free: true });
+    expect(p.now).toBe("free");
+    expect(p.index).toBe(5);
   });
 });

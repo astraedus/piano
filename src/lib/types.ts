@@ -393,3 +393,6 @@ export function progressionRepId(keyId: KeyId, name: string): string {
 export function drillRepId(drillId: string): string {
   return `drill:${drillId}`;
 }
+export function pieceRepId(pieceId: string): string {
+  return `piece:${pieceId}`;
+}

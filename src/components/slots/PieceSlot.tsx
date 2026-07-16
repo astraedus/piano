@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Slot } from "../Slot";
 import type { Piece, KeyId } from "@/lib/types";
+import { pieceRepId } from "@/lib/types";
 import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META } from "@/lib/music";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { useAppState } from "@/hooks/useAppState";
@@ -10,8 +11,11 @@ import { useAppState } from "@/hooks/useAppState";
 // renders no instrument visual today — it's a form/recording surface — so it does
 // not consume module.InstrumentVisual; passing it keeps the slot API uniform.
 export function PieceSlot({ module: _module, piece, printAlways, isNow, status }: { module?: InstrumentModule; piece?: Piece; printAlways?: boolean; isNow?: boolean; status?: "done" | "active" | null }) {
-  const { patch, state } = useAppState();
+  const { patch, state, bumpRep } = useAppState();
   const [editing, setEditing] = useState(false);
+  // Persistent "I worked on it" counter for this piece, mirroring the warmup /
+  // chain rep model. Its presence drives the slot's done pill + advances NOW.
+  const rep = piece ? state.skillReps?.[pieceRepId(piece.id)] : undefined;
   const [title, setTitle] = useState(piece?.title ?? "");
   const [composer, setComposer] = useState(piece?.composer ?? "");
   const [section, setSection] = useState(piece?.section ?? "");
@@ -51,6 +55,24 @@ export function PieceSlot({ module: _module, piece, printAlways, isNow, status }
             <span className="font-serif text-lg text-[color:var(--ink)]">{piece.title}</span>
             {piece.composer && <span className="text-[color:var(--ink-3)]"> · {piece.composer}</span>}
             {piece.section && <span className="text-[color:var(--ink-3)]"> · {piece.section}</span>}
+          </div>
+          <p className="text-sm text-[color:var(--ink-2)] leading-relaxed">
+            {pieceGuidance(piece.section)}
+          </p>
+          <div className="flex items-center gap-3 no-print">
+            <button
+              type="button"
+              data-testid="piece-worked-on"
+              onClick={() => bumpRep(pieceRepId(piece.id))}
+              className="chip chip-accent text-xs px-3 py-1"
+            >
+              I worked on it
+            </button>
+            {rep && (
+              <span data-testid="piece-reps" className="text-xs text-[color:var(--ink-3)] italic">
+                {rep.count} {rep.count === 1 ? "pass" : "passes"} logged
+              </span>
+            )}
           </div>
           {piece.notes && (
             <p className="text-[color:var(--ink-2)] whitespace-pre-wrap leading-relaxed">{piece.notes}</p>
@@ -120,6 +142,13 @@ export function PieceSlot({ module: _module, piece, printAlways, isNow, status }
       )}
     </Slot>
   );
+}
+
+/** Plain-language "what does working the piece mean" line. Names the section when
+ *  the user set one, so the instruction is concrete ("play Bars 9-16 slowly ..."). */
+function pieceGuidance(section?: string): string {
+  const what = section && section.trim() ? section.trim() : "the rough spots";
+  return `Work the piece: play ${what} slowly until they feel smooth. A few passes counts.`;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

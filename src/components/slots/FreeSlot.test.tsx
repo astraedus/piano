@@ -52,3 +52,34 @@ describe("FreeSlot — R7 spaced-retrieval review prompts", () => {
     expect(screen.queryByTestId("free-reviews")).toBeNull();
   });
 });
+
+describe("FreeSlot, review triage cap + no-shame framing (R7)", () => {
+  const many = (count: number): SkillNode[] =>
+    Array.from({ length: count }, (_, i) => ({ ...reviewNode, id: `n${i}`, title: `Skill ${i}` }));
+
+  it("shows at most 3 review cards by default with an 'and N more' expander", () => {
+    renderFree({ reviewSkills: many(6), expanded: true });
+    expect(screen.getByTestId("free-review-n0")).toBeTruthy();
+    expect(screen.getByTestId("free-review-n2")).toBeTruthy();
+    expect(screen.queryByTestId("free-review-n3")).toBeNull();
+    expect(screen.getByTestId("free-reviews-more").textContent).toContain("and 3 more");
+  });
+
+  it("expands to reveal the rest when 'and N more' is clicked", () => {
+    renderFree({ reviewSkills: many(6), expanded: true });
+    fireEvent.click(screen.getByTestId("free-reviews-more"));
+    expect(screen.getByTestId("free-review-n5")).toBeTruthy();
+    expect(screen.queryByTestId("free-reviews-more")).toBeNull();
+  });
+
+  it("shows the no-shame line only when the backlog is large (>5)", () => {
+    renderFree({ reviewSkills: many(6), expanded: true });
+    expect(screen.getByTestId("free-reviews-noshame")).toBeTruthy();
+  });
+
+  it("no no-shame line and no expander for a small backlog", () => {
+    renderFree({ reviewSkills: many(3), expanded: true });
+    expect(screen.queryByTestId("free-reviews-noshame")).toBeNull();
+    expect(screen.queryByTestId("free-reviews-more")).toBeNull();
+  });
+});

@@ -32,8 +32,17 @@ export function FreeSlot({
   // moment it's marked done (state advances the interval; the plan won't re-surface
   // it until next session anyway, but this gives instant feedback).
   const [reviewedIds, setReviewedIds] = useState<string[]>([]);
+  // Triage: a returning user with a big backlog should meet a short, doable list,
+  // not a wall of cards. Show the most-overdue few (reviewSkills arrives ordered
+  // most-overdue-first) and tuck the rest behind an expander.
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const REVIEW_CAP = 3;
 
   const dueReviews = (reviewSkills ?? []).filter((n) => !reviewedIds.includes(n.id));
+  const visibleReviews = showAllReviews ? dueReviews : dueReviews.slice(0, REVIEW_CAP);
+  const hiddenReviewCount = dueReviews.length - visibleReviews.length;
+  // Only reassure when the backlog is genuinely large (never guilt, just permission).
+  const manyOverdue = (reviewSkills ?? []).length > 5;
 
   const handleReviewDone = (nodeId: string) => {
     reviewSkill(nodeId);
@@ -60,8 +69,13 @@ export function FreeSlot({
             <p className="text-xs text-[color:var(--ink-3)] italic">
               Skills you learned earlier, due for a quick refresh. Play one, then mark it done.
             </p>
+            {manyOverdue && (
+              <p data-testid="free-reviews-noshame" className="text-xs text-[color:var(--ink-3)] italic">
+                Been away? We&apos;ll bring things back a few at a time.
+              </p>
+            )}
             <ul className="space-y-2">
-              {dueReviews.map((node) => (
+              {visibleReviews.map((node) => (
                 <li
                   key={node.id}
                   data-testid={`free-review-${node.id}`}
@@ -85,6 +99,16 @@ export function FreeSlot({
                 </li>
               ))}
             </ul>
+            {hiddenReviewCount > 0 && (
+              <button
+                type="button"
+                data-testid="free-reviews-more"
+                onClick={() => setShowAllReviews(true)}
+                className="text-xs text-[color:var(--ink-3)] underline decoration-1 underline-offset-2 hover:text-[color:var(--ink-2)]"
+              >
+                and {hiddenReviewCount} more
+              </button>
+            )}
           </div>
         )}
         <ul className="text-[color:var(--ink-2)] leading-relaxed space-y-1 font-serif text-base">

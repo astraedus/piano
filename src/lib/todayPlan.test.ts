@@ -69,6 +69,19 @@ describe("computeTodayPlan — V3 surfacing", () => {
     expect(plan.reviewSkills).toEqual([]);
   });
 
+  it("orders due reviews most-overdue-first (R7 triage)", () => {
+    const s = stateWith({
+      phase: 1,
+      skillReview: {
+        "p-key-G": { dueAt: "2026-06-05T00:00:00.000Z", intervalIndex: 1 }, // less overdue
+        "p-key-C": { dueAt: "2026-06-01T00:00:00.000Z", intervalIndex: 0 }, // most overdue
+      },
+    });
+    const ids = computeTodayPlan(s, DAY).reviewSkills.map((n) => n.id);
+    expect(ids[0]).toBe("p-key-C");
+    expect(ids).toContain("p-key-G");
+  });
+
   it("the light modes (first-back / just-play) have no chain drill or interleave", () => {
     const plan = computeTodayPlan(stateWith({ phase: 1 }), DAY, "just-play");
     expect(plan.chainDrill).toBeNull();

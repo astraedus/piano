@@ -126,8 +126,13 @@ export function computeTodayPlan(state: AppState, date: Date, overrideMode?: Tod
 
   // R7 — learned nodes due for spaced review today, resolved to full SkillNodes.
   const allNodes = module?.skillNodes ?? [];
-  const dueIds = new Set(dueReviews(state.skillReview ?? {}, date.toISOString()));
-  const reviewSkills = allNodes.filter((n) => dueIds.has(n.id));
+  // dueReviews returns ids most-overdue-first; preserve that order so the top of
+  // the queue always leads with the skill that has waited longest, and the Free
+  // Play triage cap keeps the most-overdue three.
+  const nodeById = new Map(allNodes.map((n) => [n.id, n]));
+  const reviewSkills = dueReviews(state.skillReview ?? {}, date.toISOString())
+    .map((id) => nodeById.get(id))
+    .filter((n): n is SkillNode => !!n);
 
   // North star nudge — once per month, surface for 48h
   let northStarNudge: string | null = null;
