@@ -230,6 +230,10 @@ function SkillGraphInner() {
     : undefined;
 
   const empty = allNodes.length === 0;
+  // All-done: every node in the current (filtered) tree is learned. A modest,
+  // honest banner instead of a silently all-green graph.
+  const allLearned = !empty && flowNodes.length > 0
+    && flowNodes.every((n) => statusById.get(n.id) === "learned");
 
   return (
     <div className="space-y-4">
@@ -240,6 +244,15 @@ function SkillGraphInner() {
         onSelectPathAction={selectPath}
         onToggleTheoryAction={() => setTheoryEnabled((t) => !t)}
       />
+      {allLearned && (
+        <div
+          data-testid="sg-all-done"
+          className="rounded-lg border border-[color:var(--rule)] bg-[color:var(--surface)] px-4 py-3 text-sm"
+        >
+          <span className="font-medium text-[color:var(--ink)]">Every skill in this tree is learned.</span>{" "}
+          <span className="text-[color:var(--ink-2)]">Reviews keep it alive — each one comes back for a light pass before it fades.</span>
+        </div>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div

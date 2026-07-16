@@ -1,22 +1,56 @@
-import type { AppState, ChainDrill, SkillNode } from "./types";
+import type { AppState, ChainDrill, SkillNode, SkillProgress } from "./types";
 import { ghostKeyFor } from "./ghostKey";
 import { getModuleSync } from "./instrumentRegistry";
 import { resolveStatus } from "./skillTree";
+
+/**
+ * Filter a drill pool to those whose linked skill node (if any) is NOT locked.
+ *
+ * "What's next" must agree with the skill DAG: the tree can show a node as LOCKED
+ * (prereqs unmet) while this picker would otherwise serve its drill tonight. A
+ * drill's linked node is the first skill node whose `chainDrillId` matches it;
+ * drills with no linked node have nothing to gate on and always pass. Pure.
+ */
+export function filterDrillsByNodeUnlocked(
+  drills: ChainDrill[],
+  nodes: SkillNode[],
+  progress: Record<string, SkillProgress>,
+): ChainDrill[] {
+  const status = resolveStatus(nodes, progress);
+  const nodeByDrill = new Map<string, SkillNode>();
+  for (const n of nodes) {
+    if (n.chainDrillId && !nodeByDrill.has(n.chainDrillId)) nodeByDrill.set(n.chainDrillId, n);
+  }
+  return drills.filter((d) => {
+    const node = nodeByDrill.get(d.id);
+    if (!node) return true; // no linked node → nothing to gate on
+    return status.get(node.id) !== "locked";
+  });
+}
 
 // Deterministic pick per (phase, ghost, dayOfYear) so the same day yields the same drill.
 // Drills come from the active instrument's module (guarded — empty if unregistered).
 export function pickChainDrill(state: AppState, date: Date): ChainDrill | null {
   const phase = state.phase;
   const ghost = ghostKeyFor(state, date);
-  const drills = getModuleSync(state.instrument)?.chainDrills ?? [];
+  const module = getModuleSync(state.instrument);
+  const drills = module?.chainDrills ?? [];
+  const nodes = module?.skillNodes ?? [];
   const pool = drills.filter((d) => d.phase === phase);
   if (pool.length === 0) return null;
 
+  // DAG consistency: never serve a drill whose linked skill node is LOCKED, so
+  // "tonight's drill" can't contradict a node the tree shows as locked. If the
+  // filter empties the pool (nothing unlocked yet — e.g. a fresh phase), fall
+  // back to the unfiltered pool rather than returning null.
+  const unlockedPool = filterDrillsByNodeUnlocked(pool, nodes, state.skillProgress ?? {});
+  const usable = unlockedPool.length > 0 ? unlockedPool : pool;
+
   // Soft-prefer drills matching ghost key; exclude last 5.
   const recent = new Set(state.recentDrillIds ?? []);
-  const preferred = pool.filter((d) => d.ghostKey === ghost && !recent.has(d.id));
-  const fallback = pool.filter((d) => !recent.has(d.id));
-  const choices = preferred.length > 0 ? preferred : (fallback.length > 0 ? fallback : pool);
+  const preferred = usable.filter((d) => d.ghostKey === ghost && !recent.has(d.id));
+  const fallback = usable.filter((d) => !recent.has(d.id));
+  const choices = preferred.length > 0 ? preferred : (fallback.length > 0 ? fallback : usable);
 
   // Phase-stable seed (B6): folding `phase` into the seed shifts the index space
   // per phase, so advancing phase mid-year doesn't land on a recently-played

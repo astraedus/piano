@@ -2,10 +2,12 @@ import { describe, it, expect } from "vitest";
 import {
   pickChainDrill,
   buildInterleavePlan,
+  filterDrillsByNodeUnlocked,
   INTERLEAVE_REPS_PER_SKILL,
 } from "./chainDrillPicker";
 import { defaultState } from "./storage";
-import type { AppState, Phase, SkillProgress } from "./types";
+import type { AppState, ChainDrill, Phase, SkillNode, SkillProgress } from "./types";
+import { registerInstrumentModule, type InstrumentModule } from "./instrumentRegistry";
 import "./piano/module"; // self-registers piano so chainDrills resolve
 
 function stateWith(partial: Partial<AppState> = {}): AppState {
@@ -140,5 +142,100 @@ describe("buildInterleavePlan (R4 interleaved rep sequence)", () => {
     const plan = buildInterleavePlan(s, DAY, primary);
     expect(plan).not.toBeNull();
     expect(plan!.drills[0].id).toBe("p1-g-major-chain");
+  });
+});
+
+// ── DAG consistency: never serve a drill whose linked node is locked ──────────
+
+const drill = (id: string, over: Partial<ChainDrill> = {}): ChainDrill => ({
+  id,
+  instrument: "guitar",
+  phase: 1,
+  name: id,
+  minutes: 5,
+  ghostKey: "C",
+  pillar: "technique",
+  steps: [],
+  closingNote: "",
+  ...over,
+});
+
+const node = (id: string, chainDrillId: string, prereqs: string[] = []): SkillNode => ({
+  id,
+  instrument: "guitar",
+  title: id,
+  tier: 1,
+  category: "technique",
+  prereqs,
+  masteryDrill: "",
+  unlock: "",
+  chainDrillId,
+});
+
+describe("filterDrillsByNodeUnlocked (DAG lock filter)", () => {
+  it("keeps drills whose linked node is not locked (available)", () => {
+    const nodes = [node("n-a", "d-a"), node("n-b", "d-b")];
+    const out = filterDrillsByNodeUnlocked([drill("d-a"), drill("d-b")], nodes, {});
+    expect(out.map((d) => d.id).sort()).toEqual(["d-a", "d-b"]);
+  });
+
+  it("drops a drill whose linked node is LOCKED (prereq unmet)", () => {
+    const nodes = [node("n-a", "d-a"), node("n-b", "d-b", ["ghost"])]; // n-b locked
+    const out = filterDrillsByNodeUnlocked([drill("d-a"), drill("d-b")], nodes, {});
+    expect(out.map((d) => d.id)).toEqual(["d-a"]);
+  });
+
+  it("un-drops the drill once its node's prereqs are learned", () => {
+    const nodes = [node("n-a", "d-a"), node("n-b", "d-b", ["n-a"])];
+    const progress: Record<string, SkillProgress> = {
+      "n-a": { status: "learned", reps: 3, learnedAt: "2026-01-01" },
+    };
+    const out = filterDrillsByNodeUnlocked([drill("d-a"), drill("d-b")], nodes, progress);
+    expect(out.map((d) => d.id).sort()).toEqual(["d-a", "d-b"]);
+  });
+
+  it("passes drills with no linked node (nothing to gate on)", () => {
+    expect(filterDrillsByNodeUnlocked([drill("d-x")], [], {}).map((d) => d.id)).toEqual(["d-x"]);
+  });
+});
+
+// A minimal guitar module so we can force the "every drill locked" fallback path.
+const minimalGuitarModule: InstrumentModule = {
+  id: "guitar",
+  displayName: "Electric Guitar",
+  accentVar: "guitar",
+  chainDrills: [],
+  warmups: {},
+  warmupRotation: { phase1: [], phase2Plus: [] },
+  unlockLibrary: [],
+  skillNodes: [],
+  ghostRotation: { 1: ["C"], 2: ["C"], 3: ["C"], 4: ["C"], 5: ["C"] },
+  focusKind: "chord",
+  focusLabel: (id) => id,
+  progressMapKind: "fretboard",
+  InstrumentVisual: () => null,
+  NotationVisual: () => null,
+};
+
+describe("pickChainDrill — DAG lock filter + fallback", () => {
+  it("excludes a locked-node drill in favor of an unlocked one", () => {
+    registerInstrumentModule({
+      ...minimalGuitarModule,
+      chainDrills: [drill("d-open"), drill("d-gated")],
+      skillNodes: [node("n-open", "d-open"), node("n-gated", "d-gated", ["ghost"])],
+    });
+    const picked = pickChainDrill(stateWith({ phase: 1, instrument: "guitar" }), DAY);
+    expect(picked?.id).toBe("d-open");
+  });
+
+  it("falls back to the full pool when EVERY drill's node is locked", () => {
+    registerInstrumentModule({
+      ...minimalGuitarModule,
+      chainDrills: [drill("d-locked")],
+      skillNodes: [node("n-locked", "d-locked", ["ghost"])],
+    });
+    // Filtering empties the pool → the picker must still return the (locked) drill.
+    const picked = pickChainDrill(stateWith({ phase: 1, instrument: "guitar" }), DAY);
+    expect(picked?.id).toBe("d-locked");
   });
 });
