@@ -52,6 +52,12 @@ export const UNLOCK_LIBRARY: UnlockCard[] = [
     tryLine: "Try Happy Birthday. Then Ode to Joy. You can do it.",
   },
   {
+    id: "u-p2-pedal",
+    phase: 2,
+    title: "Can pedal through a chord progression so it flows smooth.",
+    tryLine: "Try it: loop Am, F, C, G and flick the pedal on every change. Then play River Flows in You.",
+  },
+  {
     id: "u-p3-ii-v-i",
     phase: 3,
     title: "You can read and play a ii–V–I.",

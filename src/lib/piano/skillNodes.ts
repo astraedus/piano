@@ -181,6 +181,24 @@ export const PIANO_NODES: SkillNode[] = [
     keepTitle: "Three Moods",
     pathTags: ["play-with-soul", "go-deep"],
   },
+  {
+    id: "p-t1-rhythm",
+    instrument: "piano",
+    title: "Rhythm Foundation",
+    tier: 1,
+    category: "rhythm",
+    // Batch 3a — the single most universal absent skill (Trinity's aural test opens
+    // with "clap the pulse" at every grade). Prereq is posture only, so rhythm is
+    // reachable in parallel with the first keys. pathTags omitted = shown on every
+    // path (a soul-critical fundamental).
+    prereqs: ["p-t0-posture"],
+    masteryDrill: "Lock a simple pattern to the metronome for a full minute at 80 BPM, counting quarter notes and eighth note subdivisions out loud the whole time.",
+    unlock: "Can hold a steady pulse, count quarter notes and eighth note subdivisions out loud, and lock a simple pattern to the metronome without drifting.",
+    chainDrillId: "p1-rhythm-foundation",
+    fluencyTest: { prompt: "Tap the steady pulse with one hand while counting the eighth note subdivision, '1 and 2 and 3 and 4 and,' out loud at the same time, without losing the beat or slowing down." },
+    soulTitle: "Lock the Beat",
+    keepTitle: "Rhythm Foundation",
+  },
 
   // ───── Tier 2 — more keys, the pop formula, transcribing ─────
   {
@@ -204,8 +222,10 @@ export const PIANO_NODES: SkillNode[] = [
     tier: 2,
     category: "chords",
     // #2 — gated on the Am→F transition clearing the fluency threshold, so the
-    // song unlock fires only once the hard change is actually in tempo.
-    prereqs: ["p-t2-chord-under-melody", "p-trans-am-F"],
+    // song unlock fires only once the hard change is actually in tempo. Batch 3a:
+    // also gated on p-t2-inversions — the lesson's "only one finger moves from Am
+    // to F" claim is only literally true once F is voiced in first inversion.
+    prereqs: ["p-t2-chord-under-melody", "p-trans-am-F", "p-t2-inversions"],
     masteryDrill: "Am–F–C–G as block chords, then a melody over the loop.",
     unlock: "You can play half of pop music.",
     chainDrillId: "p2-am-pop-formula",
@@ -275,6 +295,58 @@ export const PIANO_NODES: SkillNode[] = [
     keepTitle: "E minor",
     pathTags: ["play-with-soul", "go-deep"],
   },
+  {
+    id: "p-t2-pedal",
+    instrument: "piano",
+    title: "The Sustain Pedal",
+    tier: 2,
+    category: "technique",
+    // Batch 3a — pedal timing assumes a hand that already holds a chord steady
+    // (chord-under-melody). pathTags omitted = every path: it is a physical
+    // fundamental, an expression lever, AND a formal Trinity Grade 3 requirement.
+    prereqs: ["p-t2-chord-under-melody"],
+    masteryDrill: "Loop Am, F, C, G with the pedal flicking up and down exactly on every chord change, so the sound never gaps and never blurs.",
+    unlock: "Can pedal through a chord progression so it flows smooth, with no gaps and no muddy overlap between chords.",
+    chainDrillId: "p2-sustain-pedal",
+    unlockCardId: "u-p2-pedal",
+    fluencyTest: { prompt: "Play the Am to F to C to G loop with the pedal flicking cleanly on every change while looking away from your hands." },
+    soulTitle: "Smooth Every Change",
+    keepTitle: "The Sustain Pedal",
+  },
+  {
+    id: "p-t2-inversions",
+    instrument: "piano",
+    title: "Chord Inversions",
+    tier: 2,
+    category: "chords",
+    // Batch 3a — makes the Pop Formula's "only one finger moves from Am to F"
+    // promise literally true (F in first inversion). Gates p-t2-pop-formula.
+    // pathTags omitted = every path (its neighbours are all universal).
+    prereqs: ["p-key-C", "p-key-am"],
+    masteryDrill: "Loop Am to F using F's first inversion (A, C, F) so only your top finger moves, then use the same nearest inversion instinct to go from F to C.",
+    unlock: "Can move Am to F with barely a finger of motion, and reach for the nearest inversion instead of jumping to root position on any familiar chord.",
+    chainDrillId: "p-t2-inversions-drill",
+    fluencyTest: { prompt: "Play Am to F using its first inversion, then F to C using whichever shape sits closest, three times each without hunting for the next chord." },
+    soulTitle: "The Nearest Chord",
+    keepTitle: "Chord Inversions",
+  },
+  {
+    id: "p-t2-lh-patterns",
+    instrument: "piano",
+    title: "Left-Hand Accompaniment Patterns",
+    tier: 2,
+    category: "technique",
+    // Batch 3a — the direct next step after holding one static chord: teach that
+    // the held chord can MOVE. Fixes the month-3-6 stiffness plateau that hits
+    // every path, so pathTags omitted = shown everywhere.
+    prereqs: ["p-t2-chord-under-melody"],
+    masteryDrill: "Loop C, F, G, C and switch left-hand patterns (broken chord, root-fifth, rolling arpeggio, octave bass) under each chord without losing the pulse.",
+    unlock: "Can move the left hand through four different accompaniment patterns under a chord progression instead of freezing on one block chord.",
+    chainDrillId: "p2-lh-patterns",
+    fluencyTest: { prompt: "Loop C to F to G to C using a left-hand pattern of your choice while singing or humming the melody out loud." },
+    soulTitle: "The Left Hand Wakes Up",
+    keepTitle: "Left-Hand Accompaniment Patterns",
+  },
 
   // ───── Tier 3 — lead-sheet, jazz, expression ─────
   {
@@ -343,7 +415,9 @@ export const PIANO_NODES: SkillNode[] = [
     title: "12-Bar Blues",
     tier: 3,
     category: "rhythm",
-    prereqs: ["p-t2-4-bar-improv", "p-key-C"],
+    // Batch 3a: +p-t1-rhythm — swing is a subdivision feel (uneven eighths), so it
+    // assumes straight quarter/eighth counting is solid first. Deep node, no over-gate.
+    prereqs: ["p-t2-4-bar-improv", "p-key-C", "p-t1-rhythm"],
     masteryDrill: "12-bar blues in C, LH roots, RH C minor pentatonic + blue note, swung.",
     unlock: "Play blues without permission.",
     chainDrillId: "p3-blues-starter",
@@ -363,7 +437,9 @@ export const PIANO_NODES: SkillNode[] = [
     title: "Am → F, in time",
     tier: 2,
     category: "chords",
-    prereqs: ["p-key-C", "p-key-am"],
+    // Batch 3a: +p-t1-rhythm — the counter is changes-per-minute, which is only
+    // honest once the learner can hold a steady internal pulse to count against.
+    prereqs: ["p-key-C", "p-key-am", "p-t1-rhythm"],
     masteryDrill: "One-minute changes Am↔F. Count clean changes. Target 30/min.",
     unlock: "Change between Am and F in tempo — the last reps before the song.",
     chainDrillId: "p-trans-am-F-drill",

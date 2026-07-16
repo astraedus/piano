@@ -78,6 +78,33 @@ describe("GLOSSARY integrity", () => {
   });
 });
 
+// Batch 3a — the glossary is a lookup space, so every term string (id / title /
+// alias) must resolve to exactly ONE entry. This locks the class of bug the batch-3a
+// fact-check caught: two writers each proposing an "octave" (and a "gain") entry,
+// which would silently shadow each other via lookupTerm's first-match resolution.
+describe("glossary resolution is unambiguous (no shadowed terms)", () => {
+  it("no term string (id, title, or alias) is claimed by more than one entry", () => {
+    const owners = new Map<string, Set<string>>();
+    for (const e of GLOSSARY) {
+      for (const s of [e.id, e.title, ...e.aliases]) {
+        const k = s.toLowerCase().trim();
+        if (!owners.has(k)) owners.set(k, new Set());
+        owners.get(k)!.add(e.id);
+      }
+    }
+    const collisions = [...owners.entries()]
+      .filter(([, ids]) => ids.size > 1)
+      .map(([term, ids]) => `"${term}" claimed by ${[...ids].join(", ")}`);
+    expect(collisions).toEqual([]);
+  });
+
+  it("deduped batch-3a terms (octave, gain) exist as exactly one entry each", () => {
+    for (const id of ["octave", "gain"]) {
+      expect(GLOSSARY.filter((e) => e.id === id).length, `"${id}" appears exactly once`).toBe(1);
+    }
+  });
+});
+
 describe("lookupTerm", () => {
   it("resolves by id, title, and alias (case-insensitive)", () => {
     const pc = lookupTerm("power-chord");

@@ -97,4 +97,14 @@ describe("PIANO_NODES form a coherent DAG", () => {
       if (n.chainDrillId) expect(drillIds.has(n.chainDrillId)).toBe(true);
     }
   });
+
+  // Batch 3a — mirror the guitar module's guard (guitar had it, piano did not). A
+  // drill whose ghostKey is not in the rotation would silently never surface as the
+  // key-of-the-week; caught the class of the mini-barre ghostKey miss.
+  it("every drill ghostKey is one used in the ghost rotation", () => {
+    const rotationKeys = new Set(Object.values(pianoModule.ghostRotation).flat());
+    for (const d of CHAIN_DRILLS) {
+      expect(rotationKeys.has(d.ghostKey), `${d.id} ghostKey ${d.ghostKey} not in rotation`).toBe(true);
+    }
+  });
 });

@@ -394,8 +394,8 @@ export const PIANO_LESSONS: Record<string, NodeLesson> = {
     "goodWhen": "You can loop Am-F-C-G four counts per chord at 80bpm without stopping to find keys, and play a few right-hand notes over the top.",
     "watchOut": "Most beginners pause and hunt for the next chord, breaking the loop. Fix it by practicing just the two HARDEST changes back and forth (often G back to Am) until that jump is automatic, then drop it into the full loop.",
     "song": {
-      "name": "Africa (Toto)",
-      "note": "Its chorus loops exactly these four chords, Am-F-C-G. Once the loop is steady, you can play along with the record."
+      "name": "Save Tonight (Eagle-Eye Cherry)",
+      "note": "The whole song loops exactly these four chords, Am, F, C, G, from the first bar to the last. Once the loop is steady, you can play along with the record start to finish."
     }
   },
 
@@ -689,6 +689,147 @@ export const PIANO_LESSONS: Record<string, NodeLesson> = {
     "song": {
       "name": "Hound Dog (Elvis Presley)",
       "note": "A straight-up 12-bar blues. The moment you have the 12-bar form and the pentatonic, you can jam over songs exactly like this all night."
+    }
+  },
+
+  // ── Batch 3a — missing fundamentals ───────────────────────────────────────
+  "p-t1-rhythm": {
+    "what": "Every piece of music sits on top of a steady beat called the pulse, like a heartbeat you can tap along to. You lock onto it by counting: '1, 2, 3, 4' for the main beats, and '1 and 2 and 3 and 4 and' when you split each beat in half. This is rhythm, the skeleton every note you ever play hangs on.",
+    "why": "A simple chord played exactly on the beat sounds right, and a beautiful chord played in the wrong spot in time sounds wrong. Locking onto a steady pulse is what makes you sound like you are playing with the music instead of just near it, and every song you will ever learn, from a nursery rhyme to a rock anthem, depends on this one skill first.",
+    "steps": [
+      {
+        "do": "Turn on the app's metronome, set it to a comfortable 60 BPM, and just listen for a while. Don't play a note yet.",
+        "feel": "Let your body find it before your fingers do: nod your head or tap your foot exactly on each click."
+      },
+      {
+        "do": "Keep the metronome running and count out loud on every click, '1, 2, 3, 4, 1, 2, 3, 4,' but say the '1' a little louder and heavier than the rest. That '1' is the downbeat, the strongest beat in the group.",
+        "feel": "The '1' should feel like a small stomp compared to the lighter '2, 3, 4' that follow it."
+      },
+      {
+        "do": "Play one comfortable note, any key you like, exactly on every click for a full minute, still counting the numbers out loud and leaning on beat one.",
+        "feel": "Boring on purpose. A rock solid, unshakeable lock is the entire goal here."
+      },
+      {
+        "do": "Keep playing and counting, but now add an 'and' between each number: '1 and 2 and 3 and 4 and,' one word for every half beat.",
+        "feel": "The 'and' should land exactly halfway between two clicks, not rushed toward the next number."
+      },
+      {
+        "do": "Play a second, different note on every 'and' so your pattern now has two notes for every one click, evenly split.",
+        "feel": "Like a smooth heartbeat that gained a little skip in the middle. Both notes should feel equally spaced."
+      },
+      {
+        "do": "Raise the metronome to 90 BPM and repeat the whole pattern, counting out loud the entire time.",
+        "feel": "If you rush or drag, slow the metronome back down. A slower, locked beat always beats a fast wobble."
+      }
+    ],
+    "goodWhen": "You can hold a steady pulse and count both the quarter note beats and the eighth note subdivision out loud, locked to the metronome without drifting, at more than one tempo.",
+    "watchOut": "The single most common mistake is speeding up on the exciting parts of a pattern and slowing down on the tricky ones. Fix it by trusting the click over your own sense of excitement, every time, even when the click feels too slow.",
+    "song": {
+      "name": "Symphony No. 5 (Beethoven)",
+      "note": "Its famous opening motif is pure rhythm before it is melody: three short notes then one long note, repeated. Clap that exact pattern and you are already counting the same pulse you just built."
+    }
+  },
+
+  "p-t2-pedal": {
+    "what": "The sustain pedal is the right pedal under your foot. Press it and the sound keeps ringing even after you lift your fingers off the keys. The real skill is not just pressing it down, it is catching each new chord slightly late, a beat after your hand plays it, then lifting and pressing it again the instant the next chord arrives. Press it together with the chord and the old chord blurs into the new one. Lift it too early and there is a hole of silence. Timed right, one chord dissolves smoothly into the next with no gap and no smear.",
+    "why": "Almost every ballad and piano cover you love owes its warm, flowing sound to this one foot movement. Play the same chords with no pedal, or with the pedal timed wrong, and it sounds thin, choppy, or muddy: nothing like the recording. Get the timing right and your playing suddenly sounds like a real pianist instead of someone just hitting keys.",
+    "steps": [
+      {
+        "do": "Rest the ball of your right foot on the pedal, heel flat on the floor. Press it all the way down, then let it rise all the way back up. Do this slowly, ten times, with no hands on the keys yet.",
+        "feel": "A smooth push from the ankle, not a stomp. Your heel never lifts."
+      },
+      {
+        "do": "Play a C chord with your left hand and take your fingers off the keys. Listen to it die almost instantly. Now play it again, and this time press the pedal down right after the chord lands, not together with it.",
+        "feel": "A small gap between the chord landing and your foot moving. That gap is the whole secret."
+      },
+      {
+        "do": "Hold the pedal down under your C chord. Now play an F chord, and at the exact instant your hand strikes it, flick the pedal up and straight back down.",
+        "feel": "Up and back down almost too fast to see. The old chord gets wiped clean and the new one gets caught, both in that one flick."
+      },
+      {
+        "do": "Loop Am, F, C, G, one chord per bar. On every single change, flick the pedal up then down right as the new chord lands. Go around the loop four times without stopping.",
+        "feel": "One continuous river of sound. A click of silence means you lifted too early. A muddy smear means you pressed back down too late."
+      },
+      {
+        "do": "Play the opening of River Flows in You, or any slow song you know, using this same flick on every chord change.",
+        "feel": "The pedal disappears completely. All you hear is the music flowing, which means it worked."
+      }
+    ],
+    "goodWhen": "You can loop Am, F, C, G with the pedal flicking cleanly on every chord change, and a listener hears one smooth wash of sound with no gaps and no muddy overlap.",
+    "watchOut": "The single biggest mistake is pressing the pedal down at the exact same instant your hand plays the new chord. That blends the old chord and the new one into a muddy mess. Fix it by hearing the new chord land first, then bringing the pedal down a beat behind it, every time, until the flick becomes automatic.",
+    "song": {
+      "name": "River Flows in You (Yiruma)",
+      "note": "Its rippling patterns only sound washed and dreamy because the pedal catches each new harmony and clears the last one exactly on time. Play it with no pedal and it turns into a dry, choppy mess."
+    }
+  },
+
+  "p-t2-inversions": {
+    "what": "An inversion is the exact same chord, the same three notes, just rearranged so a different note sits on the bottom instead of the root. Play C, E, G with the C moved up an octave and you get E, G, C. Same chord, brand new bottom note.",
+    "why": "This is what makes a chord change feel smooth instead of jumpy. Going from Am to F only truly takes one moving finger when F is played in its first inversion, not its root position. Learn this and every chord change in the pop formula gets shorter, calmer, and faster to reach.",
+    "steps": [
+      {
+        "do": "Play a C major triad in root position: C, E, G, using thumb, middle finger, and pinky. Now move the bottom note up an octave so the order becomes E, G, C. That is first inversion, same chord, new bottom note.",
+        "feel": "Same color, viewed from a new angle."
+      },
+      {
+        "do": "Move the bottom note again: play G, C, E, with G now on the bottom. That is second inversion. A triad only has three notes, so it only has three possible bottoms, and you just played all of them.",
+        "feel": "You ran out of new positions. Three notes, three inversions, one chord."
+      },
+      {
+        "do": "Tour F the same way: root position F, A, C, then first inversion A, C, F, then second inversion C, F, A.",
+        "feel": "The pattern repeats exactly. Every triad has the same three homes to live in."
+      },
+      {
+        "do": "Tour G and A minor the same way. G: root G, B, D, first inversion B, D, G, second inversion D, G, B. A minor: root A, C, E, first inversion C, E, A, second inversion E, A, C.",
+        "feel": "Four chords, twelve shapes total, and only one trick to learn."
+      },
+      {
+        "do": "Now the real payoff. Play Am in root position: A, C, E. Instead of jumping down to F's root position, keep your thumb and middle finger exactly where they are, resting on A and C, and slide only your top finger up from E to F. You just played F, first inversion.",
+        "feel": "One finger slides a short distance. The rest of your hand never left."
+      },
+      {
+        "do": "Loop Am to F, first inversion, and back, four or five times: A, C, E, then A, C, F, then A, C, E again. Keep two fingers glued down the entire time.",
+        "feel": "The change stops feeling like a leap and starts feeling like a small wiggle."
+      }
+    ],
+    "goodWhen": "You can move from Am to F using F's first inversion so only one finger really travels, and you can find at least one other inversion for C, F, or G without hunting for it.",
+    "watchOut": "The common mistake is treating an inversion as a brand new chord to memorize. It is not. The three notes are identical, only their order from bottom to top changes. If you catch yourself wondering whether it still counts as F, you are overthinking it. The note names in the chord never changed.",
+    "song": {
+      "name": "Let It Be (The Beatles)",
+      "note": "Its chorus walks straight down C, G, Am, F, and that Am to F step is the exact move you just learned to soften: landing F in its nearest inversion instead of jumping to a new hand position each time."
+    }
+  },
+
+  "p-t2-lh-patterns": {
+    "what": "Your left hand does not have to sit frozen as one block chord all night. It can move: breaking a chord into single notes, alternating just the root and fifth, rolling a steady cycle, or bouncing between two octaves. Four different engines for the exact same chord.",
+    "why": "A block chord that never moves is the reason your playing has felt stiff for weeks, the classic plateau where every note is correct but nothing sounds alive. These four moving patterns are what turn a held chord into real accompaniment, the difference between plunking notes and playing like an actual song.",
+    "steps": [
+      {
+        "do": "Take the C chord you already hold as a block (C, E, G) and break it apart: play C, then E, then G, then C an octave up, one note at a time.",
+        "feel": "The same chord, now flowing instead of frozen."
+      },
+      {
+        "do": "Play the root-fifth pattern instead: just C, then G, alternating, and leave the E out entirely.",
+        "feel": "Open and spacious, like the chord took a breath."
+      },
+      {
+        "do": "Roll a simple arpeggio pattern under the chord: root, fifth, octave, fifth, on repeat in a steady loop.",
+        "feel": "A gentle rocking motion, back and forth on the beat."
+      },
+      {
+        "do": "Switch to octave bass: play low C, then the C an octave higher, back and forth, leaning into the low note each time.",
+        "feel": "A driving pulse under everything, like a heartbeat."
+      },
+      {
+        "do": "Loop C, F, G, C and pick a different left-hand pattern for each chord while your right hand plays the melody you already know.",
+        "feel": "Same tune on top, a completely different engine underneath."
+      }
+    ],
+    "goodWhen": "You can loop C, F, G, C switching between all four left-hand patterns without losing the beat or dropping a note.",
+    "watchOut": "The biggest mistake is rushing a pattern until it turns to mush. Slow down until every note in the pattern rings clean and even, then speed up only once it is steady.",
+    "song": {
+      "name": "River Flows in You (Yiruma)",
+      "note": "The left hand rolls a continuous broken chord pattern under the melody for almost the whole piece, exactly the moving accompaniment you just practiced."
     }
   },
 };

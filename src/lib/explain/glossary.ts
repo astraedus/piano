@@ -745,6 +745,254 @@ export const GLOSSARY: GlossaryEntry[] = [
     seeKind: "text",
     seeText: "A card describing the new thing you can now play.",
   },
+
+  // ---- Batch 3a — missing fundamentals (rhythm, harmony, pedal, gear) ----
+  {
+    id: "pulse",
+    title: "Pulse",
+    aliases: ["pulse", "steady pulse", "the beat", "steady beat", "quarter note", "quarter notes"],
+    what: "The steady, even beat running underneath a piece of music, like a heartbeat you can tap along to.",
+    why: "Every rhythm you ever play sits on top of this pulse. Lose it and nothing else locks into place.",
+    hear: () => hear(() => playSequence(["C4", "C4", "C4", "C4", "C4", "C4"], { noteDurationSec: 0.5 })),
+    seeKind: "text",
+    seeText: "A steady row of evenly spaced dots ticking forward, like the second hand of a clock.",
+  },
+  {
+    id: "downbeat",
+    title: "Downbeat",
+    aliases: ["downbeat", "strong beat", "beat one", "count one"],
+    what: "The first, heaviest beat in a group of counted beats, the one your foot naturally wants to stomp on.",
+    why: "Finding beat one tells you where a new group of counted beats starts, which is usually where a chord change or a phrase begins.",
+    hear: () => hear(async () => {
+      await playChord(["C4", "E4", "G4"], { durationSec: 0.4 });
+      await playSequence(["E4", "E4", "E4"], { noteDurationSec: 0.4 });
+    }),
+    seeKind: "text",
+    seeText: "Four counted beats, 1, 2, 3, 4, with beat 1 shown bold and slightly louder than the rest.",
+  },
+  {
+    id: "subdivision",
+    title: "Subdivision",
+    aliases: ["subdivision", "eighth note", "eighth notes", "eighth-note subdivision", "counting eighths", "subdividing"],
+    what: "Splitting each beat in half so you count '1 and 2 and 3 and 4 and' instead of just '1, 2, 3, 4'.",
+    why: "It is how you place notes that fall between the main beats, the skill behind almost every real rhythm pattern you will ever play.",
+    hear: () => hear(() => playSequence(["C4", "C4", "C4", "C4", "C4", "C4", "C4", "C4"], { noteDurationSec: 0.25 })),
+    seeKind: "text",
+    seeText: "Each of four counted beats split into two even ticks: 1 and, 2 and, 3 and, 4 and, eight evenly spaced pulses in total.",
+  },
+  {
+    id: "octave",
+    title: "Octave",
+    aliases: ["octave", "an octave up", "an octave down", "octave apart", "an octave", "octave higher", "octave lower", "same note higher"],
+    what: "Two notes that share the same letter name where one sounds exactly double, or half, the pitch of the other, like one C and the next C up.",
+    why: "Moving a note up or down an octave keeps its letter name the same, so you can find that same note again elsewhere without it becoming a different note.",
+    hear: () => hear(() => playSequence(["C4", "C5"], { noteDurationSec: 0.6 })),
+    seeKind: "keyboard",
+    seeNotes: ["C4", "C5"],
+  },
+  {
+    id: "inversion",
+    title: "Chord Inversion",
+    aliases: ["inversion", "chord inversion", "inversions", "first inversion", "second inversion", "nearest inversion"],
+    what: "The same three notes of a chord, rearranged so a different note sits on the bottom instead of the root.",
+    why: "It lets you move between chords by shifting one or two notes instead of jumping your whole hand to a new spot.",
+    hear: () => hear(async () => {
+      await playChord(["C4", "E4", "G4"]);
+      await playChord(["E4", "G4", "C5"]);
+    }),
+    seeKind: "keyboard",
+    seeNotes: ["E4", "G4", "C5"],
+  },
+  {
+    id: "root-position",
+    title: "Root Position",
+    aliases: ["root position", "root chord", "the root spelling"],
+    what: "A chord played with its root, the note the chord is named after, sitting as the lowest note.",
+    why: "It is the default way most people first learn a chord, and the starting point every inversion is measured against.",
+    hear: () => hear(() => playChord(["C4", "E4", "G4"])),
+    seeKind: "keyboard",
+    seeNotes: ["C4", "E4", "G4"],
+  },
+  {
+    id: "voice-leading",
+    title: "Voice Leading",
+    aliases: ["voice leading", "smooth voice leading", "leading the voices"],
+    what: "Choosing which inversion of the next chord to play so its notes move the shortest possible distance from the chord you are already holding.",
+    why: "It is what makes a chord change sound connected and calm instead of like your whole hand is leaping to a brand new spot every time.",
+    hear: () => hear(() => playProgression([["A3", "C4", "E4"], ["A3", "C4", "F4"]])),
+    seeKind: "keyboard",
+    seeNotes: ["A3", "C4", "F4"],
+  },
+  {
+    id: "syncopated-pedaling",
+    title: "Syncopated Pedaling",
+    aliases: ["syncopated pedaling", "pedal change", "catch pedal", "pedal timing"],
+    what: "Lifting the sustain pedal and pressing it straight back down in one quick flick exactly when a new chord lands, so the old chord clears and the new one gets caught.",
+    why: "It is what makes chord changes flow into each other with no gap and no muddy overlap, the technique behind almost every smooth ballad.",
+    hear: () => hear(async () => {
+      await playChord(["C4", "E4", "G4"], { durationSec: 1.8 });
+      await playChord(["F4", "A4", "C5"], { durationSec: 1.8 });
+    }),
+    seeKind: "keyboard",
+    seeNotes: ["C4", "E4", "G4", "F4", "A4", "C5"],
+    instrument: "piano",
+  },
+  {
+    id: "accompaniment",
+    title: "Accompaniment",
+    aliases: ["accompaniment", "backing pattern", "left-hand pattern", "accompanying"],
+    what: "The musical support that plays under a melody, usually a chord or a moving bass pattern in the other hand.",
+    why: "Good accompaniment is what makes a song feel alive instead of a tune floating alone with nothing underneath it.",
+    hear: () => hear(async () => {
+      await playChord(["C4", "E4", "G4"], { durationSec: 1 });
+      await playSequence(["C4", "E4", "G4", "C5"], { noteDurationSec: 0.3 });
+    }),
+    seeKind: "keyboard",
+    seeNotes: ["C4", "E4", "G4"],
+  },
+  {
+    id: "root-fifth-pattern",
+    title: "Root-Fifth Pattern",
+    aliases: ["root-fifth pattern", "root and fifth", "open fifth bass", "fifth bass"],
+    what: "A left-hand pattern that plays just the root note and its fifth, leaving out the middle note of the chord.",
+    why: "It gives an open, spacious sound and is the simplest way to make the left hand move instead of holding a fist of notes.",
+    hear: () => hear(() => playSequence(["C3", "G3", "C3", "G3"], { noteDurationSec: 0.4 })),
+    seeKind: "keyboard",
+    seeNotes: ["C3", "G3"],
+    instrument: "piano",
+  },
+  {
+    id: "octave-bass",
+    title: "Octave Bass",
+    aliases: ["octave bass", "bouncing octaves", "octaves in the bass"],
+    what: "A left-hand pattern that bounces between a low note and the same note one octave higher.",
+    why: "It gives a driving, rolling low end that powers ballads and rock piano parts alike.",
+    hear: () => hear(() => playSequence(["C3", "C4", "C3", "C4"], { noteDurationSec: 0.35 })),
+    seeKind: "keyboard",
+    seeNotes: ["C3", "C4"],
+    instrument: "piano",
+  },
+  {
+    id: "gain",
+    title: "Gain",
+    aliases: ["gain", "gain knob", "how hard the amp is pushed"],
+    what: "The knob on an amp that controls how hard the signal is being pushed, which decides how much growl or distortion gets stacked into your tone.",
+    why: "It is the one control that turns a clean chord into a driven one, completely separate from how loud you are playing.",
+    hear: () => hear(async () => {
+      await playChord(["E2", "B2", "E3"], { durationSec: 1 });
+      await playMutedChug(["E2", "B2"], 8);
+    }),
+    seeKind: "text",
+    seeText: "A single dial: turned low for a clear tone, turned high for a thick, growling one.",
+    instrument: "guitar",
+  },
+  {
+    id: "distortion",
+    title: "Distortion",
+    aliases: ["distortion", "overdrive", "driven tone", "drive knob", "fuzz"],
+    what: "The thick, growling, slightly broken up sound an electric guitar makes when its signal is pushed harder than a clean amp can handle.",
+    why: "It is the sound of rock, metal, and punk rhythm, and how much of it you get comes from the gain knob, not the volume knob.",
+    hear: () => hear(() => playMutedChug(["E2", "B2"], 8)),
+    seeKind: "text",
+    seeText: "A clean note with a wall of buzzing harmonics stacked on top of it.",
+    instrument: "guitar",
+  },
+  {
+    id: "clean-tone",
+    title: "Clean Tone",
+    aliases: ["clean tone", "clean sound", "undistorted tone"],
+    what: "The clear, undistorted sound an electric guitar makes when the gain knob is kept low, every note ringing true to what your hands actually played.",
+    why: "Clean tone hides nothing, so it is the honest setting to practice on: any buzz or slip shows up instead of getting buried.",
+    hear: () => hear(() => playChord(["E2", "B2", "E3"], { durationSec: 1.2 })),
+    seeKind: "text",
+    seeText: "A single ringing chord with no fuzz stacked on top of it.",
+    instrument: "guitar",
+  },
+  {
+    id: "pickup",
+    title: "Pickup",
+    aliases: ["pickup", "pickups", "pickup selector", "bridge pickup", "neck pickup"],
+    what: "The small magnet under your strings that turns their vibration into the electric signal your amp hears, most electrics have two or three, chosen with a selector switch.",
+    why: "The bridge pickup sounds brighter and sharper, the neck pickup sounds warmer and rounder, so the selector switch is a free tone change already wired into your guitar.",
+    hear: () => hear(async () => {
+      await playSequence(["E4", "G4", "B4"], { noteDurationSec: 0.4 });
+      await playSequence(["E3", "G3", "B3"], { noteDurationSec: 0.4 });
+    }),
+    seeKind: "text",
+    seeText: "A selector switch flicking between a bright bridge position and a warm neck position.",
+    instrument: "guitar",
+  },
+  {
+    id: "amp-volume",
+    title: "Volume (Amp)",
+    aliases: ["volume knob", "amp volume", "how loud the amp is"],
+    what: "The knob on an amp that controls how loud its sound comes out of the speaker, separate from how much growl or distortion is baked into the tone.",
+    why: "Mixing up volume with gain is the most common beginner mixup: turning up volume just makes the same tone louder, it never adds any growl on its own.",
+    hear: () => hear(async () => {
+      await playChord(["E2", "B2", "E3"], { durationSec: 0.6 });
+      await playChord(["E2", "B2", "E3"], { durationSec: 0.6 });
+    }),
+    seeKind: "text",
+    seeText: "A single dial: low toward quiet, high toward loud, with the tone itself unchanged.",
+    instrument: "guitar",
+  },
+  {
+    id: "octave-shape",
+    title: "Octave Shape",
+    aliases: ["octave shape", "octave finder", "find the octave", "two string two fret shape"],
+    what: "A moveable shape on the guitar: from a note on the low E or A string, skip one string and add two frets to land on the exact same note, one octave higher.",
+    why: "It turns any single note you already know into a fast route to that same note higher up the neck, instead of a whole new fretboard you have to memorize from scratch.",
+    hear: () => hear(() => playSequence(["A2", "A3"], { noteDurationSec: 0.6 })),
+    seeKind: "fretboard",
+    seeNotes: ["A2", "A3"],
+    instrument: "guitar",
+  },
+  {
+    id: "natural-note",
+    title: "Natural Note",
+    aliases: ["natural note", "natural notes", "natural letter", "natural letter names"],
+    what: "One of the seven plain letter names, A through G, with no sharp or flat attached.",
+    why: "Learning the natural names first gives you a solid, uncluttered map of the neck before you add the sharps and flats that sit between them.",
+    hear: () => hear(() => playSequence(["C4", "D4", "E4", "F4", "G4", "A4", "B4"], { noteDurationSec: 0.4 })),
+    seeKind: "keyboard",
+    seeNotes: ["C4", "D4", "E4", "F4", "G4", "A4", "B4"],
+  },
+  {
+    id: "noise-control",
+    title: "Noise Control",
+    aliases: ["noise control", "string muting", "muting idle strings", "damping", "left hand damping", "quiet strings", "kill the squeal"],
+    what: "Resting your fretting hand and picking hand lightly on the strings you are not playing so they stay silent while gain is on.",
+    why: "It is the difference between a clean driven solo and a mess of humming, squealing strings behind every note.",
+    hear: () => hear(async () => {
+      await playSequence(["A4"], { noteDurationSec: 1 });
+      await playMutedChug(["E2", "A2", "D3", "G3", "B3"], 2);
+    }),
+    seeKind: "fretboard",
+    seeNotes: ["A4"],
+    instrument: "guitar",
+  },
+  {
+    id: "fmaj7",
+    title: "Fmaj7",
+    aliases: ["Fmaj7", "F major 7", "F major seventh", "the friendly F"],
+    what: "A brighter, dreamier cousin of the plain F chord, built from the notes F, A, C, and E, that needs no barre at all.",
+    why: "It sounds finished as its own chord in real songs, and it is the exact hand shape your first barre chord grows out of.",
+    hear: () => hear(() => playChord(["F3", "A3", "C4", "E4"], { durationSec: 1.2 })),
+    seeKind: "chord-diagram",
+    seeChordShape: [-1, -1, 3, 2, 1, 0],
+    instrument: "guitar",
+  },
+  {
+    id: "partial-barre",
+    title: "Partial Barre",
+    aliases: ["partial barre", "mini barre", "half barre", "small F", "baby F", "easy F", "two-string barre"],
+    what: "Laying one finger flat across just a couple of strings, often called the small F, instead of all six strings of a full barre chord.",
+    why: "It builds the exact flat finger strength and feel a full six string barre needs, on two easy strings before you ever try all six.",
+    hear: () => hear(() => playChord(["F3", "A3", "C4", "F4"], { durationSec: 1 })),
+    seeKind: "chord-diagram",
+    seeChordShape: [-1, -1, 3, 2, 1, 1],
+    instrument: "guitar",
+  },
 ];
 
 /**
