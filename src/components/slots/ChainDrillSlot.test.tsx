@@ -155,3 +155,27 @@ describe("ChainDrillSlot — V5 lesson block", () => {
     expect(screen.getByText(/Rep 1/)).toBeTruthy();
   });
 });
+
+describe("ChainDrillSlot — best BPM on the rep line", () => {
+  // The provider hydrates from localStorage on mount; seed a recorded rep so the
+  // "N times so far" line renders (it only shows once a drill has been done).
+  function seedReps(reps: Record<string, { count: number; maxBpm?: number }>) {
+    localStorage.setItem("practice.state", JSON.stringify({ version: 5, skillReps: reps }));
+  }
+
+  it("shows 'N times so far · best X BPM' when a tempo was recorded", () => {
+    seedReps({ "drill:g-t0-tuning-chain": { count: 3, maxBpm: 90 } });
+    renderSlot();
+    const line = screen.getByTestId("chain-rep-count");
+    expect(line.textContent).toContain("3 times so far");
+    expect(line.textContent).toContain("best 90 BPM");
+  });
+
+  it("omits the BPM suffix when no tempo was recorded", () => {
+    seedReps({ "drill:g-t0-tuning-chain": { count: 1 } });
+    renderSlot();
+    const line = screen.getByTestId("chain-rep-count");
+    expect(line.textContent).toContain("First time");
+    expect(line.textContent).not.toContain("BPM");
+  });
+});

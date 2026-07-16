@@ -43,6 +43,9 @@ export interface SkillGraphPanelProps {
   fluent?: boolean;
   /** R3 — self-assessment verdict from the node's recorded success rate. */
   difficulty?: DifficultyVerdict;
+  /** Best tempo (BPM) this skill has been played at, across the node's drill and
+   *  any linked scale warmup. Undefined when none recorded (renders nothing). */
+  bestBpm?: number;
   onCloseAction: () => void;
   onAddToTodayAction: (nodeId: string) => void;
   onMarkLearnedAction: (nodeId: string) => void;
@@ -57,6 +60,7 @@ export function SkillGraphPanel({
   titleById,
   fluent,
   difficulty,
+  bestBpm,
   onCloseAction,
   onAddToTodayAction,
   onMarkLearnedAction,
@@ -246,18 +250,31 @@ export function SkillGraphPanel({
 
       {showSongs && <ProgressionSongsPanel />}
 
-      {/* R3 — difficulty self-assessment from the recorded success rate. Only shown
-          once there are enough attempts to judge (verdict !== unknown). */}
-      {difficultyMeta && (
+      {/* R3 — difficulty self-assessment from the recorded success rate + the best
+          tempo this skill has been played at. Shown when either exists (difficulty
+          needs enough attempts to judge; tempo needs any recorded BPM). */}
+      {(difficultyMeta || bestBpm) && (
         <Section label="how it's going">
-          <div data-testid="sg-panel-difficulty" data-verdict={difficulty} className="space-y-1">
-            <p
-              className="text-sm font-medium"
-              style={{ color: "var(--instrument-accent-deep)" }}
-            >
-              {difficultyMeta.label}
-            </p>
-            <p className="text-xs text-[color:var(--ink-3)]">{difficultyMeta.hint}</p>
+          <div className="space-y-2">
+            {difficultyMeta && (
+              <div data-testid="sg-panel-difficulty" data-verdict={difficulty} className="space-y-1">
+                <p
+                  className="text-sm font-medium"
+                  style={{ color: "var(--instrument-accent-deep)" }}
+                >
+                  {difficultyMeta.label}
+                </p>
+                <p className="text-xs text-[color:var(--ink-3)]">{difficultyMeta.hint}</p>
+              </div>
+            )}
+            {bestBpm && (
+              <p data-testid="sg-panel-bpm" className="text-sm text-[color:var(--ink-2)]">
+                Best tempo so far:{" "}
+                <span className="font-medium text-[color:var(--instrument-accent-deep)]">
+                  {bestBpm} BPM
+                </span>
+              </p>
+            )}
           </div>
         </Section>
       )}

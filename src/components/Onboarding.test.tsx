@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { learningPathPatch, PATH_OPTIONS } from "./Onboarding";
+import { learningPathPatch, PATH_OPTIONS, onboardingSeeds } from "./Onboarding";
 
 describe("learningPathPatch — the orthogonal theory rule", () => {
   it("Go Deep forces theory on, even when theory was off", () => {
@@ -64,5 +64,16 @@ describe("PATH_OPTIONS", () => {
     const soul = PATH_OPTIONS.find((o) => o.tag === "play-with-soul")!;
     expect(soul.sub("guitar")).toContain("guitar");
     expect(soul.sub("piano")).toContain("piano");
+  });
+});
+
+describe("onboardingSeeds — honest fresh start", () => {
+  // Regression guard for the seeded-demo-data fix: a fresh install must NOT
+  // fabricate pieces (the old "Once Upon A Time — yours" 2019 piece) or pre-chart
+  // keys. Product soul: honest progress numbers, no faking.
+  it("seeds no pieces and no charted keys", () => {
+    const seeds = onboardingSeeds();
+    expect(seeds.pieces).toEqual([]);
+    expect(seeds.seedDepths).toEqual({});
   });
 });

@@ -27,6 +27,7 @@ import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { isModuleRegistered } from "@/lib/instrumentRegistry";
 import { difficultyVerdict, isFluent, markNodeProgress, resolveStatus } from "@/lib/skillTree";
+import { bestBpmForNode } from "@/lib/bestBpm";
 import {
   buildLaidOutGraph,
   nodesForInstrument,
@@ -224,6 +225,9 @@ function SkillGraphInner() {
   const selectedProgress = selectedNode ? progress?.[selectedNode.id] : undefined;
   const selectedFluent = isFluent(selectedProgress);
   const selectedDifficulty = difficultyVerdict(selectedProgress);
+  const selectedBestBpm = selectedNode
+    ? bestBpmForNode(selectedNode, progress, state.skillReps)
+    : undefined;
 
   const empty = allNodes.length === 0;
 
@@ -277,6 +281,7 @@ function SkillGraphInner() {
             titleById={titleById}
             fluent={selectedFluent}
             difficulty={selectedDifficulty}
+            bestBpm={selectedBestBpm}
             onCloseAction={() => setSelectedId(null)}
             onAddToTodayAction={addToToday}
             onMarkLearnedAction={markLearned}

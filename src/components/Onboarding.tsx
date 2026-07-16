@@ -3,7 +3,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/hooks/useAppState";
 import { weekIdOf } from "@/lib/ghostKey";
-import type { Phase, Grade, KeyId, Instrument, PathTag } from "@/lib/types";
+import type { Phase, Grade, KeyId, KeyDepth, Instrument, PathTag, Piece } from "@/lib/types";
+
+/**
+ * Fresh-profile seed. Deliberately EMPTY: a new install starts with an empty
+ * shelf and a blank Key Map, so every piece and every charted key reflects REAL
+ * practice (product soul: honest progress numbers, no faking). Previously this
+ * seeded a fabricated "Once Upon A Time — yours" 2019 piece + phase-based key
+ * depths, which read as fake history to anyone who is not the app's author.
+ *
+ * Named + exported so the honest-start contract has a regression test — if anyone
+ * re-introduces fabricated pieces or pre-charted keys, the test fails.
+ */
+export function onboardingSeeds(): { pieces: Piece[]; seedDepths: Partial<Record<KeyId, KeyDepth>> } {
+  return { pieces: [], seedDepths: {} };
+}
 
 /**
  * The path-setting rule, shared by Onboarding and Settings.
@@ -74,40 +88,12 @@ export function Onboarding() {
     const chosen: Instrument = instrument ?? "piano";
     const guitar = chosen === "guitar";
 
-    // Piano-only seeds: the Key Map depths + Anti's personal piece history are
-    // piano repertoire and don't apply to a guitar profile. A fresh guitar profile
-    // starts clean (its progress lives in the skill graph + chain drills).
-    const seedDepths: Record<string, number> = {};
-    if (!guitar) {
-      if (option.phase >= 1) { seedDepths.C = 2; seedDepths.am = 1; }
-      if (option.phase >= 2) { seedDepths.C = 3; seedDepths.am = 2; seedDepths.G = 2; seedDepths.F = 1; }
-      if (option.phase >= 3) { seedDepths.C = 3; seedDepths.am = 3; seedDepths.G = 3; seedDepths.F = 2; seedDepths.D = 2; seedDepths.dm = 1; seedDepths.em = 1; }
-    }
-
-    // Seed the shelf with Once Upon A Time (Anti's first-ever piece, Nov 2019).
-    const seededOnceUponATime = {
-      id: "piece-once-upon-a-time",
-      title: "Once Upon A Time",
-      composer: "(your first piece)",
-      keyId: "C" as const,
-      status: "yours" as const,
-      startedAt: "2019-11-01T00:00:00.000Z",
-      minutes: 0,
-    };
-    // Suggest Tickery Tockery as the current working piece (Anti's Trinity Initial piece).
-    const defaultCurrentPiece = {
-      id: "piece-tickery-tockery",
-      title: "Tickery Tockery",
-      composer: "Charlton",
-      grade: "initial" as const,
-      keyId: "C" as const,
-      status: "learning" as const,
-      section: "bars 9–16",
-      referenceUrl: "https://www.youtube.com/results?search_query=Tickery+Tockery+Charlton+Trinity+piano",
-      startedAt: now,
-      minutes: 0,
-    };
-    const pianoPieces = [seededOnceUponATime, defaultCurrentPiece];
+    // Honest fresh start (product soul: no faking, honest progress numbers). A new
+    // profile begins with an EMPTY shelf and a BLANK Key Map — real practice fills
+    // them in. We no longer fabricate a "yours" 2019 piece or pre-chart keys from a
+    // self-reported level. The phase / grade / earLevel below still position the
+    // learner in the curriculum, which is a difficulty setting, not fake history.
+    const { pieces: seededPieces, seedDepths } = onboardingSeeds();
 
     const arc = [
       ...(state.arc ?? []),
@@ -119,15 +105,6 @@ export function Onboarding() {
         label: guitar ? "electric guitar begins" : "piano begins",
       },
     ];
-    if (!guitar) {
-      arc.push({
-        id: "once-upon-a-time-yours",
-        at: "2019-11-01T00:00:00.000Z",
-        kind: "piece-yours" as const,
-        instrument: "piano" as const,
-        label: "Once Upon A Time — yours",
-      });
-    }
 
     // Default a path-less finish to "just-play" (the safest, theory-free start);
     // Go Deep forces theory on, every other choice leaves theory off for a fresh
@@ -148,9 +125,9 @@ export function Onboarding() {
       // weekId must be a real ISO-week id (matches ghostKeyFor) so the seeded
       // ghost actually applies this first week, then naturally expires (B5).
       ghostOverride: { key: option.ghost, weekId: weekIdOf(new Date()) },
-      // Only seed piano repertoire for a piano profile.
-      pieces: guitar ? state.pieces : (state.pieces.length > 0 ? state.pieces : pianoPieces),
-      currentPieceId: guitar ? state.currentPieceId : (state.currentPieceId ?? defaultCurrentPiece.id),
+      // Fresh installs start empty/honest — no fabricated pieces, no pre-charted keys.
+      pieces: state.pieces.length > 0 ? state.pieces : seededPieces,
+      currentPieceId: state.currentPieceId,
       keyDepths: { ...(state.keyDepths ?? {}), ...seedDepths },
       arc,
     });

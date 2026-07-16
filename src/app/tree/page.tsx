@@ -8,12 +8,13 @@ import { SongShelf } from "@/components/SongShelf";
 import { YourArc } from "@/components/YourArc";
 import { SkillGraphView } from "@/components/SkillGraphView";
 import { PathView } from "@/components/PathView";
+import { WhatYouKnow } from "@/components/WhatYouKnow";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { skillLearnedCount } from "@/lib/skillSummary";
 import { fmtTotalTime } from "@/lib/format";
 
-type Tab = "path" | "map" | "graph" | "shelf" | "arc";
+type Tab = "path" | "know" | "map" | "graph" | "shelf" | "arc";
 
 // Instrument-aware progress map: render the keymap for "keymap" instruments
 // (piano) and the fretboard territory map for "fretboard" instruments (guitar).
@@ -61,6 +62,7 @@ function TreeShell() {
       </header>
       <div className="flex gap-2 border-b border-[color:var(--rule)]">
         <TabButton active={tab === "path"}  onClickAction={() => setTab("path")}>Your Path</TabButton>
+        <TabButton active={tab === "know"}  onClickAction={() => setTab("know")}>What You Know</TabButton>
         <TabButton active={tab === "map"}   onClickAction={() => setTab("map")}>{mapLabel}</TabButton>
         <TabButton active={tab === "graph"} onClickAction={() => setTab("graph")}>Skill Graph</TabButton>
         <TabButton active={tab === "shelf"} onClickAction={() => setTab("shelf")}>Song Shelf</TabButton>
@@ -68,6 +70,7 @@ function TreeShell() {
       </div>
       <div className="pt-2">
         {tab === "path" && <PathView />}
+        {tab === "know" && <WhatYouKnow />}
         {tab === "map" && <ProgressMap />}
         {tab === "graph" && <SkillGraphView />}
         {tab === "shelf" && <SongShelf />}

@@ -527,3 +527,25 @@ describe("topoSortTier — unit", () => {
     expect(sorted[1].id).toBe("z-node");
   });
 });
+
+describe("PathView — best tempo on an expanded step", () => {
+  it("shows the best-tempo line for a learned node with a recorded BPM", () => {
+    const progress: Record<string, SkillProgress> = {
+      [t0Node.id]: { status: "learned", reps: 5, bpmReached: 75 },
+    };
+    mockState("guitar", progress);
+    render(<PathView />);
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${t0Node.id}`));
+    expect(screen.getByTestId(`path-bpm-${t0Node.id}`).textContent).toContain("75 BPM");
+  });
+
+  it("omits the best-tempo line when the node has no recorded BPM", () => {
+    const progress: Record<string, SkillProgress> = {
+      [t0Node.id]: { status: "learned", reps: 5 },
+    };
+    mockState("guitar", progress);
+    render(<PathView />);
+    fireEvent.click(screen.getByTestId(`path-step-toggle-${t0Node.id}`));
+    expect(screen.queryByTestId(`path-bpm-${t0Node.id}`)).toBeNull();
+  });
+});

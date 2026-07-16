@@ -503,3 +503,38 @@ describe("SkillGraphPanel", () => {
     expect(screen.getByTestId("sg-panel-drill").textContent).toBe("Practice drill.");
   });
 });
+
+describe("SkillGraphPanel — best tempo", () => {
+  it("renders the best-tempo line when a BPM is recorded", () => {
+    render(
+      <SkillGraphPanel
+        node={node}
+        status="learned"
+        statusById={statusById("learned")}
+        titleById={titleById}
+        bestBpm={88}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    expect(screen.getByTestId("sg-panel-bpm").textContent).toContain("88 BPM");
+  });
+
+  it("omits the best-tempo line when no BPM is recorded", () => {
+    render(
+      <SkillGraphPanel
+        node={node}
+        status="learned"
+        statusById={statusById("learned")}
+        titleById={titleById}
+        onCloseAction={() => {}}
+        onAddToTodayAction={() => {}}
+        onMarkLearnedAction={() => {}}
+        onMarkFluentAction={() => {}}
+      />,
+    );
+    expect(screen.queryByTestId("sg-panel-bpm")).toBeNull();
+  });
+});
