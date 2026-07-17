@@ -41,6 +41,12 @@ vi.mock("@/lib/piano/components/Keyboard", () => ({
   ),
 }));
 
+// Mock StaffMap — its real SVG is exercised in StaffMap.test.tsx; here we only
+// assert LessonMedia routes the staff node to it.
+vi.mock("@/lib/piano/components/StaffMap", () => ({
+  StaffMap: () => <div data-testid="staff-map" />,
+}));
+
 // Mock TermVisual so we can control what the term visual renders without the
 // real guitar/piano components. Uses the same data-testids so assertions work.
 vi.mock("@/components/explain/TermVisual", () => {
@@ -156,6 +162,19 @@ const capoNode: SkillNode = {
   chordShape: [-1, 3, 2, 0, 1, 0],
 };
 
+// The "Reading the Staff" node gets its dedicated grand-staff diagram, never the
+// generic labeled keyboard (which would teach the wrong thing).
+const staffNode: SkillNode = {
+  id: "p-t0-staff",
+  instrument: "piano",
+  title: "Reading the Staff",
+  tier: 0,
+  category: "notation",
+  prereqs: ["p-t0-keyboard-map"],
+  masteryDrill: "Name treble + bass clef notes on sight.",
+  unlock: "Decode a basic score.",
+};
+
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe("LessonMedia", () => {
@@ -165,6 +184,34 @@ describe("LessonMedia", () => {
       render(<LessonMedia node={capoNode} />);
       expect(screen.getByTestId("capo-teacher")).toBeTruthy();
       expect(screen.queryByTestId("chord-diagram")).toBeNull();
+    });
+  });
+
+  describe("(i) the staff node renders the StaffMap, not the default keyboard", () => {
+    it("renders staff-map and not a keyboard for p-t0-staff", () => {
+      mockLookupTerm.mockReturnValue(undefined);
+      render(<LessonMedia node={staffNode} />);
+      expect(screen.getByTestId("staff-map")).toBeTruthy();
+      expect(screen.queryByTestId("keyboard")).toBeNull();
+    });
+
+    it("the staff map wins even when the node maps to a term with a visual", () => {
+      // p-t0-staff maps to the "staff" glossary term; the node-id special case
+      // must beat any term/default fallback so the lesson always shows the staff.
+      mockLookupTerm.mockReturnValue({
+        id: "staff",
+        title: "Staff",
+        aliases: [],
+        what: "...",
+        why: "...",
+        hear: vi.fn().mockResolvedValue(undefined),
+        seeKind: "keyboard",
+        seeNotes: ["C4"],
+      });
+      render(<LessonMedia node={staffNode} />);
+      expect(screen.getByTestId("staff-map")).toBeTruthy();
+      expect(screen.queryByTestId("keyboard")).toBeNull();
+      expect(screen.queryByTestId("term-visual")).toBeNull();
     });
   });
 

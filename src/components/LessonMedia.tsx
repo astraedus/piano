@@ -29,6 +29,7 @@ import { CapoTeacher } from "@/components/CapoTeacher";
 import { Fretboard } from "@/lib/guitar/components/Fretboard";
 import { Tab } from "@/lib/guitar/components/Tab";
 import { Keyboard } from "@/lib/piano/components/Keyboard";
+import { StaffMap } from "@/lib/piano/components/StaffMap";
 import { TermVisual, termHasVisual } from "@/components/explain/TermVisual";
 
 export interface LessonMediaProps {
@@ -97,11 +98,15 @@ function LessonVisual({
   termHasVis: boolean;
   termEntry: ReturnType<typeof lookupTerm>;
 }) {
-  // 0. The capo node gets its dedicated interactive teacher (chart + calculator)
-  //    instead of a single static diagram — the capo IS a calculator, so the
-  //    interactive surface is the right "one visual" for this lesson.
+  // 0. Node-id special cases — a purpose-built teaching surface beats any generic
+  //    default for these lessons, so they win before node.viz / term / default.
+  //    The capo IS a calculator (chart + calculator); "Reading the Staff" IS the
+  //    grand staff itself, so a keyboard would teach the wrong thing entirely.
   if (node.id === "g-t1-capo") {
     return <CapoTeacher />;
+  }
+  if (node.id === "p-t0-staff") {
+    return <StaffMap />;
   }
 
   // 1. Concrete node.viz.
