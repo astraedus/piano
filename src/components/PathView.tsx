@@ -12,7 +12,7 @@
 // - Decoupled from graph selection state — self-contained expand state
 // - Falls back gracefully when a node has no authored lesson
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { resolveStatus, nextToLearn, markNodeProgress, isFluent } from "@/lib/skillTree";
@@ -26,26 +26,16 @@ import { LessonMedia } from "@/components/LessonMedia";
 import { ProgressionSongsPanel } from "@/components/ProgressionSongsPanel";
 import { isProgressionContainerNode } from "@/lib/progressionSongs";
 import { UnlockCardModal } from "@/components/UnlockCardModal";
+import { tierLabel } from "@/lib/tierLabels";
 import type { NodeLesson, SkillNode, SkillNodeStatus } from "@/lib/types";
 
 // Local shape for the reward modal — matches UnlockCardModal's `unlock` prop.
 type RewardCard = { id: string; title: string; tryLine: string };
 
-// ── Tier section names ──────────────────────────────────────────────────────
-
-const TIER_LABELS: Record<number, { name: string; subtitle: string }> = {
-  0: { name: "Start Here — Setup & Orientation", subtitle: "Before you can make music, you need to know your instrument." },
-  1: { name: "Foundations", subtitle: "The core shapes and skills everything else is built on." },
-  2: { name: "Getting Real", subtitle: "You are playing now. These open up actual songs." },
-  3: { name: "Playing With Soul", subtitle: "Expression, feel, and the moments that make music yours." },
-  4: { name: "Going Deep", subtitle: "Advanced technique and musical vocabulary." },
-  5: { name: "Mastery", subtitle: "The long game — where the serious learning lives." },
-  6: { name: "Beyond", subtitle: "Expert-level depth." },
-};
-
-export function tierLabel(tier: number) {
-  return TIER_LABELS[tier] ?? { name: `Tier ${tier}`, subtitle: "" };
-}
+// Tier section names now live in lib/tierLabels (shared with WhatYouKnow + the
+// current-lesson card). Re-exported here so existing `@/components/PathView`
+// importers keep working.
+export { tierLabel };
 
 // ── Status helpers ──────────────────────────────────────────────────────────
 
@@ -549,7 +539,7 @@ function TierBar({ tier, count }: { tier: number; count: TierCount }) {
 
 // ── Main PathView ────────────────────────────────────────────────────────────
 
-export function PathView() {
+export function PathView({ initialNodeId }: { initialNodeId?: string } = {}) {
   const { state, patch, markFluent } = useAppState();
   const [expanded, setExpanded] = useState<string | null>(null);
   // The reward moment shown when a node is marked learned from Your Path. Local
@@ -670,6 +660,28 @@ export function PathView() {
   function toggle(id: string) {
     setExpanded((prev) => (prev === id ? null : id));
   }
+
+  // Deep-link (?node=<id>): on first arrival with a node param, auto-expand that
+  // node's inline lesson and scroll it into view once. Guarded by a ref so it
+  // fires exactly once per distinct target and never fights the user's later
+  // manual toggles. Waits until the node is actually in the visible set (nodes +
+  // the path filter hydrate after first paint). Locked nodes: setting `expanded`
+  // is a no-op in StepCard (the lesson panel is gated on !isLocked), so this
+  // never force-unlocks anything.
+  const deepLinkedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!initialNodeId || deepLinkedRef.current === initialNodeId) return;
+    if (!visibleNodes.some((n) => n.id === initialNodeId)) return;
+    deepLinkedRef.current = initialNodeId;
+    setExpanded(initialNodeId);
+    if (typeof document !== "undefined") {
+      const el = document.querySelector(`[data-testid="path-step-${initialNodeId}"]`);
+      // jsdom has no scrollIntoView; guard so the effect never throws in tests.
+      if (el && typeof (el as HTMLElement).scrollIntoView === "function") {
+        (el as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [initialNodeId, visibleNodes]);
 
   return (
     <div data-testid="path-view" className="space-y-8">

@@ -683,6 +683,32 @@ describe("PathView — learning-path treatment + all-done", () => {
   });
 });
 
+describe("PathView — deep-link (?node=<id>)", () => {
+  // Uses the piano module (registered once, never re-registered) so the node set
+  // is stable regardless of describe ordering.
+  it("auto-expands the node named by initialNodeId on mount", () => {
+    mockState("piano", {});
+    render(<PathView initialNodeId={pianoNode.id} />);
+    // The lesson panel for the deep-linked node opens without any click.
+    expect(screen.getByTestId(`path-lesson-${pianoNode.id}`)).toBeTruthy();
+    expect(within(screen.getByTestId(`path-lesson-${pianoNode.id}`)).getByTestId("lesson-what")).toBeTruthy();
+  });
+
+  it("expands nothing when initialNodeId is absent", () => {
+    mockState("piano", {});
+    render(<PathView />);
+    expect(screen.queryByTestId(`path-lesson-${pianoNode.id}`)).toBeNull();
+    expect(screen.queryByTestId(`path-lesson-${popFormulaNode.id}`)).toBeNull();
+  });
+
+  it("ignores an initialNodeId that is not a visible node", () => {
+    mockState("piano", {});
+    render(<PathView initialNodeId="not-a-real-node" />);
+    expect(screen.getByTestId("path-view")).toBeTruthy();
+    expect(screen.queryByTestId(`path-lesson-${pianoNode.id}`)).toBeNull();
+  });
+});
+
 describe("PathView — best tempo on an expanded step", () => {
   it("shows the best-tempo line for a learned node with a recorded BPM", () => {
     const progress: Record<string, SkillProgress> = {

@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { AppStateProvider } from "@/hooks/useAppState";
 import { KeyMap } from "@/components/KeyMap";
@@ -29,7 +30,11 @@ export default function TreePage() {
   return (
     <AppStateProvider>
       <AppShell>
-        <TreeShell />
+        {/* useSearchParams (?node= deep-link) must sit under a Suspense boundary
+            in the App Router, matching the home + print pages. */}
+        <Suspense fallback={null}>
+          <TreeShell />
+        </Suspense>
       </AppShell>
     </AppStateProvider>
   );
@@ -39,6 +44,10 @@ function TreeShell() {
   // "path" is the default — it is the autonomous robot-mode spine the user sees first.
   const [tab, setTab] = useState<Tab>("path");
   const { state } = useAppState();
+  // Deep-link target from the current-lesson card (?node=<id>) → Your Path opens
+  // that node's inline lesson. Absent for a plain /tree visit.
+  const search = useSearchParams();
+  const deepLinkNode = search?.get("node") ?? undefined;
   const totalMin = (state.sessions ?? []).reduce((s, x) => s + x.minutes, 0);
   const timeStr = fmtTotalTime(totalMin);
   const sessions = (state.sessions ?? []).length;
@@ -69,7 +78,7 @@ function TreeShell() {
         <TabButton active={tab === "arc"}   onClickAction={() => setTab("arc")}>Your Arc</TabButton>
       </div>
       <div className="pt-2">
-        {tab === "path" && <PathView />}
+        {tab === "path" && <PathView initialNodeId={deepLinkNode} />}
         {tab === "know" && <WhatYouKnow />}
         {tab === "map" && <ProgressMap />}
         {tab === "graph" && <SkillGraphView />}
