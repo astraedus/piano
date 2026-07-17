@@ -31,6 +31,9 @@ import {
 } from "../audio";
 import type { FretPosition, StickingCell } from "../types";
 import { AM_PENT_BOX1, AM_BLUES_BOX1 } from "../guitar/scaleShapes";
+// Reuse the ONE drums sticking interpreter so a glossary "hear" plays the exact
+// rudiment the curriculum teaches (no re-authored, drifting stickings).
+import { drumsFocusFor } from "../drums/focus";
 
 export type SeeKind = "fretboard" | "keyboard" | "chord-diagram" | "text";
 
@@ -76,6 +79,14 @@ const DEMO_LOUD_SOFT: StickingCell[] = [
 const DEMO_ROLL: StickingCell[] = [
   { hand: "R", accent: true }, { hand: "L" }, { hand: "R" }, { hand: "L" },
   { hand: "R" }, { hand: "L" }, { hand: "R" }, { hand: "L" },
+];
+const DEMO_SIXTEENTHS: StickingCell[] = Array.from({ length: 16 }, (_, i) => ({
+  hand: (i % 2 === 0 ? "R" : "L") as "R" | "L",
+  accent: i % 4 === 0,
+}));
+// The Moeller whip as a demo: one accent then two taps (down / tap / up).
+const DEMO_MOELLER: StickingCell[] = [
+  { hand: "R", accent: true }, { hand: "R" }, { hand: "R" },
 ];
 
 // ── The GLOSSARY ──────────────────────────────────────────────────────────
@@ -1315,6 +1326,108 @@ export const GLOSSARY: GlossaryEntry[] = [
     hear: () => hear(() => playSticking(DEMO_ROLL, 120)),
     seeKind: "text",
     seeText: "A repeating sticking pattern (e.g. R L R L) drilled slow, then faster, until it is even and automatic.",
+  },
+
+  // ---- Drums (Stage B) — the rudiment + reading vocabulary of Tiers 1-3. ----
+  {
+    id: "single-stroke-roll",
+    title: "Single Stroke Roll",
+    aliases: ["single stroke roll", "single strokes", "single stroke"],
+    what: "The simplest rudiment: you alternate hands, right left right left, one hit each — the pattern every other rudiment is built from.",
+    why: "Almost everything you play breaks down into single strokes, so making both hands sound identical here is the foundation for every fill and fast pattern.",
+    hear: () => hear(() => playSticking(drumsFocusFor("C").pattern, 100)),
+    seeKind: "text",
+    seeText: "R L R L R L R L — the hands alternating evenly, one hit at a time.",
+  },
+  {
+    id: "double-stroke-roll",
+    title: "Double Stroke Roll",
+    aliases: ["double stroke roll", "double strokes", "double stroke"],
+    what: "Two strokes per hand — R R L L — where the second stroke of each pair is the stick's own rebound, caught with the fingers.",
+    why: "Doubles are the engine behind fast fills, rolls, and quiet ghost notes; letting the bounce play the second note is what makes speed feel easy.",
+    hear: () => hear(() => playSticking(drumsFocusFor("G").pattern, 90)),
+    seeKind: "text",
+    seeText: "R R L L R R L L — two even hits per hand before switching.",
+  },
+  {
+    id: "sixteenth-notes",
+    title: "Sixteenth Notes",
+    aliases: ["sixteenth notes", "sixteenths", "sixteenth note", "16th notes"],
+    what: "Notes that split each beat into four even parts, counted '1 e & a' — twice as dense as eighth notes.",
+    why: "Most busy grooves and quick fills live at this subdivision, so counting and playing sixteenths evenly is the door to real drum parts.",
+    hear: () => hear(() => playSticking(DEMO_SIXTEENTHS, 300)),
+    seeKind: "text",
+    seeText: "Each beat split into four even ticks — 1 e & a, 2 e & a — sixteen hits in a bar.",
+  },
+  {
+    id: "accent",
+    title: "Accent",
+    aliases: ["accent", "accents"],
+    what: "A note played noticeably louder than the notes around it, marked with a '>' wedge above it.",
+    why: "Placing a loud note exactly where you want it is the basis of groove and feel — it is how a flat, even pattern turns into music.",
+    hear: () => hear(() => playSticking(DEMO_LOUD_SOFT, 84)),
+    seeKind: "text",
+    seeText: "One note standing out louder — a '>' over it — against quieter notes on either side.",
+  },
+  {
+    id: "paradiddle",
+    title: "Paradiddle",
+    aliases: ["paradiddle", "single paradiddle", "paradiddles"],
+    what: "A sticking that fuses singles and doubles — R L R R, L R L L — with the lead hand switching each time through.",
+    why: "It is the most-used sticking in drumming; the doubled note lets you reset a hand to move a fill around the drums.",
+    hear: () => hear(() => playSticking(drumsFocusFor("A").pattern, 100)),
+    seeKind: "text",
+    seeText: "R L R R, then L R L L — a single, a single, then a double, hands swapping lead.",
+  },
+  {
+    id: "flam",
+    title: "Flam",
+    aliases: ["flam", "flams"],
+    what: "A soft grace note played a hair before a louder main note from the other hand, heard as one thick note rather than two.",
+    why: "Flams add weight — dropping one on a backbeat is the textbook way to make it hit harder and fuller.",
+    hear: () => hear(() => playSticking(drumsFocusFor("F").pattern, 90)),
+    seeKind: "text",
+    seeText: "A tiny soft note tucked just before a loud one — two sticks, one thick sound.",
+  },
+  {
+    id: "drag",
+    title: "Drag (Ruff)",
+    aliases: ["drag", "drags", "ruff"],
+    what: "Two quick soft grace notes on one hand leading into a louder note on the other — a tiny 'brrp' before the main hit. Also called a ruff.",
+    why: "The drag sits inside a dozen other patterns, and on its own it is the classic soft pickup into a fill or accented backbeat.",
+    hear: () => hear(() => playSticking(drumsFocusFor("B").pattern, 90)),
+    seeKind: "text",
+    seeText: "Two soft grace notes, then a loud tap — a little rip of sound into the main note.",
+  },
+  {
+    id: "five-stroke-roll",
+    title: "Five Stroke Roll",
+    aliases: ["five stroke roll", "five-stroke roll", "5 stroke roll"],
+    what: "Two doubles capped by a single accent — R R L L R — a short counted roll that resolves into one loud hit.",
+    why: "It is the classic 'roll into a hit' shape that ends fills and sets up crashes.",
+    hear: () => hear(() => playSticking(drumsFocusFor("E").pattern, 100)),
+    seeKind: "text",
+    seeText: "R R L L R — two doubles, then one accented note that clearly tops the roll.",
+  },
+  {
+    id: "buzz-roll",
+    title: "Buzz Roll",
+    aliases: ["buzz roll", "press roll", "multiple bounce roll", "buzz"],
+    what: "A smooth sustained sound made by pressing each stroke into the pad so the stick buzzes many times, alternating hands.",
+    why: "It is the texture behind crescendos, swells, and soft builds — a control-and-dynamics skill, not a speed one.",
+    hear: () => hear(() => playSticking(drumsFocusFor("am").pattern, 90)),
+    seeKind: "text",
+    seeText: "Each stroke pressed so it buzzes, the hands overlapping into one continuous roll.",
+  },
+  {
+    id: "moeller",
+    title: "The Whip Stroke (Moeller)",
+    aliases: ["moeller", "whip stroke", "moeller technique", "moeller method"],
+    what: "A relaxed whipping arm motion that chains a down stroke, a rebound tap, and an up stroke into one flowing move, using gravity for speed and power.",
+    why: "It is how drummers play fast and loud with little effort — but it is built on the four strokes, so it comes only once those are automatic.",
+    hear: () => hear(() => playSticking(DEMO_MOELLER, 80)),
+    seeKind: "text",
+    seeText: "One accent, then two taps, in a single whipping motion — down, tap, up.",
   },
 ];
 
