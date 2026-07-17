@@ -11,6 +11,7 @@ import { weekIdOf } from "@/lib/ghostKey";
 import { setRootAttrs } from "@/lib/domAttrs";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { focusNoun, isNonTonal } from "@/lib/focusNoun";
+import { reminderExampleQuote } from "@/lib/sharedCopy";
 import type { Instrument } from "@/lib/types";
 import { learningPathPatch, PATH_OPTIONS } from "@/components/Onboarding";
 import { CloudSync } from "@/components/CloudSync";
@@ -143,7 +144,7 @@ function Settings() {
       </header>
 
       <Section title="Instrument">
-        <p className="text-xs text-[color:var(--ink-3)] mb-3">Switch between piano and electric guitar. Your progress for each is kept separately.</p>
+        <p className="text-xs text-[color:var(--ink-3)] mb-3">Switch between {INSTRUMENTS.map((o) => o.label.toLowerCase()).join(", ").replace(/, ([^,]+)$/, ", and $1")}. Your progress for each is kept separately.</p>
         <div className="inline-flex rounded-full border border-[color:var(--rule)] p-1 bg-[color:var(--surface)]">
           {INSTRUMENTS.map((o) => (
             <button
@@ -270,7 +271,7 @@ function Settings() {
             className="accent-[color:var(--accent)]"
           />
           <span className="text-sm text-[color:var(--ink-2)]">
-            One note after five days away: <span className="italic text-[color:var(--ink-3)]">"The piano is here when you are."</span>
+            One note after five days away: <span className="italic text-[color:var(--ink-3)]">"{reminderExampleQuote(activeModule)}"</span>
           </span>
         </label>
         <p className="text-xs text-[color:var(--ink-3)] italic mt-1">Off by default. Nothing else, ever.</p>

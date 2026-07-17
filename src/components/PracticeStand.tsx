@@ -16,7 +16,8 @@ import { FreeSlot } from "./slots/FreeSlot";
 import { generateEarRoundForModule } from "@/lib/earRounds";
 import { effectiveEarLevel } from "@/lib/earProgression";
 import { drillRepId, scaleRepId, pieceRepId } from "@/lib/types";
-import type { EarRound } from "@/lib/types";
+import type { EarRound, Instrument } from "@/lib/types";
+import { mentalPracticeCopy } from "@/lib/sharedCopy";
 import { UnlockCardModal } from "./UnlockCardModal";
 import { LevelUpModal } from "./LevelUpModal";
 import { XPBar } from "./XPBar";
@@ -300,7 +301,7 @@ export function PracticeStand() {
             {showStartHere && (
               <StartHereCard instrument={instrumentDisplayName} />
             )}
-            <MentalPracticeCard firstBack={plan.mode === "first-back"} pieceTitle={piece?.title} />
+            <MentalPracticeCard firstBack={plan.mode === "first-back"} pieceTitle={piece?.title} instrument={state.instrument} />
             <div className="mt-5">
               <WarmupSlot module={module} warmup={plan.warmup} ghostName={ghost.name} ghostKey={plan.ghostKey} printAlways={printing} isNow={nowSlot === "warmup"} status={slotStatus("warmup")} />
               <PieceSlot module={module} piece={piece} printAlways={printing} isNow={nowSlot === "piece"} status={piece && pieceDone ? "done" : null} />
@@ -513,7 +514,7 @@ function DailyFramingLine() {
 /** R9 — mental-practice (audiation) card. An OPTIONAL prompt for the times you're
  *  away from the instrument or easing back in. Dismissible for the session, so it
  *  helps rather than nags. Surfaced more prominently on a first-back day. */
-function MentalPracticeCard({ firstBack, pieceTitle }: { firstBack: boolean; pieceTitle?: string }) {
+function MentalPracticeCard({ firstBack, pieceTitle, instrument }: { firstBack: boolean; pieceTitle?: string; instrument: Instrument }) {
   const [dismissed, setDismissed] = useState(false);
   if (dismissed) return null;
   const subject = pieceTitle ? `“${pieceTitle}”` : "this week's piece";
@@ -528,9 +529,7 @@ function MentalPracticeCard({ firstBack, pieceTitle }: { firstBack: boolean; pie
             Away from your instrument?
           </p>
           <p className="text-xs text-[color:var(--ink-2)] leading-relaxed">
-            {firstBack
-              ? `Ease back in without touching a key. Close your eyes and hear ${subject}. Feel the fingering, beat by beat. Mental reps count.`
-              : `Close your eyes and hear ${subject}. Feel the fingering in your hands. Even a minute of this strengthens the real thing.`}
+            {mentalPracticeCopy(instrument, firstBack, subject)}
           </p>
         </div>
         <button

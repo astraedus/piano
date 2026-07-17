@@ -246,7 +246,7 @@ export function endSession(
       at: log.endedAt,
       kind: "ear-level-up",
       instrument: state.instrument,
-      label: `ear level ${earLevel} — ${earLevelLabel(earLevel)}`,
+      label: `ear level ${earLevel} — ${earLevelLabel(earLevel, getModuleSync(state.instrument)?.focusKind)}`,
       detail: { earLevel },
     });
   }

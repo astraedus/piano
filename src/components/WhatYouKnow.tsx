@@ -36,6 +36,7 @@ export function WhatYouKnow() {
     earLevel: effectiveEarLevel(state, module?.earLevelGates),
     sessions: state.sessions ?? [],
     pieces: state.pieces ?? [],
+    focusKind: module?.focusKind,
   });
 
   const totalMin = (state.sessions ?? []).reduce((s, x) => s + x.minutes, 0);

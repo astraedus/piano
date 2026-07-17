@@ -77,8 +77,19 @@ export function earLevelAdvanced(from: EarLevel, to: EarLevel): boolean {
   return to > from;
 }
 
-/** Human label for an ear level, for UI surfaces. */
-export function earLevelLabel(level: EarLevel): string {
+/** Human label for an ear level, for UI surfaces. Non-tonal instruments
+ *  (focusKind "rudiment") get the rhythm-dictation ladder — the tonal names
+ *  ("Major vs Minor" etc.) must never appear on a drums surface (QA 2026-07-17). */
+export function earLevelLabel(level: EarLevel, focusKind?: "key" | "chord" | "rudiment"): string {
+  if (focusKind === "rudiment") {
+    switch (level) {
+      case 1: return "Beat Divisions";
+      case 2: return "Eighth-Note Patterns";
+      case 3: return "Sixteenth Patterns";
+      case 4: return "Accent Placement";
+      default: return "Rudiments by Ear";
+    }
+  }
   switch (level) {
     case 1: return "Major vs Minor";
     case 2: return "Scale Degrees";

@@ -4,6 +4,7 @@ import { useAppState } from "@/hooks/useAppState";
 import { KEY_META } from "@/lib/music";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { focusNoun, isNonTonal } from "@/lib/focusNoun";
+import { weeklyFocusBlurb } from "@/lib/sharedCopy";
 import { nextToLearn } from "@/lib/skillTree";
 import { abilityAxis, generationAxis, patternAxis } from "@/lib/threeAxis";
 import { effectiveEarLevel } from "@/lib/earProgression";
@@ -63,7 +64,7 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
   // Show the EFFECTIVE (gate-clamped) ear level, not a stored ratchet the learner
   // can't actually access yet — the card must never claim a level the curriculum
   // hasn't earned.
-  const pattern = patternAxis(effectiveEarLevel(state, module?.earLevelGates), (state.sessions ?? []).map((s) => s.earResults));
+  const pattern = patternAxis(effectiveEarLevel(state, module?.earLevelGates), (state.sessions ?? []).map((s) => s.earResults), module?.focusKind);
 
   return (
     <section className="border-t border-[color:var(--rule)] pt-8 mt-10 space-y-8">
@@ -79,7 +80,7 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
             <span className="text-[color:var(--ink-2)]">Warmup · {warmup?.label ?? "—"}</span>
           </p>
           <p className="text-xs text-[color:var(--ink-3)] italic">
-            One key, seven days. The week picks it, so you don't have to.
+            {weeklyFocusBlurb(module?.focusKind)}
             {thisWeek.weekInRotation && thisWeek.rotationLength
               ? ` This is week ${thisWeek.weekInRotation} of ${thisWeek.rotationLength} in the rotation.`
               : ""}

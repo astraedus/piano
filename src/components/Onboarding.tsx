@@ -43,15 +43,20 @@ export const PATH_OPTIONS: { tag: PathTag; label: string; sub: (instrumentNoun: 
   {
     tag: "just-play",
     label: "Just Play",
-    sub: () => "Learn riffs, chords, and songs. Make noise you love. No music theory needed, ever.",
+    sub: (n) =>
+      n === "drums"
+        ? "Learn grooves, rudiments, and songs. Make noise you love. No music theory needed, ever."
+        : "Learn riffs, chords, and songs. Make noise you love. No music theory needed, ever.",
   },
   {
     tag: "play-with-soul",
     label: "Play With Soul",
     sub: (n) =>
-      n === "guitar"
-        ? "Solo, bend, improvise. Learn to make the guitar sing and cry. Builds on Just Play."
-        : "Solo, improvise, shape every note. Learn to make the piano sing. Builds on Just Play.",
+      n === "drums"
+        ? "Groove, improvise, shape every stroke. Learn to make the drums talk. Builds on Just Play."
+        : n === "guitar"
+          ? "Solo, bend, improvise. Learn to make the guitar sing and cry. Builds on Just Play."
+          : "Solo, improvise, shape every note. Learn to make the piano sing. Builds on Just Play.",
   },
   {
     tag: "go-deep",
