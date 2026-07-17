@@ -12,17 +12,12 @@
 // notes — the relative minor pentatonic IS the major pentatonic's box), so the
 // shape shown is the correct scale for the key.
 
-import type { KeyId } from "../types";
+import type { FretPosition, KeyId } from "../types";
 import { KEY_META, noteIndex } from "../music";
 
-// Re-declared locally to avoid importing the React component's type. Matches
-// Fretboard's FretPosition (string 1 = low E .. 6 = high e; fret 0 = open).
-export interface ScaleBoxPosition {
-  string: number;
-  fret: number;
-  root?: boolean;
-  label?: string;
-}
+// A scale-box dot is just a FretPosition (string 1 = low E .. 6 = high e; fret
+// 0 = open). Kept as a named alias for readability at the call sites here.
+export type ScaleBoxPosition = FretPosition;
 
 // The moveable minor-pentatonic Box 1 shape, as fret OFFSETS from the root fret
 // (string 1 = low E). Root degrees flagged. This is the canonical Box 1 the app

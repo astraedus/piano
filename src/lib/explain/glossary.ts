@@ -13,7 +13,9 @@
 // AudioContext is unlocked by the user's tap. They use the helpers in
 // `src/lib/audio.ts` (playSequence / playChord / playProgression / playCadence /
 // playBend / playVibrato / playMutedChug). Note names are Scientific Pitch
-// Notation. `seeNotes` (SPN) feed Keyboard/Fretboard; `seeChordShape`
+// Notation. `seeNotes` (SPN) feed the Keyboard; `seePositions` (string/fret dots)
+// feed the Fretboard — a guitar pitch maps to several fretboard spots, so the
+// honest view is authored positions, not a note→fret guess; `seeChordShape`
 // (6-el lowE..highE, -1 muted / 0 open / n fret) feeds ChordDiagram.
 
 import {
@@ -26,19 +28,34 @@ import {
   playSequence,
   playVibrato,
 } from "../audio";
+import type { FretPosition } from "../types";
+import { AM_PENT_BOX1, AM_BLUES_BOX1 } from "../guitar/scaleShapes";
 
-export interface GlossaryEntry {
+export type SeeKind = "fretboard" | "keyboard" | "chord-diagram" | "text";
+
+// The SEE payload — WHAT to draw plus its data. An entry carries one inline as
+// its primary/default view and MAY override it per instrument (seeByInstrument)
+// for shared concepts that live on both a keyboard and a fretboard.
+export interface GlossarySee {
+  seeKind: SeeKind;
+  seeNotes?: string[]; // SPN — keyboard highlight
+  seePositions?: FretPosition[]; // fretboard dots (string/fret) — the honest guitar view
+  seeChordShape?: number[]; // for chord-diagram (lowE..highE, -1 = muted)
+  seeText?: string; // for seeKind: "text"
+}
+
+export interface GlossaryEntry extends GlossarySee {
   id: string; // "power-chord", "g-major", "tonic"
   title: string; // "Power Chords"
   aliases: string[]; // for the inline text scanner: ["power chord", "5 chord", "rock chord"]
   what: string; // 1 sentence, zero jargon
   why: string; // 1 sentence on why it matters for sounding good
   hear: () => Promise<void>; // calls ensureAudio() then audio.ts helpers
-  seeKind: "fretboard" | "keyboard" | "chord-diagram" | "text";
-  seeNotes?: string[]; // scientific pitch for fretboard/keyboard highlight
-  seeChordShape?: number[]; // for chord-diagram (lowE..highE, -1 = muted)
-  seeText?: string; // for seeKind: "text"
   instrument?: "guitar" | "piano" | "both"; // omit = both
+  // Per-instrument SEE override for a shared concept: when the active instrument
+  // has a variant here it replaces the primary SEE, so a piano improvisation
+  // lesson shows a keyboard while guitar keeps the fretboard box.
+  seeByInstrument?: Partial<Record<"piano" | "guitar", GlossarySee>>;
 }
 
 // Small helper so every `hear` unlocks audio before playing.
@@ -73,7 +90,12 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "Open strings ring fuller and anchor many famous riffs and chords.",
     hear: () => hear(() => playSequence(["E2", "A2", "D3", "G3", "B3", "E4"], { noteDurationSec: 0.45 })),
     seeKind: "fretboard",
-    seeNotes: ["E2", "A2", "D3", "G3", "B3", "E4"],
+    // All six strings played open (fret 0) — the six named open strings.
+    seePositions: [
+      { string: 1, fret: 0, label: "E" }, { string: 2, fret: 0, label: "A" },
+      { string: 3, fret: 0, label: "D" }, { string: 4, fret: 0, label: "G" },
+      { string: 5, fret: 0, label: "B" }, { string: 6, fret: 0, label: "e" },
+    ],
     instrument: "guitar",
   },
   {
@@ -208,7 +230,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It is forgiving and expressive, and it lives in nearly every rock, blues, and pop solo.",
     hear: () => hear(() => playSequence(["A4", "C5", "D5", "E5", "G5", "A5"])),
     seeKind: "fretboard",
-    seeNotes: ["A4", "C5", "D5", "E5", "G5", "A5"],
+    seePositions: AM_PENT_BOX1,
+    seeByInstrument: { piano: { seeKind: "keyboard", seeNotes: ["A4", "C5", "D5", "E5", "G5", "A5"] } },
   },
   {
     id: "minor-pentatonic",
@@ -218,7 +241,7 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It sits behind almost every rock and blues solo: five notes, infinite expression.",
     hear: () => hear(() => playSequence(["A4", "C5", "D5", "E5", "G5", "A5"])),
     seeKind: "fretboard",
-    seeNotes: ["A4", "C5", "D5", "E5", "G5", "A5"],
+    seePositions: AM_PENT_BOX1,
     instrument: "guitar",
   },
   {
@@ -229,7 +252,7 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "Learning the boxes one at a time gives you freedom over the whole fretboard.",
     hear: () => hear(() => playSequence(["A4", "C5", "D5", "E5", "G5", "A5"])),
     seeKind: "fretboard",
-    seeNotes: ["A4", "C5", "D5", "E5", "G5", "A5"],
+    seePositions: AM_PENT_BOX1,
     instrument: "guitar",
   },
 
@@ -389,7 +412,13 @@ export const GLOSSARY: GlossaryEntry[] = [
       ["E3", "B3"],
     ])),
     seeKind: "fretboard",
-    seeNotes: ["E2", "A2", "D3"],
+    // Blues in A: the I, IV and V chord roots (A, D, E) on the low strings.
+    seePositions: [
+      { string: 1, fret: 5, root: true, label: "I" },
+      { string: 2, fret: 5, label: "IV" },
+      { string: 2, fret: 7, label: "V" },
+    ],
+    seeByInstrument: { piano: { seeKind: "keyboard", seeNotes: ["A4", "D5", "E5"] } },
   },
   {
     id: "ii-v-i",
@@ -415,7 +444,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It is the foundation of every guitar note actually sounding musical instead of buzzing.",
     hear: () => hear(() => playSequence(["A2", "A2", "A2"], { noteDurationSec: 0.4 })),
     seeKind: "fretboard",
-    seeNotes: ["A2"],
+    // One clean fretted note: A on the low E string, 5th fret.
+    seePositions: [{ string: 1, fret: 5, root: true }],
     instrument: "guitar",
   },
   {
@@ -465,7 +495,8 @@ export const GLOSSARY: GlossaryEntry[] = [
       await playChord(["E2", "B2", "E3"], { durationSec: 0.8 });
     }),
     seeKind: "fretboard",
-    seeNotes: ["E2", "B2"],
+    // The E5 power chord you chug: open low E (root) + B on the A string, fret 2.
+    seePositions: [{ string: 1, fret: 0, root: true }, { string: 2, fret: 2 }],
     instrument: "guitar",
   },
   {
@@ -479,7 +510,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It makes melodies flow and is the key to smooth, connected blues and rock lines.",
     hear: () => hear(() => playBend("G4", "A4")),
     seeKind: "fretboard",
-    seeNotes: ["A4", "B4"],
+    // Hammer a whole step up on the high e string: A (fret 5) → B (fret 7).
+    seePositions: [{ string: 6, fret: 5 }, { string: 6, fret: 7, label: "H" }],
     instrument: "guitar",
   },
   {
@@ -490,7 +522,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It is the descending half of legato, the partner to the hammer-on.",
     hear: () => hear(() => playBend("A4", "G4")),
     seeKind: "fretboard",
-    seeNotes: ["A4", "B4"],
+    // Pull off a whole step down on the high e string: B (fret 7) → A (fret 5).
+    seePositions: [{ string: 6, fret: 7 }, { string: 6, fret: 5, label: "P" }],
     instrument: "guitar",
   },
   {
@@ -501,7 +534,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It adds a vocal, bluesy quality almost instantly.",
     hear: () => hear(() => playBend("D5", "E5")),
     seeKind: "fretboard",
-    seeNotes: ["E4", "F#4"],
+    // Slide up a whole step on the B string, 5th fret (E) → 7th (F#).
+    seePositions: [{ string: 5, fret: 5 }, { string: 5, fret: 7, label: "/" }],
     instrument: "guitar",
   },
   {
@@ -512,7 +546,9 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It is the blues voice: the crying quality that makes an electric solo sound human.",
     hear: () => hear(() => playBend("E5", "F#5")),
     seeKind: "fretboard",
-    seeNotes: ["E5"],
+    // The signature blues bend: push the D on the G string (fret 7) up a whole
+    // step toward E, the way a singer slides up to a note.
+    seePositions: [{ string: 4, fret: 7, label: "↑" }],
     instrument: "guitar",
   },
   {
@@ -523,7 +559,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It makes a held note sing and is the signature of expressive playing.",
     hear: () => hear(() => playVibrato("E5", 6)),
     seeKind: "fretboard",
-    seeNotes: ["E5"],
+    // A held note to shake: the tonic A on the high e string, fret 5, wobbled.
+    seePositions: [{ string: 6, fret: 5, root: true, label: "~" }],
     instrument: "guitar",
   },
   {
@@ -534,7 +571,10 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It is the entry point to real playing, and the first thing you can show people.",
     hear: () => hear(() => playSequence(["E2", "E2", "G2", "E2", "A2", "G2"], { noteDurationSec: 0.3 })),
     seeKind: "fretboard",
-    seeNotes: ["E2", "G2", "A2"],
+    // A low-string riff on the low E: open E (root), G (fret 3), A (fret 5).
+    seePositions: [
+      { string: 1, fret: 0, root: true }, { string: 1, fret: 3 }, { string: 1, fret: 5 },
+    ],
     instrument: "guitar",
   },
   {
@@ -545,7 +585,11 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "Licks are the sentences of improvisation: things you actually have to say.",
     hear: () => hear(() => playSequence(["E5", "G5", "E5", "D5", "C5", "A4"], { noteDurationSec: 0.22 })),
     seeKind: "fretboard",
-    seeNotes: ["A4", "C5", "D5", "E5", "G5"],
+    // A short descending lick inside Box 1: C5, A4, G4, E4, D4.
+    seePositions: [
+      { string: 6, fret: 8 }, { string: 6, fret: 5, root: true },
+      { string: 5, fret: 8 }, { string: 5, fret: 5 }, { string: 4, fret: 7 },
+    ],
     instrument: "guitar",
   },
   {
@@ -577,7 +621,9 @@ export const GLOSSARY: GlossaryEntry[] = [
       await playSequence(["A4", "C5", "D5", "E5", "D5", "C5", "A4"], { noteDurationSec: 0.24 });
     }),
     seeKind: "fretboard",
-    seeNotes: ["A4", "C5", "D5", "E5", "G5", "A5"],
+    // Guitar: the Am pentatonic box you solo over. Piano: the same scale on keys.
+    seePositions: AM_PENT_BOX1,
+    seeByInstrument: { piano: { seeKind: "keyboard", seeNotes: ["A4", "C5", "D5", "E5", "G5", "A5"] } },
   },
   {
     id: "phrasing",
@@ -1002,7 +1048,11 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It turns any single note you already know into a fast route to that same note higher up the neck, instead of a whole new fretboard you have to memorize from scratch.",
     hear: () => hear(() => playSequence(["A2", "A3"], { noteDurationSec: 0.6 })),
     seeKind: "fretboard",
-    seeNotes: ["A2", "A3"],
+    // The octave shape: A on the low E (fret 5) → skip a string, +2 frets → A on
+    // the D string (fret 7), one octave up.
+    seePositions: [
+      { string: 1, fret: 5, root: true, label: "A" }, { string: 3, fret: 7, label: "8" },
+    ],
     instrument: "guitar",
   },
   {
@@ -1026,7 +1076,9 @@ export const GLOSSARY: GlossaryEntry[] = [
       await playMutedChug(["E2", "A2", "D3", "G3", "B3"], 2);
     }),
     seeKind: "fretboard",
-    seeNotes: ["A4"],
+    // One note rings clean (A on the high e, fret 5) while every other string
+    // stays silenced — the whole point of noise control under gain.
+    seePositions: [{ string: 6, fret: 5, root: true }],
     instrument: "guitar",
   },
   {
@@ -1061,7 +1113,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "Dropped into the minor pentatonic box you already know, this single note is the highest-value note in blues and rock lead, the tension that makes a line sound bluesy instead of plain.",
     hear: () => hear(() => playSequence(["D4", "D#4", "E4"], { noteDurationSec: 0.5 })),
     seeKind: "fretboard",
-    seeNotes: ["A4", "C5", "D5", "D#5", "E5", "G5", "A5"],
+    // Am Box 1 with the blue note (♭5) added on the A string, fret 6.
+    seePositions: AM_BLUES_BOX1,
     instrument: "guitar",
   },
   {
@@ -1072,7 +1125,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It is the sound of nearly every blues and rock solo, and you build it from a shape you already own just by adding one note.",
     hear: () => hear(() => playSequence(["A4", "C5", "D5", "D#5", "E5", "G5", "A5"])),
     seeKind: "fretboard",
-    seeNotes: ["A4", "C5", "D5", "D#5", "E5", "G5", "A5"],
+    // The six-note blues scale: Am Box 1 plus the blue note (♭5) on the A string.
+    seePositions: AM_BLUES_BOX1,
     instrument: "guitar",
   },
   {
@@ -1083,7 +1137,8 @@ export const GLOSSARY: GlossaryEntry[] = [
     why: "It is actually the more common bend in real music, and its short travel makes it the easiest bend to land exactly in tune.",
     hear: () => hear(() => playBend("F#4", "G4")),
     seeKind: "fretboard",
-    seeNotes: ["F#4", "G4"],
+    // A half-step bend on the B string, 7th fret (F#), pushed up one fret to G.
+    seePositions: [{ string: 5, fret: 7, label: "½" }],
     instrument: "guitar",
   },
   {
@@ -1097,7 +1152,11 @@ export const GLOSSARY: GlossaryEntry[] = [
       await playBend("D4", "E4");
     }),
     seeKind: "fretboard",
-    seeNotes: ["D4", "E4"],
+    // Unison bend: hold E on the B string (fret 5), bend D on the G string
+    // (fret 7) up a whole step until both strings ring the same E.
+    seePositions: [
+      { string: 5, fret: 5, label: "=" }, { string: 4, fret: 7, label: "↑" },
+    ],
     instrument: "guitar",
   },
   {

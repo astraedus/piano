@@ -118,6 +118,8 @@ const NODE_TERM_IDS: Record<string, string> = {
   "p-t0-staff": "staff",
   "p-t1-articulation": "articulation",
   "p-t2-hands-together": "hands-together",
+  "p-t2-pedal": "sustain-pedal",
+  "p-t2-inversions": "inversion",
   "p-t1-first-improv": "improvisation",
   "p-t1-echo-ear": "ear-training",
   "p-t1-three-moods": "three-moods",

@@ -31,6 +31,22 @@ export type SkillCategory =
 
 export type SkillNodeStatus = "locked" | "available" | "in-progress" | "learned";
 
+// ---- Guitar fretboard positions ----
+// The canonical dot-on-the-neck shape. Pure data (no React) so it can live in the
+// shared type home and be authored/tested as data — the Fretboard component, the
+// scale-box derivation (scaleBox.ts), the glossary SEE-data and GuitarMap all plot
+// FretPosition[]. Previously re-declared in three places; unified here.
+export interface FretPosition {
+  /** 1 (low E) .. 6 (high e) — guitar string, low to high. */
+  string: number;
+  /** 0 = open (on the nut), n = fret n. */
+  fret: number;
+  /** true → root note (accent-colored). */
+  root?: boolean;
+  /** optional short label rendered inside the dot (e.g. a note name, "H", "♭5"). */
+  label?: string;
+}
+
 export interface SkillNode {
   id: string;                         // "g-t1-power", "p-key-C-scale"
   instrument: Instrument | "shared";  // "shared" = music theory / ear (shows in both graphs)

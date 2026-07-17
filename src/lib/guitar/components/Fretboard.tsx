@@ -11,27 +11,22 @@
 // PracticeStand can mount it as the guitar's instrument visual, AND accepts a
 // richer `positions`/`box` API for the skill-graph viz slot.
 
-export interface FretPosition {
-  /** 1 (low E) .. 6 (high e) — guitar string, low to high. */
-  string: number;
-  /** 0 = open (on the nut), n = fret n. */
-  fret: number;
-  /** true → root note (accent-colored). */
-  root?: boolean;
-  label?: string;
-}
+import type { FretPosition } from "@/lib/types";
+// Re-export so existing importers (GuitarMap) keep resolving it from here.
+export type { FretPosition };
 
 export interface FretboardProps {
   /** Explicit dot positions (preferred for scale/box maps). */
   positions?: FretPosition[];
-  /** Fret window start (1-based). Defaults to 0 (nut shown). */
+  /** Fret window start (1-based). Defaults to 0 (nut shown). When left at 0 the
+   *  window auto-frames to the dots: shapes played up the neck (no open/low
+   *  notes) get a position label instead of a wasteful run of empty low frets. */
   startFret?: number;
   /** Number of frets to draw. */
   frets?: number;
   className?: string;
   ariaLabel?: string;
   // --- InstrumentVisualProps compatibility (module slot) ---
-  notes?: string[];
   shape?: number[];
 }
 
@@ -70,10 +65,15 @@ export function Fretboard({
   const dots =
     positions ?? (shape ? shapeToPositions(shape) : AM_PENTATONIC_BOX1);
 
-  // Derive the fret window. If startFret is 0 we draw the nut; otherwise show the
-  // position label.
-  const maxDotFret = dots.reduce((m, d) => Math.max(m, d.fret), startFret + frets);
-  const firstFret = startFret > 0 ? startFret : 0;
+  // Derive the fret window. An explicit startFret > 0 always wins. Otherwise
+  // auto-frame: if every dot sits up the neck (nothing open or in the first two
+  // frets), start the window just below the lowest dot so a box up at, say, the
+  // 7th fret shows a "6fr" label instead of a long empty stretch from the nut.
+  const minDotFret = dots.length ? Math.min(...dots.map((d) => d.fret)) : 0;
+  const maxDotFret = dots.length ? Math.max(...dots.map((d) => d.fret)) : frets;
+  const hasLowNote = dots.some((d) => d.fret <= 2);
+  const autoStart = !hasLowNote && minDotFret >= 4 ? minDotFret - 1 : 0;
+  const firstFret = startFret > 0 ? startFret : autoStart;
   const lastFret = Math.max(firstFret + frets, maxDotFret);
   const fretCount = lastFret - firstFret;
 

@@ -14,6 +14,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { createPortal } from "react-dom";
 import type { GlossaryEntry } from "@/lib/explain/glossary";
 import { TermVisual } from "@/components/explain/TermVisual";
+import { readInstrument } from "@/lib/domAttrs";
 
 export interface ExplainProps {
   entry: GlossaryEntry;
@@ -141,9 +142,10 @@ export function Explain({ entry, anchor, onClose }: ExplainProps) {
         </button>
       </div>
 
-      {/* SEE IT */}
+      {/* SEE IT — instrument-aware for shared terms (card is client-only here,
+          so reading the active instrument off the root is hydration-safe). */}
       <div className="mt-3">
-        <TermVisual entry={entry} />
+        <TermVisual entry={entry} instrument={readInstrument()} />
       </div>
 
       {/* WHY IT MATTERS */}

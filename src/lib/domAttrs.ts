@@ -32,3 +32,16 @@ export function setRootAttrs(attrs: RootAttrs): void {
     // SSR / detached document — ignore.
   }
 }
+
+/**
+ * Read the active instrument off the document root (the canonical global signal
+ * that setRootAttrs / the boot script keep in sync). For CLIENT-ONLY surfaces
+ * that lack app-state context — e.g. the singleton Explain card mounted above
+ * the state provider — so a shared term's SEE visual matches the instrument the
+ * learner is on. Returns undefined during SSR / when unset.
+ */
+export function readInstrument(): Instrument | undefined {
+  if (typeof document === "undefined") return undefined;
+  const v = document.documentElement.getAttribute("data-instrument");
+  return v === "piano" || v === "guitar" ? v : undefined;
+}

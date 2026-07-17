@@ -135,6 +135,11 @@ describe("nodeToTermId", () => {
     expect(nodeToTermId("g-t0-anatomy")).toBe("open-string");
   });
 
+  it("maps the pedal + inversions piano lessons to their own terms (visual + audio)", () => {
+    expect(nodeToTermId("p-t2-pedal")).toBe("sustain-pedal");
+    expect(nodeToTermId("p-t2-inversions")).toBe("inversion");
+  });
+
   it("returns undefined for nodes with no direct concept map", () => {
     expect(nodeToTermId("g-t0-posture")).toBeUndefined();
     expect(nodeToTermId("p-key-D")).toBeUndefined();
