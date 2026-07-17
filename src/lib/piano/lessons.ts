@@ -832,4 +832,187 @@ export const PIANO_LESSONS: Record<string, NodeLesson> = {
       "note": "The left hand rolls a continuous broken chord pattern under the melody for almost the whole piece, exactly the moving accompaniment you just practiced."
     }
   },
+
+  // ── Batch 3b — hands-together, more keys, articulation, whole-song milestone ──
+  "p-t1-articulation": {
+    "what": "Articulation is how you shape each note: do you hold it smooth and connected into the next one, or clip it short so there is a tiny silence before the next? Smooth and connected is called legato. Short and detached is called staccato. Same notes, same rhythm, completely different feeling, and you choose which one on purpose.",
+    "why": "Touch is feeling. A melody played legato sounds tender, singing, and flowing; the exact same melody played staccato sounds crisp, light, and playful. Once you can switch between the two on command, you stop playing notes and start playing music. It is one of the simplest, most powerful expression levers you have, and it pairs with the pedal and dynamics you meet later.",
+    "steps": [
+      {
+        "do": "Play the five-finger pattern C D E F G, and this time hold each key down right until your next finger presses, so there is never a gap of silence. That is legato: smooth and connected.",
+        "feel": "The sound is one unbroken line, like drawing without lifting your pen."
+      },
+      {
+        "do": "Now play the same C D E F G, but release each key the instant you press it, so a little silence sits between every note. That is staccato: short and detached.",
+        "feel": "Bouncy and crisp, like the notes are hopping instead of walking."
+      },
+      {
+        "do": "Alternate: play the pattern legato once, then staccato once, back and forth, keeping the notes and the tempo exactly the same. Only your touch changes.",
+        "feel": "Same five notes, two totally different moods, and you are steering it."
+      },
+      {
+        "do": "Take a tiny melody you know, like the first line of Twinkle Twinkle (C C G G A A G), and play it fully legato, then fully staccato.",
+        "feel": "Legato makes it a lullaby; staccato makes it a music box. Hear the whole character flip."
+      }
+    ],
+    "goodWhen": "You can play the same line clearly legato (smoothly connected, no gaps) and clearly staccato (short and detached, silence between notes), switching between the two on purpose without changing the notes or the speed.",
+    "watchOut": "The most common mistake is a mushy in-between where legato has little gaps and staccato is not really short, so both sound the same. Fix it by exaggerating: for legato, keep each finger down until the next is fully pressed; for staccato, snap each finger up like the key is hot.",
+    "song": {
+      "name": "Für Elise (Beethoven)",
+      "note": "Its famous opening trades between smooth legato runs and light detached notes. Once you can control articulation, you can shape those exact contrasts instead of playing every note the same way."
+    }
+  },
+
+  "p-t2-hands-together": {
+    "what": "Until now every scale you learned was hands-separate, one hand at a time, and you were only ever shown the right-hand fingering. This teaches the missing half: the LEFT-hand fingering for a scale, and how to play both hands on the same scale at once. The left hand has its own finger pattern, and going up it is a mirror of the right: the third finger crosses OVER the thumb instead of the thumb tucking under.",
+    "why": "The C major fluency check already asks you to play the scale hands together, but nothing has taught you how. Two hands moving as one is the coordination almost every real piece needs. Learn the left-hand fingering and the trick of syncing both hands, and scales stop being a right-hand-only exercise and become something your whole body can do.",
+    "steps": [
+      {
+        "do": "Left hand alone, C major going up: start with your PINKY (finger 5) on the low C, then 4, 3, 2, thumb on G, then cross your THIRD finger over the thumb onto A, then 2, then thumb on the top C. So the fingers are 5-4-3-2-1-3-2-1.",
+        "feel": "Where the right thumb TUCKS UNDER, the left third finger CROSSES OVER. Same idea, mirrored."
+      },
+      {
+        "do": "Play the left-hand C scale up and back down a few times, slow, watching that third-finger cross-over land smoothly on A going up.",
+        "feel": "Smooth as a walk, no lurch at the cross-over point."
+      },
+      {
+        "do": "Now the right hand alone, the fingering you already know: thumb on C, 2, 3, tuck the thumb under after E onto F, then 2, 3, 4, 5 on the top C. That is 1-2-3-1-2-3-4-5.",
+        "feel": "The familiar right-hand tuck under, back in your fingers."
+      },
+      {
+        "do": "Put them together VERY slowly: both thumbs would land on different notes, so just move one note at a time, both hands, up the scale together. Say each note out loud as both hands play it.",
+        "feel": "Awkward at first, then it clicks. Both hands are climbing the same ladder."
+      },
+      {
+        "do": "Once C is steady hands together, do the same with G major, remembering the F sharp in both hands.",
+        "feel": "Same coordination, a new key. Now you own hands-together scales."
+      }
+    ],
+    "goodWhen": "You can play the C and G major scales hands together, up and down, slow and even, using the correct left-hand fingering (third finger crossing over the thumb after the fifth note) without either hand stumbling at the cross-over or tuck.",
+    "watchOut": "The number-one mistake is trying to play hands together at full speed before either hand is solid alone. Fix it by getting each hand fluent SEPARATELY first, then playing hands together painfully slowly, one note at a time. Speed comes free once the coordination is there.",
+    "song": {
+      "name": "Ode to Joy (Beethoven)",
+      "note": "Playing its melody in the right hand with a simple chord or bass line in the left is a first real hands-together piece. The scale coordination you just built is exactly what lets both hands work at once."
+    }
+  },
+
+  "p-key-A": {
+    "what": "A major is a bright, ringing key built on three sharps: F sharp, C sharp, and G sharp. It is the scale starting on A, and those three black keys give it a clear, brilliant sound. It uses the exact same fingering pattern as C, G, and D major, so your fingers already know the moves, you just aim for three black keys instead.",
+    "why": "A major is one of the most common keys in pop, rock, and worship music, because it sits perfectly for guitars and singers, and piano shares those songs. Learning it adds a bright colour and, more importantly, gets you comfortable with a key that has several sharps, proving the scale pattern stays the same no matter how many black keys join in.",
+    "steps": [
+      {
+        "do": "Find A: the white key between the second and third black keys of a group of three (the same landmark as A minor). Put your right thumb on it.",
+        "feel": "A sits snug just left of the last of the three black keys."
+      },
+      {
+        "do": "Play the A scale going up: A, B, C sharp, D, E, F sharp, G sharp, A. The three sharps (C#, F#, G#) are the black keys just above C, F, and G. Tuck your thumb under after C sharp to keep climbing.",
+        "feel": "Three little lifts onto black keys, but the thumb-tuck happens in the same spot as always."
+      },
+      {
+        "do": "Play the A triad: A, C sharp, E together, thumb, middle, pinky.",
+        "feel": "Bright and full. That C sharp in the middle is what makes it major and shining."
+      },
+      {
+        "do": "Play the four big pop chords in A: A, E, F sharp minor (F# A C#), D. That is I-V-vi-IV.",
+        "feel": "Hear that instantly familiar, uplifting pop cycle, now in a brighter home."
+      }
+    ],
+    "goodWhen": "You can play the A major scale hands-separately hitting all three sharps (F#, C#, G#) without hunting, hold an A triad, and move through the I-V-vi-IV chords A, E, F#m, D.",
+    "watchOut": "The most common slip is forgetting the G sharp near the top of the scale and playing plain G, which sounds instantly wrong. Say all three sharps out loud before you start: F sharp, C sharp, G sharp. Make them a habit, not a surprise.",
+    "song": {
+      "name": "Take Me Home, Country Roads (John Denver)",
+      "note": "It lives in A major and leans on A, E, F#m, and D, the exact I-V-vi-IV family (in singalong order) you just built. A major is the warm, ringing home this classic sits in."
+    }
+  },
+
+  "p-key-E": {
+    "what": "E major is a ringing, anthemic key built on four sharps: F sharp, C sharp, G sharp, and D sharp. It is the scale starting on E, and it is one sharp brighter than A major, adding a D sharp on top of A's three sharps. Same fingering pattern as C, G, D, and A, just reaching for four black keys.",
+    "why": "E major is the home of huge rock and pop anthems, again because it loves the guitar and the singing voice, and piano gets to play along. It is your most sharp-heavy key yet, and clearing it proves the big lesson for good: a major scale is one fixed pattern, and the number of black keys never changes how your fingers move.",
+    "steps": [
+      {
+        "do": "Find E: the white key just to the RIGHT of a group of two black keys. Put your right thumb on it.",
+        "feel": "E sits right after the two-black-key group, an easy landmark."
+      },
+      {
+        "do": "Play the E scale going up: E, F sharp, G sharp, A, B, C sharp, D sharp, E. Four sharps (F#, G#, C#, D#). Tuck your thumb under after G sharp to keep climbing.",
+        "feel": "Lots of black keys, but the thumb still tucks in the usual place."
+      },
+      {
+        "do": "Play the E triad: E, G sharp, B together, thumb, middle, pinky.",
+        "feel": "Big and bright. The G sharp in the middle rings like a bell."
+      },
+      {
+        "do": "Play the four big pop chords in E: E, B, C sharp minor (C# E G#), A. That is I-V-vi-IV.",
+        "feel": "The same uplifting cycle you know, now in the most anthemic key on the piano."
+      }
+    ],
+    "goodWhen": "You can play the E major scale hands-separately hitting all four sharps (F#, G#, C#, D#) without hunting, hold an E triad, and move through the I-V-vi-IV chords E, B, C#m, A.",
+    "watchOut": "With four sharps, the easy mistake is dropping one, usually the D sharp near the top, and landing on plain D. Say all four out loud first: F sharp, G sharp, C sharp, D sharp. Go slow enough that every black key is deliberate, not a scramble.",
+    "song": {
+      "name": "Don't Stop Believin' (Journey)",
+      "note": "Its unmistakable verse loops E, B, C#m, A, exactly the I-V-vi-IV family you just built, in the key of E major. Learn the four chords and you are playing one of the most famous singalongs ever written."
+    }
+  },
+
+  "p-key-dm": {
+    "what": "D minor is the dark, cinematic cousin of the warm F major you already know. It uses the exact same one flat, B flat, but starts on D instead of F, which flips the whole feeling from gentle to sad and dramatic. Its three-note chord, D minor, is D, F, A. It is the relative minor of F, the sad twin of a happy key.",
+    "why": "D minor is one of the most emotionally powerful early keys, the sound of film scores, tragic ballads, and brooding intros. Because it shares F major's single flat, it is nearly free once you know F: same notes, new home, completely different mood. It also deepens your ear for major versus minor, the biggest lever of feeling in music.",
+    "steps": [
+      {
+        "do": "Find D: the white key right in the MIDDLE of a group of two black keys. Put your right thumb on it.",
+        "feel": "D is the easiest landmark on the piano, snug between the two blacks."
+      },
+      {
+        "do": "Play the D natural minor scale going up: D, E, F, G, A, B flat, C, D. Only one black key, B flat, the same flat as F major. Tuck your thumb under after F to keep climbing.",
+        "feel": "It climbs like a serious, shadowed version of a major scale."
+      },
+      {
+        "do": "Play the D minor triad: D, F, A together, thumb, middle, pinky.",
+        "feel": "Hollow and aching, where the F major chord felt warm and settled. That drop is minor."
+      },
+      {
+        "do": "Play a i-iv-V-i progression: D minor (D F A), G minor (G B flat D), A major (A C sharp E), back to D minor, four counts each.",
+        "feel": "Listen hard to that A major chord. It strains with its C sharp, then RESOLVES home to D minor, just like the E chord did in A minor. Tension and release is the engine of sad music."
+      }
+    ],
+    "goodWhen": "You can play the D natural minor scale catching the B flat, hold a D minor triad, and play the i-iv-V-i loop so the A major chord clearly pulls back home to D minor, sounding like a sigh coming to rest.",
+    "watchOut": "The common confusion is thinking D minor needs different notes than F major. It does not, they share the same one flat, B flat. The only thing that changes is your home note, D. In the i-iv-V loop, remember the A chord is A MAJOR (with a C sharp), which is what gives it the strong pull home.",
+    "song": {
+      "name": "Mad World (Gary Jules)",
+      "note": "Its haunting, aching feel lives in this D minor world. The dark triad and the pull back home you just practiced are the exact heartbeat of that kind of cinematic sadness."
+    }
+  },
+
+  "p-t2-first-song": {
+    "what": "This is the milestone everything else has been building toward: playing one whole song, all the way through, both hands, without stopping. Not a drill, not a fragment, a real complete song, start to finish. You pick it: any song the app has suggested to you, or one of your own you have always wanted to play.",
+    "why": "Every skill so far has been a piece of the puzzle. This is the moment they come together into the thing you actually wanted: sitting down and playing a song for real. Finishing a whole piece, even a simple one, is the single biggest jolt of motivation in learning an instrument. It proves to you, in your own hands, that you are genuinely playing now.",
+    "steps": [
+      {
+        "do": "Choose ONE song you can mostly handle: something from the songs the app has already suggested for the chords you know, or a simple song of your own. Pick something you love, not something impressive.",
+        "feel": "Excitement, not pressure. This is the fun part."
+      },
+      {
+        "do": "Break it into small sections (verse, chorus, bridge). Learn each section hands-separate first, then hands together, one section at a time. Do not move on until a section flows.",
+        "feel": "Small wins stacking up. Each section that clicks makes the next feel closer."
+      },
+      {
+        "do": "Stitch the sections together, playing from one straight into the next. Go slow enough that you never have to stop to think.",
+        "feel": "The seams between sections disappear. It starts to feel like one piece."
+      },
+      {
+        "do": "Now play the WHOLE song start to finish at a slow, steady tempo without stopping, even if you hit wrong notes. Keep going to the end no matter what.",
+        "feel": "Momentum. Playing THROUGH mistakes instead of restarting is the real skill of performing."
+      },
+      {
+        "do": "Do that full run-through again on your next practice session too, so it is not a one-time fluke. Two clean-ish complete passes on two different days means you truly have it.",
+        "feel": "Solid and repeatable, not a lucky accident. This is yours now."
+      }
+    ],
+    "goodWhen": "You can play your chosen song from beginning to end, both hands, at a slow steady tempo, without stopping, on two separate practice sessions. Small mistakes are fine as long as you keep going to the end.",
+    "watchOut": "The biggest trap is restarting from the top every time you hit a wrong note, so you never actually reach the end. Fix it by making a rule: once you start a full run-through, you are not allowed to stop or go back. Play through every mistake to the final note.",
+    "song": {
+      "name": "Your song, your choice",
+      "note": "This milestone is deliberately song-agnostic. Whatever you have been dreaming of playing, or whatever the app suggested for the chords you know, THAT is the song. Finishing it is the point."
+    }
+  },
 };

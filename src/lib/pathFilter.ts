@@ -116,6 +116,8 @@ const NODE_TERM_IDS: Record<string, string> = {
   "g-t3-syncopation": "syncopation",
   // piano
   "p-t0-staff": "staff",
+  "p-t1-articulation": "articulation",
+  "p-t2-hands-together": "hands-together",
   "p-t1-first-improv": "improvisation",
   "p-t1-echo-ear": "ear-training",
   "p-t1-three-moods": "three-moods",

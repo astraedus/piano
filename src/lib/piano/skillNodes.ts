@@ -56,19 +56,10 @@ export const PIANO_NODES: SkillNode[] = [
     keepTitle: "Posture and Arm Weight",
     pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
-  {
-    id: "p-t0-staff",
-    instrument: "piano",
-    title: "Reading the Staff",
-    tier: 0,
-    category: "notation",
-    prereqs: ["p-t0-keyboard-map"],
-    masteryDrill: "Name treble + bass clef notes on sight, no counting up from a landmark.",
-    unlock: "Decode a basic score.",
-    keepTitle: "Reading the Staff",
-    pathTags: ["go-deep"],
-    theory: true,
-  },
+  // NOTE: "Reading the Staff" (p-t0-staff) used to live here, gated only on the
+  // keyboard map — i.e. BEFORE the learner had made a single musical sound.
+  // Batch-3b soul-first reorder moves it AFTER the first key (p-key-C) and up to
+  // tier 1; see its node in the Tier 1 block below. Sound before notation.
 
   // ───── Tier 1 — foundation + first keys ─────
   {
@@ -199,6 +190,40 @@ export const PIANO_NODES: SkillNode[] = [
     soulTitle: "Lock the Beat",
     keepTitle: "Rhythm Foundation",
   },
+  {
+    id: "p-t1-articulation",
+    instrument: "piano",
+    title: "Legato vs Staccato",
+    tier: 1,
+    category: "expression",
+    // Batch 3b (P7) — connected-vs-detached touch, a basic expression lever that
+    // pairs with dynamics/timing (Three Moods) and later the pedal. Reachable as
+    // soon as one scale is under the hand (p-key-C), so it arrives early like the
+    // other touch fundamentals. pathTags omitted = shown on every path.
+    prereqs: ["p-key-C"],
+    masteryDrill: "Play the C five-finger pattern twice: once legato (each note held smooth into the next, no gaps) and once staccato (each note clipped short with silence between), same notes, same tempo.",
+    unlock: "Can play the same line two ways on purpose, smoothly connected (legato) or crisply detached (staccato), as a deliberate expressive choice.",
+    chainDrillId: "p1-articulation",
+    fluencyTest: { prompt: "Play a familiar melody once fully legato and once fully staccato, switching cleanly between the two touches without changing the notes or the tempo." },
+    soulTitle: "Smooth or Crisp",
+    keepTitle: "Articulation (legato vs staccato)",
+  },
+  {
+    id: "p-t0-staff",
+    instrument: "piano",
+    title: "Reading the Staff",
+    // Id keeps its historical "p-t0-" prefix (referenced by pathFilter + persisted
+    // progress), but the node now sits at TIER 1: batch-3b soul-first reorder moved
+    // it from before the learner makes any sound to AFTER the first key (p-key-C).
+    tier: 1,
+    category: "notation",
+    prereqs: ["p-key-C"],
+    masteryDrill: "Name treble + bass clef notes on sight, no counting up from a landmark.",
+    unlock: "Decode a basic score.",
+    keepTitle: "Reading the Staff",
+    pathTags: ["go-deep"],
+    theory: true,
+  },
 
   // ───── Tier 2 — more keys, the pop formula, transcribing ─────
   {
@@ -214,6 +239,27 @@ export const PIANO_NODES: SkillNode[] = [
     soulTitle: "Two Hands Together",
     keepTitle: "Chord Under Melody",
     pathTags: ["just-play", "play-with-soul", "go-deep"],
+  },
+  {
+    id: "p-t2-hands-together",
+    instrument: "piano",
+    title: "Hands Together + Left-Hand Fingering",
+    tier: 2,
+    category: "technique",
+    // Batch 3b (P5) — every scale lesson so far is hands-SEPARATE and gives only
+    // RIGHT-hand fingering; the C-major fluency test already asks for a scale
+    // hands-together with nothing having taught it. This node teaches the missing
+    // half: the left-hand scale fingering (thumb under / third finger crossing the
+    // thumb) AND coordinating both hands on the same scale. Gated on the first two
+    // keys so the fingering it teaches is one the learner already plays RH.
+    // pathTags omitted = every path (a coordination fundamental).
+    prereqs: ["p-key-C", "p-key-G"],
+    masteryDrill: "Play the C and G scales hands together, one octave, slow and even, using the left-hand fingering 5-4-3-2-1 then 3-2-1 going up (third finger crosses over the thumb after the fifth note).",
+    unlock: "Can play a scale with both hands at once, and knows the left-hand fingering (thumb tucks under, third finger crosses over) for the keys learned so far.",
+    chainDrillId: "p2-hands-together",
+    fluencyTest: { prompt: "Play the C major scale hands together, up and down, while counting the beats out loud and looking away from your hands." },
+    soulTitle: "Both Hands, One Scale",
+    keepTitle: "Hands Together + Left-Hand Fingering",
   },
   {
     id: "p-t2-pop-formula",
@@ -296,6 +342,60 @@ export const PIANO_NODES: SkillNode[] = [
     pathTags: ["play-with-soul", "go-deep"],
   },
   {
+    id: "p-key-A",
+    instrument: "piano",
+    title: "A major (three sharps)",
+    tier: 2,
+    category: "scales",
+    // Batch 3b (P6) — A is in the ~80% pop key set (our own batch-2 research); we
+    // taught the less song-dense F over it. Slots after D (its two sharps F#/C#
+    // are the base A adds G# onto). Same standard fingering as C/G/D.
+    prereqs: ["p-key-G", "p-key-D"],
+    masteryDrill: "A major scale (three sharps: F#, C#, G#), A triad (A C# E), and I–V–vi–IV in A (A–E–F#m–D).",
+    unlock: "A bright three-sharp key that anchors countless guitar-and-piano pop songs.",
+    chainDrillId: "p2-a-major",
+    keyId: "A",
+    soulTitle: "Bright and Ringing",
+    keepTitle: "A major",
+    pathTags: ["play-with-soul", "go-deep"],
+  },
+  {
+    id: "p-key-E",
+    instrument: "piano",
+    title: "E major (four sharps)",
+    tier: 2,
+    category: "scales",
+    // Batch 3b (P6) — E is the other high-frequency pop/rock key. Slots after A
+    // (E adds a fourth sharp, D#, onto A's three). Same standard fingering.
+    prereqs: ["p-key-A"],
+    masteryDrill: "E major scale (four sharps: F#, C#, G#, D#), E triad (E G# B), and I–V–vi–IV in E (E–B–C#m–A).",
+    unlock: "A ringing four-sharp key at the heart of rock and anthemic pop.",
+    chainDrillId: "p2-e-major",
+    keyId: "E",
+    soulTitle: "The Anthem Key",
+    keepTitle: "E major",
+    pathTags: ["play-with-soul", "go-deep"],
+  },
+  {
+    id: "p-key-dm",
+    instrument: "piano",
+    title: "D minor (one flat)",
+    tier: 2,
+    category: "scales",
+    // Batch 3b (P6) — D minor is the relative minor of the F major you already
+    // know (same one flat, Bb), slotted right after F and A minor. Reuses the
+    // existing orphan D-minor arpeggio chain (p2-dm-arpeggio, phase 2, ghost dm):
+    // it walks the scale, the triad, and i–iv–V, exactly a "meet the key" chain.
+    prereqs: ["p-key-F", "p-key-am"],
+    masteryDrill: "D natural minor scale (one flat, Bb), D minor triad (D F A), and i–iv–V–i in D minor (Dm–Gm–A–Dm).",
+    unlock: "The saddest, most cinematic of the early keys — the relative minor of F.",
+    chainDrillId: "p2-dm-arpeggio",
+    keyId: "dm",
+    soulTitle: "The Cinematic Minor",
+    keepTitle: "D minor",
+    pathTags: ["play-with-soul", "go-deep"],
+  },
+  {
     id: "p-t2-pedal",
     instrument: "piano",
     title: "The Sustain Pedal",
@@ -346,6 +446,29 @@ export const PIANO_NODES: SkillNode[] = [
     fluencyTest: { prompt: "Loop C to F to G to C using a left-hand pattern of your choice while singing or humming the melody out loud." },
     soulTitle: "The Left Hand Wakes Up",
     keepTitle: "Left-Hand Accompaniment Patterns",
+  },
+  {
+    id: "p-t2-first-song",
+    instrument: "piano",
+    title: "Play a Whole Song",
+    tier: 2,
+    category: "repertoire",
+    // Batch 3b (P10) — the capstone. Songs are motivational footnotes everywhere
+    // else; this makes "perform ONE song end to end, both hands" a real, gated
+    // milestone. Deliberately SONG-AGNOSTIC ("your song") so it does not depend on
+    // the still-unapproved song catalog (batch-2 #7): the learner picks any song
+    // the app has already suggested, or one of their own. Gated on the two skills
+    // that make a whole song possible: two hands together (chord under melody) and
+    // a chord vocabulary (the pop formula).
+    prereqs: ["p-t2-chord-under-melody", "p-t2-pop-formula"],
+    masteryDrill: "Pick one song the app has suggested (or your own), and play it start to finish, both hands, without stopping — at a slow, steady tempo, on two separate practice sessions.",
+    unlock: "Can perform one whole song from start to finish, both hands, without stopping.",
+    chainDrillId: "p2-first-song",
+    unlockCardId: "u-p2-first-song",
+    fluencyTest: { prompt: "Play your chosen song start to finish, both hands, without stopping, while a phone records you or someone listens." },
+    soulTitle: "Your First Whole Song",
+    keepTitle: "Complete-Song Milestone",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
 
   // ───── Tier 3 — lead-sheet, jazz, expression ─────

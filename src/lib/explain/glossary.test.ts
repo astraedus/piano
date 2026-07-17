@@ -18,6 +18,8 @@ const NODE_IDS_WITH_TERMS = [
   "g-t3-syncopation", "p-t0-staff", "p-t1-first-improv", "p-t1-echo-ear",
   "p-t1-three-moods", "p-t2-pop-formula", "p-t2-transcribe", "p-t3-lead-sheet",
   "p-t3-ii-v-i", "p-t3-blues", "p-key-C", "p-key-G", "p-key-am",
+  // Batch 3b — new subject-nodes whose title chip points at a single term.
+  "p-t1-articulation", "p-t2-hands-together",
 ];
 
 const GHOST_KEYS = ["C", "G", "am", "D", "em", "F", "Bb"] as const;
@@ -100,6 +102,16 @@ describe("glossary resolution is unambiguous (no shadowed terms)", () => {
 
   it("deduped batch-3a terms (octave, gain) exist as exactly one entry each", () => {
     for (const id of ["octave", "gain"]) {
+      expect(GLOSSARY.filter((e) => e.id === id).length, `"${id}" appears exactly once`).toBe(1);
+    }
+  });
+
+  // Batch 3b — the new piano terms must each resolve to exactly one entry. `legato`
+  // in particular was moved off the guitar hammer-on alias into its own entry so a
+  // piano articulation lesson chips to the right (piano) explainer, not a guitar
+  // technique — the no-shadow test above guards the move, this guards existence.
+  it("batch-3b terms (hands-together, articulation, legato, staccato) exist as exactly one entry each", () => {
+    for (const id of ["hands-together", "articulation", "legato", "staccato"]) {
       expect(GLOSSARY.filter((e) => e.id === id).length, `"${id}" appears exactly once`).toBe(1);
     }
   });

@@ -58,6 +58,12 @@ export const UNLOCK_LIBRARY: UnlockCard[] = [
     tryLine: "Try it: loop Am, F, C, G and flick the pedal on every change. Then play River Flows in You.",
   },
   {
+    id: "u-p2-first-song",
+    phase: 2,
+    title: "Can play a whole song, start to finish, both hands.",
+    tryLine: "Pick the song you have always wanted to play. Learn it section by section, then play it all the way through. That is the whole point.",
+  },
+  {
     id: "u-p3-ii-v-i",
     phase: 3,
     title: "You can read and play a ii–V–I.",
