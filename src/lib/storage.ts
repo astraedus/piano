@@ -5,7 +5,7 @@ import { emptyStreak } from "./progression";
 // and leave the old key in place as a backup (the owner's real practice history).
 export const STORAGE_KEY = "practice.state";
 export const LEGACY_STORAGE_KEY = "piano.state";
-const VERSION = 5 as const;
+const VERSION = 6 as const;
 
 export function defaultState(): AppState {
   return {
@@ -15,6 +15,10 @@ export function defaultState(): AppState {
     phase: 1,
     grade: "initial",
     earLevel: 1,
+    // Ear content floor. A fresh install claims nothing and has an empty tree, so
+    // it starts at 1; onboarding raises it to the self-reported level. Existing
+    // profiles are clamped to 1 by the v5→v6 migration (tree-taught content only).
+    earLevelFloor: 1,
     pieces: [],
     keyDepths: {},
     sessions: [],
@@ -77,10 +81,10 @@ export function loadState(): AppState {
 }
 
 /**
- * Run the full migration ladder (v1→v2→v3→v4→v5) for any pre-current blob. Older
- * blobs enter the ladder at the right rung: v1 (or missing) runs every step; v2
- * skips v1→v2; v3 skips to v3→v4; v4 only runs the final v4→v5 pass. Idempotent
- * on already-current blobs (every step is a non-destructive merge over defaults).
+ * Run the full migration ladder (v1→v2→v3→v4→v5→v6) for any pre-current blob.
+ * Older blobs enter the ladder at the right rung: v1 (or missing) runs every step;
+ * v2 skips v1→v2; v3 skips to v3→v4; …; v5 only runs the final v5→v6 pass.
+ * Idempotent on already-current blobs (every step is a non-destructive merge).
  */
 export function migrateToCurrent(old: Record<string, unknown>): AppState {
   const version = Number((old as { version?: unknown }).version ?? 1);
@@ -90,7 +94,9 @@ export function migrateToCurrent(old: Record<string, unknown>): AppState {
   const v3 = version >= 3 ? (v2 as unknown as AppState) : migrateV2toV3(v2 as unknown as Record<string, unknown>);
   // v4+ blobs are already v4-shaped; v3 blobs gain the spaced-review queue here.
   const v4 = version >= 4 ? (v3 as unknown as AppState) : migrateV3toV4(v3 as unknown as Record<string, unknown>);
-  return migrateV4toV5(v4 as unknown as Record<string, unknown>);
+  // v5+ blobs are already v5-shaped; v4 blobs gain the soul-first fields here.
+  const v5 = version >= 5 ? (v4 as unknown as AppState) : migrateV4toV5(v4 as unknown as Record<string, unknown>);
+  return migrateV5toV6(v5 as unknown as Record<string, unknown>);
 }
 
 /**
@@ -166,6 +172,8 @@ export function migrateV3toV4(old: Record<string, unknown>): AppState {
  * (learningPath / theoryEnabled) with safe defaults, preserving any values
  * already present. All prior fields (full practice history, gamification, the
  * spaced-review queue) pass through untouched. Idempotent on a partial v5 blob.
+ * Stamps version 5 explicitly (NOT the moving VERSION const) so a v4 blob lands
+ * at v5 and the v5→v6 step runs next.
  *
  * Defaults are intentionally back-compatible: an existing user (who never picked
  * a path) gets `learningPath: undefined` → the tree keeps showing everything, and
@@ -176,9 +184,32 @@ export function migrateV4toV5(old: Record<string, unknown>): AppState {
   return {
     ...defaultState(),
     ...o,
-    version: VERSION,
+    version: 5 as AppState["version"],
     learningPath: o.learningPath ?? undefined,
     theoryEnabled: o.theoryEnabled ?? false,
+  } as AppState;
+}
+
+/**
+ * Real v5 → v6 migration. Injects the ear-level FLOOR (earLevelFloor) with a safe
+ * default, preserving any value already present. All prior fields (full practice
+ * history, gamification, the spaced-review queue, soul-first paths) pass through
+ * untouched. Idempotent on a partial v6 blob.
+ *
+ * The default is intentionally CONSERVATIVE: every pre-existing profile lands at
+ * `earLevelFloor: 1`, which clamps its ear content back to what the skill tree has
+ * actually taught (see earProgression.maxAllowedEarLevel). This is the whole point
+ * of the migration — an existing user whose earLevel drifted up on accuracy alone
+ * stops being quizzed on Roman-numeral cadences/progressions they were never
+ * taught. New users get their self-reported floor written by onboarding instead.
+ */
+export function migrateV5toV6(old: Record<string, unknown>): AppState {
+  const o = old as Partial<AppState>;
+  return {
+    ...defaultState(),
+    ...o,
+    version: VERSION,
+    earLevelFloor: o.earLevelFloor ?? 1,
   } as AppState;
 }
 

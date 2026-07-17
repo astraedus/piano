@@ -67,6 +67,21 @@ export const guitarModule: InstrumentModule = {
   focusLabel: guitarFocusLabel,
   progressMapKind: "fretboard",
   earRounds: GUITAR_EAR_ROUNDS,
+  // Honest ear gating (see earProgression.maxAllowedEarLevel). The guitar ear
+  // ladder (earRounds.ts) climbs interval-direction/3rd (L1) → chord quality
+  // (L2-L3) → power-chord vs octave (L4+). Gate the levels that need a taught
+  // sound:
+  //   L2/L3 chord-quality-by-ear ("major or minor chord?") → g-t1-openEM, the
+  //       first node where major AND minor open chords (Em, Am, E, A) are learned.
+  //   L4/L5 power-chord recognition ("power chord or octave?") → g-t1-power, where
+  //       the power-chord shape/sound is actually taught. (L1 stays ungated — pure
+  //       ear orientation, up/down + bluesy/bright 3rd, needs no prior skill.)
+  earLevelGates: {
+    2: ["g-t1-openEM"],
+    3: ["g-t1-openEM"],
+    4: ["g-t1-power"],
+    5: ["g-t1-power"],
+  },
   InstrumentVisual: GuitarInstrumentVisual,
   NotationVisual: GuitarNotationVisual,
 };

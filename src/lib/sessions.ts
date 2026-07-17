@@ -17,7 +17,7 @@ import {
 } from "./skillTree";
 import { levelForXp, localDateKey, updateStreak, xpForSession } from "./progression";
 import { advanceReview, dueReviews, enqueueReview } from "./skillReview";
-import { nextEarLevel, earLevelAdvanced, earLevelLabel, type EarTally } from "./earProgression";
+import { nextEarLevel, earLevelAdvanced, earLevelLabel, maxAllowedEarLevel, type EarLevel, type EarTally } from "./earProgression";
 import { clearedTarget } from "./drillConfig";
 import { songUnlocksForNewlyLearned } from "./progressionSongs";
 
@@ -214,17 +214,32 @@ export function endSession(
   // Forgiving streak: a single missed day is auto-graced (see progression.ts).
   const streak = updateStreak(state.streak ?? { current: 0, longest: 0 }, localDateKey(date));
 
-  // ── Pattern-Recognition axis: auto-advance earLevel ──
+  // ── Pattern-Recognition axis: auto-advance earLevel (honestly gated) ──
   // Read the recent window of ear results (this session is already in `sessions`)
   // and bump earLevel one step when accuracy is solidly high. Capped at L5 (only
   // L1–L5 have authored rounds). Emits an `ear-level-up` arc event on advance.
+  //
+  // GATE: accuracy alone must never push the level past what the curriculum has
+  // taught. `maxAllowedEarLevel` (over the POST-session progress + the claimed
+  // floor) is the ceiling; `Math.max(prevEarLevel, cap)` keeps this a ratchet —
+  // it never DEMOTES a level already reached, it just refuses to climb past the
+  // gate. So a beginner acing L1 rounds can't land in L4 cadence content.
   const prevEarLevel = state.earLevel;
   const earWindow: EarTally[] = sessions
     .map((s) => ({
       correct: s.earResults?.correctIds.length ?? 0,
       wrong: s.earResults?.wrongIds.length ?? 0,
     }));
-  const earLevel = nextEarLevel(prevEarLevel, earWindow);
+  const earGates = getModuleSync(state.instrument)?.earLevelGates;
+  const earCeiling = maxAllowedEarLevel(
+    earGates,
+    nextProgress,
+    (state.earLevelFloor ?? 1) as EarLevel,
+  );
+  const earLevel = Math.min(
+    nextEarLevel(prevEarLevel, earWindow),
+    Math.max(prevEarLevel, earCeiling),
+  ) as EarLevel;
   if (earLevelAdvanced(prevEarLevel, earLevel)) {
     arc.push({
       id: `ear-level-up-${earLevel}-${id}`,

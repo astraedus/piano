@@ -7,6 +7,7 @@
 import { useAppState } from "@/hooks/useAppState";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { buildWhatYouKnow } from "@/lib/whatYouKnow";
+import { effectiveEarLevel } from "@/lib/earProgression";
 import { tierLabel } from "@/components/PathView";
 import { linkTerms, TermChip } from "@/components/explain";
 import { ghostKeyToTermId } from "@/lib/pathFilter";
@@ -30,7 +31,9 @@ export function WhatYouKnow() {
     progress: state.skillProgress ?? {},
     skillReps: state.skillReps,
     keyDepths: state.keyDepths ?? {},
-    earLevel: state.earLevel,
+    // Effective (gate-clamped) ear level — the same honest number the Three-Axis
+    // card shows, never a stored level the learner can't yet access.
+    earLevel: effectiveEarLevel(state, module?.earLevelGates),
     sessions: state.sessions ?? [],
     pieces: state.pieces ?? [],
   });

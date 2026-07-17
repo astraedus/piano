@@ -1,4 +1,5 @@
 import type { EarRound, KeyId } from "./types";
+import type { InstrumentModule } from "./instrumentRegistry";
 import { KEY_META, pitchMidi, midiToSpn, progressionChords, triad } from "./music";
 import { intervalRound, INTERVAL_MIN_LEVEL } from "./intervalRound";
 
@@ -31,6 +32,30 @@ export function generateEarRound(
   if (level === 5) return progressionRound(ghostKey);
   // Levels 6–7: fall back to progressions; deferred extended logic.
   return progressionRound(ghostKey);
+}
+
+/**
+ * Generate one ear round for the active instrument at the given (already-clamped)
+ * level. Guitar (and any module supplying its own ear content via `earRounds`)
+ * gets its instrument-native round — a function generator per call, or a
+ * level-matched entry from an authored array — so a guitarist is never quizzed on
+ * piano-only vocabulary (scale degrees, cadences, Roman numerals). Piano leaves
+ * `earRounds` undefined and falls back to the shared generator, unchanged.
+ *
+ * The caller MUST pass a level already clamped by effectiveEarLevel — this helper
+ * only routes to the right generator; it does not re-gate.
+ */
+export function generateEarRoundForModule(
+  module: InstrumentModule | undefined,
+  level: EarRound["level"],
+  ghostKey: KeyId,
+): EarRound {
+  const source = module?.earRounds;
+  if (typeof source === "function") return source(level, ghostKey);
+  if (Array.isArray(source) && source.length > 0) {
+    return source.find((r) => r.level === level) ?? source[0];
+  }
+  return generateEarRound(level, ghostKey);
 }
 
 function randomIn<T>(arr: T[]): T {
