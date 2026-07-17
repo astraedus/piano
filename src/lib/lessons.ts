@@ -9,10 +9,12 @@
 import type { Instrument, NodeLesson } from "./types";
 import { GUITAR_LESSONS } from "./guitar/lessons";
 import { PIANO_LESSONS } from "./piano/lessons";
+import { DRUMS_LESSONS } from "./drums/lessons";
 
 const BY_INSTRUMENT: Record<Instrument, Record<string, NodeLesson>> = {
   guitar: GUITAR_LESSONS,
   piano: PIANO_LESSONS,
+  drums: DRUMS_LESSONS,
 };
 
 /** The authored lesson for a node, or undefined if none exists yet. */

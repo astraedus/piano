@@ -25,6 +25,7 @@ import { Horizons } from "./Horizons";
 import { CurrentLessonCard } from "./CurrentLessonCard";
 import { GhostPicker } from "./GhostPicker";
 import { TermChip } from "./explain";
+import { focusEyebrow as focusEyebrowFor, isNonTonal } from "@/lib/focusNoun";
 import { ghostKeyToTermId } from "@/lib/pathFilter";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
 import { emptyStreak, levelForXp, localDateKey, titleForLevel } from "@/lib/progression";
@@ -384,12 +385,14 @@ function ResumeBanner({ slotLabel, repN }: { slotLabel: string; repN: number }) 
 }
 
 function Header({ ghostName, ghostKey, instrumentLabel, mode, firstBackMessage, module }: { ghostName: string; ghostKey: import("@/lib/types").KeyId; instrumentLabel: string; mode?: string; firstBackMessage?: string | null; module?: InstrumentModule }) {
-  // Instrument-aware focus eyebrow. Piano (focusKind "key") keeps the historical
-  // "tonight's ghost" wording untouched; guitar (focusKind "chord") reads as
-  // "chord of the week". The headline uses the module's own focusLabel so the
-  // current focus reads in the instrument's terms (a key name vs a chord/riff
-  // label). Falls back to the piano wording + the plan's ghost name if no module.
-  const focusEyebrow = module?.focusKind === "chord" ? "Chord of the Week" : "Key of the Week";
+  // Instrument-aware focus eyebrow: "Key of the Week" (piano) / "Chord of the
+  // Week" (guitar) / "Rudiment of the Week" (drums). The headline uses the module's
+  // own focusLabel so the current focus reads in the instrument's terms. On TONAL
+  // instruments the focus name is a tappable TermChip (opens the key/chord
+  // explainer); on non-tonal drums it is plain text (its token is not a tonal key,
+  // so no tonal chip is offered).
+  const focusEyebrow = focusEyebrowFor(module?.focusKind);
+  const nonTonal = isNonTonal(module?.focusKind);
   const focusName = module ? module.focusLabel(ghostKey) : ghostName;
   return (
     <header className="pb-5 border-b border-[color:var(--bg-rule)]">
@@ -403,9 +406,14 @@ function Header({ ghostName, ghostKey, instrumentLabel, mode, firstBackMessage, 
         {/* V4 soul-first (spec 4.4.1): the focus name is the theory term itself, so
             it leads as the headline AND is the always-tappable explainer — one tap
             opens "what / hear / see / why" for the week's key/chord. Degrades to
-            plain text for keys with no glossary entry (never a dead chip). */}
-        <h1 className="font-serif text-[length:var(--text-3xl)] tracking-[-0.025em]" style={{ fontVariationSettings: "'opsz' 36, 'SOFT' 50" }}>
-          <TermChip term={ghostKeyToTermId(ghostKey)} label={focusName} className="text-[color:var(--ink)] decoration-1" />
+            plain text for keys with no glossary entry (and for drums, whose
+            rudiment focus has no tonal chip). */}
+        <h1 className="font-serif text-[length:var(--text-3xl)] tracking-[-0.025em] text-[color:var(--ink)]" style={{ fontVariationSettings: "'opsz' 36, 'SOFT' 50" }}>
+          {nonTonal ? (
+            focusName
+          ) : (
+            <TermChip term={ghostKeyToTermId(ghostKey)} label={focusName} className="text-[color:var(--ink)] decoration-1" />
+          )}
         </h1>
         <GhostPicker current={ghostKey} />
       </div>
@@ -560,10 +568,12 @@ function UnlockQueue({ queue, onClose, unlocks }: { queue: string[]; onClose: ()
  *  /tree (Your Path) where the setup nodes live. Disappears once all setup nodes
  *  are learned — never nags a returning user. */
 function StartHereCard({ instrument }: { instrument: string }) {
-  const isGuitar = instrument.toLowerCase().includes("guitar");
-  const hint = isGuitar
+  const lower = instrument.toLowerCase();
+  const hint = lower.includes("guitar")
     ? "New to this? Start with tuning and holding the guitar."
-    : "New to this? Start with finding notes and setting your posture.";
+    : lower.includes("drum")
+      ? "New to this? Start with how to hold the sticks and let them bounce."
+      : "New to this? Start with finding notes and setting your posture.";
   return (
     <div
       data-testid="start-here-card"

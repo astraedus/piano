@@ -1,11 +1,22 @@
 "use client";
-import type { EarRound, KeyId } from "./types";
+import type { EarRound, KeyId, StickingCell } from "./types";
 import { KEY_META, progressionChords } from "./music";
 
 // Lazy Tone.js loader — avoids SSR and only loads when user gestures.
 let TonePromise: Promise<typeof import("tone")> | null = null;
 let ToneMod: typeof import("tone") | null = null;
 let synth: import("tone").PolySynth | null = null;
+
+// Percussion voices for the drums module — a dry practice-pad "tok". Two hands,
+// each panned to its side, so R/L is audible; a short membrane thud + a noise
+// transient for the stick attack. Built lazily on first use (same gesture-unlock
+// contract as the pitched synth).
+interface PadVoice {
+  membrane: import("tone").MembraneSynth;
+  noise: import("tone").NoiseSynth;
+}
+let padR: PadVoice | null = null;
+let padL: PadVoice | null = null;
 
 async function getTone() {
   if (typeof window === "undefined") throw new Error("audio only in browser");
@@ -128,6 +139,58 @@ export async function playMutedChug(notes: string[], hits = 4): Promise<void> {
   await sleep((hits * 0.22 + 0.2) * 1000);
 }
 
+// Build (once) the two panned pad voices. `pan` is -1 (hard left) .. 1 (hard right).
+async function getPadVoice(hand: "R" | "L"): Promise<PadVoice> {
+  const Tone = await getTone();
+  const existing = hand === "R" ? padR : padL;
+  if (existing) return existing;
+  const panner = new Tone.Panner(hand === "R" ? 0.4 : -0.4).toDestination();
+  const membrane = new Tone.MembraneSynth({
+    pitchDecay: 0.008,
+    octaves: 2,
+    envelope: { attack: 0.001, decay: 0.14, sustain: 0, release: 0.02 },
+  }).connect(panner);
+  membrane.volume.value = -6;
+  const noise = new Tone.NoiseSynth({
+    noise: { type: "white" },
+    envelope: { attack: 0.001, decay: 0.03, sustain: 0, release: 0.01 },
+  }).connect(panner);
+  noise.volume.value = -20;
+  const voice: PadVoice = { membrane, noise };
+  if (hand === "R") padR = voice; else padL = voice;
+  return voice;
+}
+
+/**
+ * Play a drum sticking pattern on the pad. Each cell is one even pulse at `bpm`
+ * pulses per minute (so the CALLER encodes subdivision as pulse-rate: quarters at
+ * bpm, eighths at 2·bpm, etc.). Rests advance the clock silently. A hit pans to
+ * its hand's side; an accent hits harder (higher velocity) so it is audibly louder
+ * than surrounding taps — the whole point of the four-strokes dynamic vocabulary.
+ */
+export async function playSticking(pattern: StickingCell[], bpm = 90): Promise<void> {
+  if (typeof window === "undefined" || pattern.length === 0) return;
+  const Tone = await getTone();
+  const cellSec = 60 / Math.max(1, bpm);
+  const t0 = Tone.now() + 0.05;
+  pattern.forEach((cell, i) => {
+    if (cell.rest || !cell.hand) return;
+    const t = t0 + i * cellSec;
+    const accent = cell.accent ?? false;
+    // Fire the correct hand's voice; play() resolves the panned voice for the side.
+    void getPadVoice(cell.hand).then((voice) => {
+      // Guard: the async voice build may resolve after the scheduled time on a
+      // cold start; clamp to "now" so a late note still sounds rather than throwing.
+      const when = Math.max(t, Tone.now());
+      const vel = accent ? 1 : 0.5;
+      // A slightly higher membrane pitch for accents reads as "louder/harder".
+      voice.membrane.triggerAttackRelease(accent ? "C2" : "A1", 0.08, when, vel);
+      voice.noise.triggerAttackRelease(0.03, when, accent ? 0.9 : 0.4);
+    });
+  });
+  await sleep(pattern.length * cellSec * 1000 + 120);
+}
+
 export async function playEarRound(round: EarRound): Promise<void> {
   // Play twice with a small pause.
   const play = async () => {
@@ -148,6 +211,8 @@ export async function playEarRound(round: EarRound): Promise<void> {
     } else if (round.audio.kind === "tonicized-note") {
       const n = round.audio.notes?.[0];
       if (n) await playSequence([n]);
+    } else if (round.audio.kind === "sticking") {
+      if (round.audio.sticking) await playSticking(round.audio.sticking, round.audio.bpm ?? 90);
     }
   };
   await play();

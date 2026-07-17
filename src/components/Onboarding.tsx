@@ -60,12 +60,28 @@ export const PATH_OPTIONS: { tag: PathTag; label: string; sub: (instrumentNoun: 
   },
 ];
 
-const PHASE_OPTIONS: { label: string; phase: Phase; grade: Grade; ghost: KeyId; earLevel: 1 | 2 | 3 | 4 | 5 | 6 | 7 }[] = [
+type PhaseOption = { label: string; phase: Phase; grade: Grade; ghost: KeyId; earLevel: 1 | 2 | 3 | 4 | 5 | 6 | 7 };
+
+// Tonal instruments (piano/guitar) — scale/piece-oriented self-report, mapped to a
+// curriculum phase + a tonal ghost key.
+const TONAL_PHASE_OPTIONS: PhaseOption[] = [
   { label: "I've never touched one.", phase: 1, grade: "initial", ghost: "C", earLevel: 1 },
   { label: "I know a few things. Some scales, some pieces.", phase: 1, grade: "g1", ghost: "C", earLevel: 2 },
   { label: "Around grade 2 or 3 (a couple of years in), trying to go further.", phase: 2, grade: "g2", ghost: "am", earLevel: 3 },
   { label: "Higher than that. I mostly want to improvise and play by ear.", phase: 3, grade: "g4", ghost: "A", earLevel: 5 },
 ];
+
+// Drums (pad-first) — no scales/grades. Stage A ships only the Tier-0 foundations,
+// so everyone starts at phase 1; the ghost is the "C" rudiment token (singles).
+// The self-report only sets the ear-level FLOOR (rhythm dictation).
+const DRUMS_PHASE_OPTIONS: PhaseOption[] = [
+  { label: "I've never held a pair of sticks.", phase: 1, grade: "initial", ghost: "C", earLevel: 1 },
+  { label: "I've messed around on a pad or kit before.", phase: 1, grade: "g1", ghost: "C", earLevel: 2 },
+];
+
+function phaseOptionsFor(instrument: Instrument | null): PhaseOption[] {
+  return instrument === "drums" ? DRUMS_PHASE_OPTIONS : TONAL_PHASE_OPTIONS;
+}
 
 export function Onboarding() {
   const router = useRouter();
@@ -79,14 +95,16 @@ export function Onboarding() {
   const [name, setName] = useState("");
 
   const isGuitar = instrument === "guitar";
-  const instrumentNoun = isGuitar ? "guitar" : "piano";
-  const haveNoun = isGuitar ? "guitar" : "keyboard or piano";
+  const isDrums = instrument === "drums";
+  const instrumentNoun = isDrums ? "drums" : isGuitar ? "guitar" : "piano";
+  const haveNoun = isDrums ? "drum pad or kit" : isGuitar ? "guitar" : "keyboard or piano";
 
   const finish = () => {
-    const option = PHASE_OPTIONS[selected ?? 0];
+    const option = phaseOptionsFor(instrument)[selected ?? 0];
     const now = new Date().toISOString();
     const chosen: Instrument = instrument ?? "piano";
-    const guitar = chosen === "guitar";
+    const beginsLabel =
+      chosen === "guitar" ? "electric guitar begins" : chosen === "drums" ? "drums begin" : "piano begins";
 
     // Honest fresh start (product soul: no faking, honest progress numbers). A new
     // profile begins with an EMPTY shelf and a BLANK Key Map — real practice fills
@@ -102,7 +120,7 @@ export function Onboarding() {
         at: now,
         kind: "instrument-begins" as const,
         instrument: chosen,
-        label: guitar ? "electric guitar begins" : "piano begins",
+        label: beginsLabel,
       },
     ];
 
@@ -152,10 +170,11 @@ export function Onboarding() {
           <p className="font-serif text-xl text-[color:var(--ink)]">
             Which instrument are you here for?
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {([
               { v: "piano" as const, label: "Piano", sub: "Keys, harmony, the full range." },
               { v: "guitar" as const, label: "Electric Guitar", sub: "Riffs, chords, the rock spine." },
+              { v: "drums" as const, label: "Drums", sub: "Sticks, rudiments, the practice pad." },
             ]).map((o) => (
               <button
                 key={o.v}
@@ -185,7 +204,7 @@ export function Onboarding() {
             Where are you on the {instrumentNoun} today?
           </p>
           <ul className="space-y-2">
-            {PHASE_OPTIONS.map((o, i) => (
+            {phaseOptionsFor(instrument).map((o, i) => (
               <li key={i}>
                 <button
                   type="button"
@@ -281,9 +300,11 @@ export function Onboarding() {
           </div>
           {keyboardChoice === "not-yet" && (
             <p className="text-sm text-[color:var(--ink-3)] italic fade-in">
-              {isGuitar
-                ? "That's fine. Read the tree and learn the shapes by eye. Come back when you have a guitar in your hands. It'll be worth the wait."
-                : "That's fine. The theory side is free and useful. Come back when you have keys under your fingers. The piano will be worth the wait."}
+              {isDrums
+                ? "That's fine. Read the path and learn the strokes by eye. A cheap practice pad and a pair of sticks is all you'll ever need — come back when you have them. It'll be worth the wait."
+                : isGuitar
+                  ? "That's fine. Read the tree and learn the shapes by eye. Come back when you have a guitar in your hands. It'll be worth the wait."
+                  : "That's fine. The theory side is free and useful. Come back when you have keys under your fingers. The piano will be worth the wait."}
             </p>
           )}
           <p

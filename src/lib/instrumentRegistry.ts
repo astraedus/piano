@@ -83,12 +83,18 @@ export interface InstrumentModule {
   // still drives chain-drill selection; `focusKind`/`focusLabel` just describe
   // how to PRESENT the current focus for this instrument.
 
-  /** What a weekly "focus" is for this instrument. piano = "key", guitar = "chord". */
-  focusKind: "key" | "chord";
-  /** Map a focus id (a KeyId for piano, a chord/riff id for guitar) → display label. */
+  /**
+   * What a weekly "focus" is for this instrument. piano = "key", guitar = "chord",
+   * drums = "rudiment". A module is NON-TONAL iff `focusKind === "rudiment"` — the
+   * single derived predicate that gates every tonal UI block (scales, key wheel,
+   * I-IV-V-I previews). No separate flag; derive from this.
+   */
+  focusKind: "key" | "chord" | "rudiment";
+  /** Map a focus id (a KeyId for piano, a chord/riff id for guitar, a rudiment
+   *  token for drums) → display label. Tokens are never shown raw. */
   focusLabel: (focusId: string) => string;
   /** Which progress-map visual the /tree page should render for this instrument. */
-  progressMapKind: "keymap" | "fretboard";
+  progressMapKind: "keymap" | "fretboard" | "rudiments";
   /**
    * #4 — a one-line "when to bring the thumb up" cue for a key's scale on a hand,
    * surfaced beside the fingered scale view. Piano returns e.g. "thumb tucks under
@@ -141,6 +147,12 @@ export function getModuleSync(id: Instrument): InstrumentModule | undefined {
 /** True once a module for `id` has registered. */
 export function isModuleRegistered(id: Instrument): boolean {
   return CACHE.has(id);
+}
+
+/** Every module currently in the sync cache. For registry-wide invariants
+ *  (e.g. the "non-tonal modules must ship ear content" class guard). */
+export function allRegisteredModules(): InstrumentModule[] {
+  return Array.from(CACHE.values());
 }
 
 /**

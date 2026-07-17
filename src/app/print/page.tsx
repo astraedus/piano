@@ -5,6 +5,8 @@ import { AppStateProvider, useAppState } from "@/hooks/useAppState";
 import { computeTodayPlan } from "@/lib/todayPlan";
 import { KEY_META } from "@/lib/music";
 import { getModuleSync } from "@/lib/instrumentRegistry";
+import { focusEyebrow as focusEyebrowFor } from "@/lib/focusNoun";
+import { fillWarmupLine } from "@/lib/warmupLines";
 import type { KeyId, ChainDrill } from "@/lib/types";
 
 export default function PrintPage() {
@@ -39,7 +41,11 @@ function PrintSheet() {
   const effectiveGhost = ghostOverride ?? plan.ghostKey;
   const mod = getModuleSync(state.instrument);
   const ghost = KEY_META[effectiveGhost];
-  const focusEyebrow = mod?.focusKind === "chord" ? "Chord of the Week" : "Key of the Week";
+  const focusEyebrow = focusEyebrowFor(mod?.focusKind);
+  // The weekly focus name reads in the instrument's own terms (a key name for
+  // piano, a chord/riff for guitar, a rudiment for drums) — never a raw tonal
+  // key name for a non-tonal instrument.
+  const focusName = mod ? mod.focusLabel(effectiveGhost) : ghost.name;
   const instrumentLabel = mod?.displayName ?? "Piano";
   const piece = state.pieces.find((p) => p.id === state.currentPieceId);
   const dateLine = new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -58,14 +64,14 @@ function PrintSheet() {
       <div className="max-w-[700px] mx-auto">
         <header className="pb-4 border-b border-black/40">
           <p className="uppercase tracking-[0.2em] text-[11px] text-black/60">{instrumentLabel} Stand · {dateLine}</p>
-          <h1 className="text-3xl mt-1">{focusEyebrow}: <span className="italic">{ghost.name}</span></h1>
+          <h1 className="text-3xl mt-1">{focusEyebrow}: <span className="italic">{focusName}</span></h1>
         </header>
 
         <ol className="divide-y divide-black/30">
           <Item index={1} title="Warmup" duration="90 seconds">
             <p className="italic text-black/70 mb-1">{plan.warmup?.postureLine}</p>
             <ul className="list-none space-y-1">
-              {(plan.warmup?.lines ?? []).map((l, i) => <li key={i}>→ {l}</li>)}
+              {(plan.warmup?.lines ?? []).map((l, i) => <li key={i}>→ {fillWarmupLine(l, effectiveGhost)}</li>)}
             </ul>
           </Item>
 

@@ -27,7 +27,7 @@ import { ProgressionSongsPanel } from "@/components/ProgressionSongsPanel";
 import { isProgressionContainerNode } from "@/lib/progressionSongs";
 import { UnlockCardModal } from "@/components/UnlockCardModal";
 import { tierLabel } from "@/lib/tierLabels";
-import type { NodeLesson, SkillNode, SkillNodeStatus } from "@/lib/types";
+import type { Instrument, NodeLesson, SkillNode, SkillNodeStatus } from "@/lib/types";
 
 // Local shape for the reward modal — matches UnlockCardModal's `unlock` prop.
 type RewardCard = { id: string; title: string; tryLine: string };
@@ -116,7 +116,7 @@ interface StepCardProps {
   node: SkillNode;
   status: SkillNodeStatus;
   isYouAreHere: boolean;
-  instrument: "piano" | "guitar";
+  instrument: Instrument;
   expanded: boolean;
   fluent: boolean;
   /** Off the chosen learning path → rendered dimmed but still expandable. */

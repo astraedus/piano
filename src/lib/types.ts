@@ -22,7 +22,7 @@ export type Grade =
 export type Pillar = "technique" | "repertoire" | "ear" | "expression" | "lead-sheet" | "improv";
 
 // ---- Instrument identity ----
-export type Instrument = "piano" | "guitar";
+export type Instrument = "piano" | "guitar" | "drums";
 
 // ---- Skill DAG (serves BOTH instruments) ----
 export type SkillCategory =
@@ -191,6 +191,11 @@ export interface ChainDrill {
   // counter instead of the rep engine, and clearing the threshold marks the
   // linked node learned (gating the target song via the DAG prereq).
   transitionPairId?: string;
+  // Drums — the sticking pattern this drill trains, rendered as the RhythmGrid
+  // reference (count + R/L + accents/rests) and sounded by "Hear it" (playSticking).
+  // Tonal instruments (piano/guitar) leave this undefined; their chain-drill
+  // reference is the I-IV-V-I progression + scale instead.
+  pattern?: StickingCell[];
 }
 
 export type WarmupType =
@@ -209,7 +214,8 @@ export interface Warmup {
 }
 
 export type EarRoundType =
-  | "interval" | "quality" | "cadence" | "progression" | "updown" | "scale-degree" | "maj-min";
+  | "interval" | "quality" | "cadence" | "progression" | "updown" | "scale-degree" | "maj-min"
+  | "rhythm"; // drums — rhythm dictation (which subdivision / which pattern)
 
 export interface EarChoice {
   label: string;
@@ -224,6 +230,16 @@ export interface EarChoice {
 // earProgression.maxAllowedEarLevel for the prefix semantics.
 export type EarLevelGates = Partial<Record<2 | 3 | 4 | 5, string[]>>;
 
+// A single sounded hit in a drum sticking pattern: which hand, whether accented,
+// and whether it is a silent rest (a gap the player leaves). Pure data so the
+// percussion audio layer + the RhythmGrid render from ONE shape.
+export interface StickingCell {
+  hand?: "R" | "L";  // omitted when `rest` is true (nothing sounds)
+  accent?: boolean;  // played measurably louder (the ">" wedge)
+  rest?: boolean;    // a silence in the pattern (rendered "–", no audio)
+  count?: string;    // the count syllable under this cell ("1", "e", "&", "a")
+}
+
 export interface EarRound {
   id: string;
   type: EarRoundType;
@@ -233,11 +249,15 @@ export interface EarRound {
   choices: EarChoice[];
   // payload for audio
   audio: {
-    kind: "interval" | "triad" | "cadence" | "progression" | "scale-degree" | "tonicized-note";
+    kind: "interval" | "triad" | "cadence" | "progression" | "scale-degree" | "tonicized-note" | "sticking";
     key: KeyId;
     notes?: string[]; // scientific pitch e.g. "C4" "E4"
     chords?: string[][]; // array of chord tones
     keyCenter?: string; // "C4" — for scale-degree rounds
+    // Percussion (drums) rounds: the sticking pattern to play + its tempo.
+    // `key` stays a KeyId token for type-compatibility but is unused here.
+    sticking?: StickingCell[];
+    bpm?: number;
   };
 }
 

@@ -7,7 +7,9 @@ import type { ChainDrill, SessionQuality, SkillNode } from "@/lib/types";
 import { drillRepId } from "@/lib/types";
 import { KEY_META, keyPrefersFlats, pentatonic, progressionChords } from "@/lib/music";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
-import { ensureAudio, playProgression, playSequence } from "@/lib/audio";
+import { isNonTonal } from "@/lib/focusNoun";
+import { ensureAudio, playProgression, playSequence, playSticking } from "@/lib/audio";
+import type { StickingCell } from "@/lib/types";
 import { useAppState } from "@/hooks/useAppState";
 import { RepEngine } from "../RepEngine";
 import { TransitionDrill } from "../TransitionDrill";
@@ -17,6 +19,15 @@ import { findTransitionPair } from "@/lib/transitionDrill";
 import { markNodeProgress } from "@/lib/skillTree";
 import type { InterleavePlan } from "@/lib/chainDrillPicker";
 import { getLesson } from "@/lib/lessons";
+
+// A slow single-stroke bar — the honest default reference for a foundational
+// drums drill that carries no explicit sticking pattern.
+const DEFAULT_DRUM_PATTERN: StickingCell[] = [
+  { hand: "R", accent: true, count: "1" },
+  { hand: "L", count: "2" },
+  { hand: "R", count: "3" },
+  { hand: "L", count: "4" },
+];
 
 export function ChainDrillSlot({
   module,
@@ -76,10 +87,16 @@ export function ChainDrillSlot({
     );
   }
 
+  // Non-tonal instruments (drums) have no I-IV-V-I progression, pentatonic, or
+  // key wheel — their chain-drill reference is the sticking RhythmGrid instead.
+  const nonTonal = isNonTonal(module?.focusKind);
   const meta = KEY_META[drill.ghostKey];
   const romans = meta.mode === "major" ? ["I", "IV", "V", "I"] : ["i", "iv", "V", "i"];
-  const prog = progressionChords(drill.ghostKey, romans);
-  const pentatonicNotes = pentatonic(meta.tonic, meta.mode, 4, keyPrefersFlats(drill.ghostKey));
+  const prog = nonTonal ? [] : progressionChords(drill.ghostKey, romans);
+  const pentatonicNotes = nonTonal ? [] : pentatonic(meta.tonic, meta.mode, 4, keyPrefersFlats(drill.ghostKey));
+  // The drums drill's sticking pattern (RhythmGrid + "Hear it"); a slow single-
+  // stroke bar is the honest default for a foundational drill with no pattern set.
+  const drumPattern: StickingCell[] = drill.pattern ?? DEFAULT_DRUM_PATTERN;
 
   const rep = state.skillReps?.[drillRepId(drill.id)];
 
@@ -223,34 +240,56 @@ export function ChainDrillSlot({
           </ol>
         </Disclosure>
 
-        {/* Reference 2 — the progression + keyboard + hear buttons, collapsed. */}
-        <Disclosure label="Hear it · see the shape">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-1.5">
-            progression · <TermChip term="roman-numerals" label={romans.join(" — ")} />
-          </p>
-          {/* overflow guard so the keyboard never clips at the card edge (P2). */}
-          <div className="overflow-x-auto">
-            {module?.InstrumentVisual && (
-              <module.InstrumentVisual notes={prog.flat()} rangeStart="C3" octaves={2} />
-            )}
-          </div>
-          <div className="mt-2 flex gap-2 no-print">
-            <button
-              type="button"
-              onClick={async () => { await ensureAudio(); await playProgression(prog); }}
-              className="chip text-xs px-3 py-1"
-            >
-              Hear the Loop
-            </button>
-            <button
-              type="button"
-              onClick={async () => { await ensureAudio(); await playSequence(pentatonicNotes); }}
-              className="chip text-xs px-3 py-1"
-            >
-              Hear Pentatonic
-            </button>
-          </div>
-        </Disclosure>
+        {/* Reference 2 — collapsed. TONAL: the I-IV-V-I progression on the
+            keyboard/fretboard + hear buttons. NON-TONAL drums: the sticking
+            RhythmGrid (count + R/L + accents) + "Hear it" (real percussion).
+            Gated on `nonTonal` (design D3) so no tonal UI reaches a drum stand. */}
+        {nonTonal ? (
+          <Disclosure label="Hear it · see the pattern">
+            <div className="overflow-x-auto">
+              {module?.NotationVisual && (
+                <module.NotationVisual tab={{ pattern: drumPattern }} ariaLabel={`${drill.name} sticking pattern`} />
+              )}
+            </div>
+            <div className="mt-2 flex gap-2 no-print">
+              <button
+                type="button"
+                onClick={async () => { await ensureAudio(); await playSticking(drumPattern, 80); }}
+                className="chip text-xs px-3 py-1"
+              >
+                Hear It
+              </button>
+            </div>
+          </Disclosure>
+        ) : (
+          <Disclosure label="Hear it · see the shape">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-1.5">
+              progression · <TermChip term="roman-numerals" label={romans.join(" — ")} />
+            </p>
+            {/* overflow guard so the keyboard never clips at the card edge (P2). */}
+            <div className="overflow-x-auto">
+              {module?.InstrumentVisual && (
+                <module.InstrumentVisual notes={prog.flat()} rangeStart="C3" octaves={2} />
+              )}
+            </div>
+            <div className="mt-2 flex gap-2 no-print">
+              <button
+                type="button"
+                onClick={async () => { await ensureAudio(); await playProgression(prog); }}
+                className="chip text-xs px-3 py-1"
+              >
+                Hear the Loop
+              </button>
+              <button
+                type="button"
+                onClick={async () => { await ensureAudio(); await playSequence(pentatonicNotes); }}
+                className="chip text-xs px-3 py-1"
+              >
+                Hear Pentatonic
+              </button>
+            </div>
+          </Disclosure>
+        )}
 
         <div className="flex items-center gap-3 pt-1 no-print">
           {rep && (

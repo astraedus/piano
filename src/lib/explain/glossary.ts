@@ -26,9 +26,10 @@ import {
   playMutedChug,
   playProgression,
   playSequence,
+  playSticking,
   playVibrato,
 } from "../audio";
-import type { FretPosition } from "../types";
+import type { FretPosition, StickingCell } from "../types";
 import { AM_PENT_BOX1, AM_BLUES_BOX1 } from "../guitar/scaleShapes";
 
 export type SeeKind = "fretboard" | "keyboard" | "chord-diagram" | "text";
@@ -63,6 +64,19 @@ async function hear(fn: () => Promise<void>): Promise<void> {
   await ensureAudio();
   await fn();
 }
+
+// Drums demo patterns for glossary `hear` (annotated so the "R"/"L" literals type
+// as StickingCell, not widened string). Percussion — no pitch.
+const DEMO_SINGLES: StickingCell[] = [
+  { hand: "R", accent: true }, { hand: "L" }, { hand: "R" }, { hand: "L" },
+];
+const DEMO_LOUD_SOFT: StickingCell[] = [
+  { hand: "R", accent: true }, { hand: "R" }, { hand: "R", accent: true }, { hand: "R" },
+];
+const DEMO_ROLL: StickingCell[] = [
+  { hand: "R", accent: true }, { hand: "L" }, { hand: "R" }, { hand: "L" },
+  { hand: "R" }, { hand: "L" }, { hand: "R" }, { hand: "L" },
+];
 
 // ── The GLOSSARY ──────────────────────────────────────────────────────────
 // Guitar-first ship set (the stated pain) + the fundamentals it leans on. The
@@ -1238,6 +1252,69 @@ export const GLOSSARY: GlossaryEntry[] = [
     }),
     seeKind: "keyboard",
     seeNotes: ["C4", "E4", "G4", "Bb4"],
+  },
+
+  // ---- Drums (Stage A) — pad-first fundamentals. Text SEE (a pad has no
+  //      keyboard/fretboard); percussion HEAR via playSticking. ----
+  {
+    id: "practice-pad",
+    title: "Practice Pad",
+    aliases: ["practice pad", "drum pad"],
+    what: "A round rubber pad you hit with sticks — quiet, springy, and portable, so you can build your hands without a full kit or bothering anyone.",
+    why: "Almost every drumming hand skill is built here first: its consistent, honest bounce is exactly what makes it the tool teachers reach for.",
+    hear: () => hear(() => playSticking(DEMO_SINGLES, 90)),
+    seeKind: "text",
+    seeText: "A round pad and two sticks — where the hands learn to play before a kit ever gets involved.",
+  },
+  {
+    id: "matched-grip",
+    title: "Matched Grip",
+    aliases: ["matched grip"],
+    what: "Holding the stick the same way in both hands — the standard, symmetrical grip every pad learner starts with.",
+    why: "One grip to learn instead of two, and it carries over to every drum and percussion instrument you might ever play.",
+    hear: () => hear(() => playSticking(DEMO_SINGLES, 90)),
+    seeKind: "text",
+    seeText: "Both hands holding the sticks identically — palms down, a loose 'OK'-sign pinch, fingers curled softly underneath.",
+  },
+  {
+    id: "fulcrum",
+    title: "Fulcrum",
+    aliases: ["fulcrum", "balance point"],
+    what: "The pinch point about a third of the way up the stick, between the pad of your thumb and the side of your index finger, that the stick pivots around.",
+    why: "It is the hinge every single stroke rotates on. Place it right and loose and the stick bounces for free; place it wrong and every note fights you.",
+    hear: () => hear(() => playSticking(DEMO_SINGLES, 90)),
+    seeKind: "text",
+    seeText: "A loose 'OK'-sign pinch about a third up the stick — the one spot where a light tap makes it rebound on its own.",
+  },
+  {
+    id: "rebound",
+    title: "Rebound",
+    aliases: ["rebound", "the rebound", "free stroke"],
+    what: "The way the pad springs the stick back up on its own after you throw it down, exactly like dribbling a basketball — you push down, the surface returns it.",
+    why: "Trusting the rebound instead of muscling every note is THE core drumming skill: it is where all your speed, quiet control, and stamina come from.",
+    hear: () => hear(() => playSticking(DEMO_SINGLES, 96)),
+    seeKind: "text",
+    seeText: "Throw the stick down, do nothing, and let it bounce back near its starting height by itself.",
+  },
+  {
+    id: "four-strokes",
+    title: "The Four Strokes",
+    aliases: ["four strokes", "the four strokes"],
+    what: "Full, down, tap, and up — the same bounce played at four named heights. Full is loud into loud, down is loud into quiet, tap is quiet, up is quiet into ready.",
+    why: "Every rhythm, accent, and groove is these four strokes in some order — once your hands know all four, playing loud then soft cleanly stops being a mystery.",
+    hear: () => hear(() => playSticking(DEMO_LOUD_SOFT, 84)),
+    seeKind: "text",
+    seeText: "Loud, loud, soft, soft: the stick starting high for loud notes and low for quiet ones.",
+  },
+  {
+    id: "rudiment",
+    title: "Rudiment",
+    aliases: ["rudiment", "rudiments"],
+    what: "A short, named sticking pattern — like the single stroke roll (R L R L) — that acts as a building block for everything you play.",
+    why: "Rudiments are the vocabulary of drumming: learn a handful cleanly at a target tempo and you can build real grooves and fills out of them.",
+    hear: () => hear(() => playSticking(DEMO_ROLL, 120)),
+    seeKind: "text",
+    seeText: "A repeating sticking pattern (e.g. R L R L) drilled slow, then faster, until it is even and automatic.",
   },
 ];
 

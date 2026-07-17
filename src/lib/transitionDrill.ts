@@ -16,14 +16,14 @@
 // The count is "clean changes" the player self-reports (tap on each landed
 // change) — the same honest-self-report contract as the rep engine's mark.
 
-import type { KeyId } from "./types";
+import type { Instrument, KeyId } from "./types";
 
 /** A chord-change pair to drill (e.g. G→C). `pairId` is stable + used to derive
  *  the DAG node id. `targetPerMin` is the clean-changes/min threshold for
  *  "fluent" (JustinGuitar's ~30 for common open-chord pairs). */
 export interface TransitionPair {
   pairId: string;          // stable, e.g. "am-F" / "G-C"
-  instrument: "piano" | "guitar";
+  instrument: Instrument;
   keyId: KeyId;            // the working key the pair lives in
   chordA: string;          // display chord name, e.g. "Am"
   chordB: string;          // display chord name, e.g. "F"
@@ -45,14 +45,23 @@ export const TRANSITION_PAIRS: TransitionPair[] = [
   { pairId: "em-am", instrument: "guitar", keyId: "em", chordA: "Em", chordB: "Am", targetPerMin: DEFAULT_TARGET_PER_MIN },
 ];
 
+/** Node-id prefix per instrument. An explicit map (not a `piano ? "p" : "g"`
+ *  ternary) so a new instrument can never silently collide onto the guitar "g"
+ *  prefix — recon flagged that latent bug. */
+export const NODE_ID_PREFIX: Record<Instrument, string> = {
+  piano: "p",
+  guitar: "g",
+  drums: "d",
+};
+
 /** The synthetic DAG node id a transition pair maps to. Becoming `learned` on
  *  this node (when the pair clears threshold) lets the existing prereq gate
  *  unlock a target-song node. Instrument-prefixed to match node id conventions. */
-export function transitionNodeId(instrument: "piano" | "guitar", pairId: string): string {
-  return `${instrument === "piano" ? "p" : "g"}-trans-${pairId}`;
+export function transitionNodeId(instrument: Instrument, pairId: string): string {
+  return `${NODE_ID_PREFIX[instrument]}-trans-${pairId}`;
 }
 
-export function findTransitionPair(instrument: "piano" | "guitar", pairId: string): TransitionPair | undefined {
+export function findTransitionPair(instrument: Instrument, pairId: string): TransitionPair | undefined {
   return TRANSITION_PAIRS.find((p) => p.instrument === instrument && p.pairId === pairId);
 }
 

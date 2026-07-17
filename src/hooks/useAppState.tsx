@@ -14,6 +14,10 @@ import "@/lib/piano/module";
 // Guitar module self-registers likewise — warms the sync cache so guitar content
 // (chain drills, skill nodes, unlocks) resolves the moment a profile is on guitar.
 import "@/lib/guitar/module";
+// Drums module self-registers likewise — warms the sync cache so drums content
+// (chain drills, skill nodes, unlocks, ear rounds) resolves the moment a profile
+// is on drums.
+import "@/lib/drums/module";
 
 interface Ctx {
   state: AppState;

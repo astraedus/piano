@@ -25,7 +25,12 @@ export interface TermVisualProps {
 /** Resolve the SEE payload for an entry under the active instrument: a matching
  *  per-instrument override wins, else the entry's primary SEE fields. */
 export function resolveSee(entry: GlossaryEntry, instrument?: Instrument): GlossarySee {
-  const override = instrument ? entry.seeByInstrument?.[instrument] : undefined;
+  // seeByInstrument only carries piano/guitar overrides (drums glossary entries
+  // are text-only, no instrument-specific SEE); the cast narrows the widened
+  // Instrument union to the keys the map actually has — a missing key is undefined.
+  const override = instrument
+    ? entry.seeByInstrument?.[instrument as "piano" | "guitar"]
+    : undefined;
   return override ?? entry;
 }
 

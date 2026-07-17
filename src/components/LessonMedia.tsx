@@ -34,6 +34,7 @@ import { fretboardMapFor } from "@/lib/guitar/scaleShapes";
 import { Tab } from "@/lib/guitar/components/Tab";
 import { Keyboard } from "@/lib/piano/components/Keyboard";
 import { StaffMap } from "@/lib/piano/components/StaffMap";
+import { PadVisual } from "@/lib/drums/components/PadVisual";
 import { TermVisual, termHasVisual } from "@/components/explain/TermVisual";
 
 /** The concrete instrument for a node's visuals: "shared" nodes have no single
@@ -172,13 +173,20 @@ function LessonVisual({
 }
 
 /**
- * The instrument's default visual: a labeled guitar neck (its string names
- * double as the "anatomy / your guitar's names" visual) or a labeled keyboard.
- * Instrument comes from node.instrument; "shared" nodes default to guitar.
+ * The instrument's default visual, chosen by node.instrument:
+ *   piano → labeled keyboard, drums → practice pad, guitar/shared → labeled neck
+ *   (its string names double as the "anatomy / your guitar's names" visual).
+ * An explicit switch (not a piano/else branch) so a new instrument gets its own
+ * default rather than silently falling through to the guitar fretboard.
  */
 function InstrumentDefault({ node }: { node: SkillNode }) {
-  if (node.instrument === "piano") {
-    return <Keyboard notes={[]} labelNotes height={96} />;
+  switch (node.instrument) {
+    case "piano":
+      return <Keyboard notes={[]} labelNotes height={96} />;
+    case "drums":
+      return <PadVisual ariaLabel={`${node.title} on the practice pad`} />;
+    case "guitar":
+    default:
+      return <Fretboard ariaLabel={`${node.title} on the fretboard`} />;
   }
-  return <Fretboard ariaLabel={`${node.title} on the fretboard`} />;
 }
