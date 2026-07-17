@@ -21,6 +21,7 @@ import { LevelUpModal } from "./LevelUpModal";
 import { XPBar } from "./XPBar";
 import { StreakFlame } from "./StreakFlame";
 import { Horizons } from "./Horizons";
+import { CurrentLessonCard } from "./CurrentLessonCard";
 import { GhostPicker } from "./GhostPicker";
 import { TermChip } from "./explain";
 import { ghostKeyToTermId } from "@/lib/pathFilter";
@@ -319,6 +320,14 @@ export function PracticeStand() {
             </div>
           </div>
         </div>
+        {/* Map-level bridge: WHICH lesson on the path this session is on, and a
+            deep-link into the tree. Quiet, below the actionable slots. */}
+        <CurrentLessonCard
+          nodes={allNodes}
+          progress={state.skillProgress ?? {}}
+          chainDrill={plan.chainDrill}
+          instrument={state.instrument}
+        />
         <Footer
           onDone={handleDone}
           onPrint={handlePrint}
