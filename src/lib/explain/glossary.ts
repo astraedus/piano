@@ -843,7 +843,9 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     id: "accompaniment",
     title: "Accompaniment",
-    aliases: ["accompaniment", "backing pattern", "left-hand pattern", "accompanying"],
+    // "comping" / "comp" (the jazz shorthand for rhythmic chordal backing) point at
+    // this explainer rather than a near-duplicate entry — same concept, one card.
+    aliases: ["accompaniment", "backing pattern", "left-hand pattern", "accompanying", "comping", "comp"],
     what: "The musical support that plays under a melody, usually a chord or a moving bass pattern in the other hand.",
     why: "Good accompaniment is what makes a song feel alive instead of a tune floating alone with nothing underneath it.",
     hear: () => hear(async () => {
@@ -1108,6 +1110,75 @@ export const GLOSSARY: GlossaryEntry[] = [
     seeKind: "text",
     seeText: "One long note then two quick ones on each beat, palm-muted: da, da-da, da, da-da, the chugging horse-hooves feel of metal rhythm.",
     instrument: "guitar",
+  },
+
+  // ---- Batch 3c — the chord-numbering system + the harmony vocab it leans on ----
+  // Roman numerals are used from the very first lesson (I–IV–V in C) but were only
+  // explained deep in the tree; this entry lets every I/IV/V/vi string chip to a
+  // plain-language explainer. The title "Roman Numerals" is itself scanned, so the
+  // phrase "Roman numerals" in prose chips without needing a bare-numeral alias
+  // (single "I" is un-matchable — it collides with the English word and is < 3 chars).
+  {
+    id: "roman-numerals",
+    title: "Roman Numerals",
+    aliases: ["roman numeral", "chord numbers", "chord number", "scale-degree number", "scale-degree numbers", "numeral notation"],
+    what: "A way of naming a chord by which step of the scale it is built on, written as a Roman numeral. A CAPITAL letter means a major chord and a small letter means a minor one, so I is the chord on step one and vi is the minor chord on step six.",
+    why: "The numbers describe the pattern, not the exact notes, so the same numbered progression works in every key: learn I, IV, V once and you can play it in C, in G, anywhere.",
+    hear: () => hear(() => playProgression([
+      ["C4", "E4", "G4"], // I  — C major (capital = major)
+      ["F3", "A3", "C4"], // IV — F major
+      ["G3", "B3", "D4"], // V  — G major
+      ["A3", "C4", "E4"], // vi — A minor (small = minor)
+    ])),
+    seeKind: "text",
+    seeText: "The chords of C major, numbered: I = C, ii = Dm, iii = Em, IV = F, V = G, vi = Am. CAPITAL letters are major chords, small letters are minor.",
+  },
+  {
+    id: "relative-minor",
+    title: "Relative Minor",
+    aliases: ["relative major", "relative key"],
+    what: "A minor key that shares the exact same notes as a major key, just centred on a different home note: A minor is the relative minor of C major, the same white keys with a sadder home.",
+    why: "Every major key comes with a relative minor for free, so learning one key hands you a second, darker key with no new notes to learn.",
+    hear: () => hear(async () => {
+      await playSequence(["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"]);
+      await playSequence(["A4", "B4", "C5", "D5", "E5", "F5", "G5", "A5"]);
+    }),
+    seeKind: "text",
+    seeText: "C major and A minor use the exact same white keys. The only thing that changes is home: C for the major, A for its relative minor, three notes lower.",
+  },
+  {
+    id: "cadence",
+    title: "Cadence",
+    aliases: ["cadences", "musical full stop", "chord ending"],
+    what: "The chord or two that ends a musical phrase, the way a full stop or comma ends a sentence, telling your ear the phrase has arrived home or paused for breath.",
+    why: "Cadences are how music breathes and resolves. Learn a few and you can make any progression sound finished instead of just stopping.",
+    hear: () => hear(() => playProgression([
+      ["G3", "B3", "D4"], // V
+      ["C4", "E4", "G4"], // I — the phrase lands home
+    ])),
+    seeKind: "text",
+    seeText: "The last chords of a phrase, like G landing on C, bringing your ear back home. The musical version of a full stop.",
+  },
+  {
+    id: "seventh-chord",
+    title: "Seventh Chord",
+    // Word forms + the exact 7th symbols that appear in the tier-3 drills, so a
+    // standalone "C7" / "Dm7" token chips (linkTerms needs whole-token boundaries;
+    // an embedded "maj7" inside "Gmaj7" can't match, so the whole token is listed).
+    // "Fmaj7" is deliberately absent — it owns its own dedicated entry.
+    aliases: [
+      "seventh chords", "dominant seventh", "major seventh", "minor seventh",
+      "C7", "D7", "E7", "F7", "G7", "Am7", "Dm7", "Em7", "Cmaj7", "Gmaj7",
+    ],
+    what: "A four-note chord: an ordinary three-note chord with one more note stacked on top, the seventh, which adds colour and a gentle, leaning restlessness. Written with a 7, like G7, Dm7, or Cmaj7.",
+    why: "That one extra note is the sound of jazz, soul, and blues. It turns a plain, settled chord into a richer one that leans forward and wants to move on.",
+    hear: () => hear(async () => {
+      await playChord(["C4", "E4", "G4"]);        // plain triad
+      await playChord(["C4", "E4", "G4", "B4"]);  // Cmaj7 — add the major 7th
+      await playChord(["C4", "E4", "G4", "Bb4"]); // C7 — the dominant 7th
+    }),
+    seeKind: "keyboard",
+    seeNotes: ["C4", "E4", "G4", "Bb4"],
   },
 ];
 

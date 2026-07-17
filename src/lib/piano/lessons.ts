@@ -14,7 +14,7 @@ export const PIANO_LESSONS: Record<string, NodeLesson> = {
   // ── Gold-standard example (the quality bar for the rest) ───────────────────
   "p-key-C": {
     what: "C major is the home base of the piano. It is the scale you play using only the white keys, starting on the note C. Its three-note chord (a triad) is C, E, G played together. Almost every beginner song lives here because there are no black keys to worry about.",
-    why: "Get C major under your hands and you can play a huge amount of music immediately. It is the key everything else is measured against, and the I, IV, V chords in C (the three chords behind countless songs) are all easy white-key shapes.",
+    why: "Get C major under your hands and you can play a huge amount of music immediately. It is the key everything else is measured against, and the three chords behind countless songs, C, F and G, are all easy white-key shapes. Musicians number chords by the scale step they sit on, so those three are the 1st, 4th and 5th chords, written I, IV and V in Roman numerals: learn that numbering once and it works in every key.",
     steps: [
       { do: "Find C: it is the white key just to the left of any group of two black keys.", feel: "Once you see the two-black-key landmark, C jumps out everywhere." },
       { do: "Play the C scale with your right hand: C, D, E, F, G, A, B, C, all white keys going up.", feel: "Thumb on C, tuck it under after E to keep going smoothly." },
@@ -226,7 +226,7 @@ export const PIANO_LESSONS: Record<string, NodeLesson> = {
         "feel": "Same hand, tiny shift, totally different emotion. Burn this contrast in."
       },
       {
-        "do": "Play a i-iv-V-i progression: A minor, D minor, E (major), A minor, four counts each.",
+        "do": "Play a i-iv-V-i progression (small numerals are minor chords, the capital V is major): A minor, D minor, E (major), A minor, four counts each.",
         "feel": "Listen hard to that E chord. It strains, then RESOLVES home to A minor. That tension and release is the engine of sad music."
       }
     ],

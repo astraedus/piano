@@ -8,7 +8,7 @@
 // Start-Here card: a separate test suite covers PracticeStand directly.
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { ChainDrillSlot } from "./ChainDrillSlot";
 import { AppStateProvider } from "@/hooks/useAppState";
 import type { ChainDrill, SkillNode } from "@/lib/types";
@@ -153,6 +153,30 @@ describe("ChainDrillSlot — V5 lesson block", () => {
     renderSlot();
     // Rep engine always shows the rep counter
     expect(screen.getByText(/Rep 1/)).toBeTruthy();
+  });
+});
+
+describe("ChainDrillSlot — term-linking (Roman-numeral strip + drill-step instructions)", () => {
+  it("attaches a Roman Numerals explainer chip to the progression strip", () => {
+    renderSlot();
+    // The strip lives behind the "Hear it · see the shape" disclosure.
+    fireEvent.click(screen.getByRole("button", { name: /Hear it.*see the shape/i }));
+    expect(screen.getByRole("button", { name: /Explain: Roman Numerals/i })).toBeTruthy();
+  });
+
+  it("links glossary terms inside drill-step instructions (was raw, un-chippable text)", () => {
+    // A drill whose id still maps to ANATOMY_NODE, but with a step naming 7th chords.
+    const termyDrill: ChainDrill = {
+      ...TUNING_DRILL,
+      steps: [
+        { type: "progression", durationSec: 60, instruction: "Loop a ii–V–I with a C7 and a Dm7 shell." },
+      ],
+    };
+    renderSlot({ drill: termyDrill });
+    // Step list is behind the "Show steps" disclosure.
+    fireEvent.click(screen.getByRole("button", { name: /Show steps/i }));
+    // "C7" / "Dm7" are seventh-chord symbol aliases → one tappable chip.
+    expect(screen.getByRole("button", { name: /Explain: Seventh Chord/i })).toBeTruthy();
   });
 });
 

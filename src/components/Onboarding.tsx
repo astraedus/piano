@@ -63,7 +63,7 @@ export const PATH_OPTIONS: { tag: PathTag; label: string; sub: (instrumentNoun: 
 const PHASE_OPTIONS: { label: string; phase: Phase; grade: Grade; ghost: KeyId; earLevel: 1 | 2 | 3 | 4 | 5 | 6 | 7 }[] = [
   { label: "I've never touched one.", phase: 1, grade: "initial", ghost: "C", earLevel: 1 },
   { label: "I know a few things. Some scales, some pieces.", phase: 1, grade: "g1", ghost: "C", earLevel: 2 },
-  { label: "Around grade 2 or 3, trying to go further.", phase: 2, grade: "g2", ghost: "am", earLevel: 3 },
+  { label: "Around grade 2 or 3 (a couple of years in), trying to go further.", phase: 2, grade: "g2", ghost: "am", earLevel: 3 },
   { label: "Higher than that. I mostly want to improvise and play by ear.", phase: 3, grade: "g4", ghost: "A", earLevel: 5 },
 ];
 

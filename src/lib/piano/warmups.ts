@@ -4,11 +4,11 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
   "ghost-scale": {
     id: "ghost-scale",
     instrument: "piano",
-    label: "ghost scale",
+    label: "week's scale",
     soulSummary: "Loosen up in this week's home key",
     lines: [
-      "today's ghost, hands separate. 2 octaves. slow on the return.",
-      "or just play the ghost for a minute. don't count.",
+      "this week's scale, hands separate. 2 octaves. slow on the return.",
+      "or just play this week's scale for a minute. don't count.",
     ],
     postureLine: "neck free. shoulders drop. forearms heavy. let arm weight rest on the keys.",
   },
@@ -32,7 +32,7 @@ export const WARMUPS: Record<WarmupType, Warmup> = {
     label: "triad tour",
     soulSummary: "Walk the chords and feel where home is",
     lines: [
-      "walk I–IV–V–vi in today's ghost. both hands.",
+      "walk the I, IV, V and vi chords of this week's key — Roman numerals for the 1, 4, 5 and 6 chords. both hands.",
       "once around, slowly. feel where home is.",
     ],
     postureLine: "let the keys meet you. quiet hands. listen for the top note.",

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Slot } from "../Slot";
-import { TermChip } from "../explain";
+import { TermChip, linkTerms } from "../explain";
 import type { Warmup, KeyId } from "@/lib/types";
 import { scaleRepId } from "@/lib/types";
 import { KEY_META, keyPrefersFlats, scale } from "@/lib/music";
@@ -110,7 +110,7 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
           {warmup.lines.map((l, i) => (
             <li key={i} className="flex gap-3">
               <span className="text-[color:var(--ink-3)] text-sm mt-0.5">→</span>
-              <span>{fillWarmupLine(l)}</span>
+              <span>{linkTerms(fillWarmupLine(l), `wl${i}`)}</span>
             </li>
           ))}
         </ul>
