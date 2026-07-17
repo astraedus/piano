@@ -94,3 +94,21 @@ describe("WarmupSlot renders the instrument-aware week-reference label", () => {
     expect(label).toContain("A major");
   });
 });
+
+// The architecture gap this closes: warmup lines were rendered as RAW strings, so
+// no term in a warmup could ever open its explainer. They now route through
+// linkTerms, and the internal "ghost" codename is gone from user-facing copy.
+describe("WarmupSlot links glossary terms in warmup lines + drops the 'ghost' codename", () => {
+  it("renders a tappable Roman Numerals chip in the triad-tour warmup", () => {
+    renderWarmup("triad-tour", "C");
+    // TermChip exposes role=button with aria-label "Explain: <title>".
+    expect(screen.getByRole("button", { name: /Explain: Roman Numerals/i })).toBeTruthy();
+  });
+
+  it("no longer leaks the internal 'ghost' codename in the ghost-scale warmup", () => {
+    renderWarmup("ghost-scale", "C");
+    const body = document.body.textContent ?? "";
+    expect(body).not.toMatch(/today's ghost|play the ghost/i);
+    expect(body).toContain("this week's scale");
+  });
+});

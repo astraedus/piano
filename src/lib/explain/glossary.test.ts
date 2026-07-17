@@ -115,6 +115,13 @@ describe("glossary resolution is unambiguous (no shadowed terms)", () => {
       expect(GLOSSARY.filter((e) => e.id === id).length, `"${id}" appears exactly once`).toBe(1);
     }
   });
+
+  // Batch 3c — the chord-numbering system + harmony vocab it leans on.
+  it("batch-3c terms (roman-numerals, relative-minor, cadence, seventh-chord) exist as exactly one entry each", () => {
+    for (const id of ["roman-numerals", "relative-minor", "cadence", "seventh-chord"]) {
+      expect(GLOSSARY.filter((e) => e.id === id).length, `"${id}" appears exactly once`).toBe(1);
+    }
+  });
 });
 
 describe("lookupTerm", () => {
@@ -128,6 +135,20 @@ describe("lookupTerm", () => {
 
   it("returns undefined for an unknown term (so chips degrade gracefully)", () => {
     expect(lookupTerm("does-not-exist")).toBeUndefined();
+  });
+
+  it("batch-3c: numeral / seventh symbol aliases resolve to their family entry", () => {
+    // The Roman-numeral title itself is matchable (the phrase "Roman numerals").
+    expect(lookupTerm("Roman Numerals")?.id).toBe("roman-numerals");
+    expect(lookupTerm("chord numbers")?.id).toBe("roman-numerals");
+    // Standalone seventh-chord symbol tokens chip to the one family entry.
+    for (const sym of ["C7", "Dm7", "Cmaj7", "G7"]) {
+      expect(lookupTerm(sym)?.id, `${sym} -> seventh-chord`).toBe("seventh-chord");
+    }
+    // Fmaj7 keeps its own dedicated entry (not swallowed by the family).
+    expect(lookupTerm("Fmaj7")?.id).toBe("fmaj7");
+    // "comping" reuses the accompaniment explainer rather than a duplicate entry.
+    expect(lookupTerm("comping")?.id).toBe("accompaniment");
   });
 
   it("every id resolves to itself", () => {

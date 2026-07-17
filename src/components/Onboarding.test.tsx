@@ -126,7 +126,7 @@ describe("Onboarding finish — writes the ear-level floor", () => {
     for (const label of [
       "I've never touched one.",
       "I know a few things. Some scales, some pieces.",
-      "Around grade 2 or 3, trying to go further.",
+      "Around grade 2 or 3 (a couple of years in), trying to go further.",
       "Higher than that. I mostly want to improvise and play by ear.",
     ]) {
       const patched = walkOnboarding(label);

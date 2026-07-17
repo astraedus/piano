@@ -216,7 +216,7 @@ export function ChainDrillSlot({
             {drill.steps.map((s, i) => (
               <li key={i} className="flex gap-3 items-baseline">
                 <span className="text-[color:var(--ink-3)] text-xs font-serif tabular-nums w-6">{i + 1}.</span>
-                <span className="flex-1 text-[color:var(--ink-2)]">{s.richInstruction ?? s.instruction}</span>
+                <span className="flex-1 text-[color:var(--ink-2)]">{s.richInstruction ?? linkTerms(s.instruction, `cs${i}`)}</span>
                 <span className="text-[color:var(--ink-3)] text-xs tabular-nums">{fmtStep(s.durationSec)}</span>
               </li>
             ))}
@@ -226,7 +226,7 @@ export function ChainDrillSlot({
         {/* Reference 2 — the progression + keyboard + hear buttons, collapsed. */}
         <Disclosure label="Hear it · see the shape">
           <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)] mb-1.5">
-            progression · {romans.join(" — ")}
+            progression · <TermChip term="roman-numerals" label={romans.join(" — ")} />
           </p>
           {/* overflow guard so the keyboard never clips at the card edge (P2). */}
           <div className="overflow-x-auto">
