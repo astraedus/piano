@@ -33,12 +33,14 @@ const DRUMS_FOCUS_BY_TOKEN: Partial<Record<KeyId, DrumsFocus>> = {
       { hand: "R", count: "4" }, { hand: "L", count: "&" },
     ],
   },
-  // G — Double Stroke Roll: two even strokes per hand, R R L L.
+  // G — Double Stroke Roll: two even strokes per hand, R R L L. No accent — the
+  // whole point is an even "buh-buh buh-buh"; a beat-1 accent would sound like the
+  // "bum-BUM" the double-stroke lesson explicitly warns against.
   G: {
     label: "Double Stroke Roll",
     blurb: "two even strokes per hand — R R L L — the bounce doing half the work.",
     pattern: [
-      { hand: "R", accent: true, count: "1" }, { hand: "R", count: "e" },
+      { hand: "R", count: "1" }, { hand: "R", count: "e" },
       { hand: "L", count: "&" }, { hand: "L", count: "a" },
       { hand: "R", count: "2" }, { hand: "R", count: "e" },
       { hand: "L", count: "&" }, { hand: "L", count: "a" },
@@ -76,13 +78,15 @@ const DRUMS_FOCUS_BY_TOKEN: Partial<Record<KeyId, DrumsFocus>> = {
       { hand: "R", accent: true, count: "2" },
     ],
   },
-  // F — Flam: a soft grace note a hair before the main note, heard as one thick hit.
+  // F — Flam: a soft grace note a hair before the main note, heard as one thick
+  // hit. Two flams with alternating lead hand (rudiments.json: "(l)R (r)L …") —
+  // grace L → main R on beat 1, grace R → main L on beat 2.
   F: {
     label: "The Flam",
     blurb: "a soft grace note just before the main hit — one thick note, not two.",
     pattern: [
       { hand: "L", count: "" }, { hand: "R", accent: true, count: "1" },
-      { hand: "R", count: "2" },
+      { hand: "R", count: "" }, { hand: "L", accent: true, count: "2" },
     ],
   },
   // B — Drag (Ruff): two soft grace notes into a tap.
@@ -94,15 +98,16 @@ const DRUMS_FOCUS_BY_TOKEN: Partial<Record<KeyId, DrumsFocus>> = {
       { hand: "R", accent: true, count: "1" },
     ],
   },
-  // am — Buzz Roll: many pressed multiple-bounce strokes blurring into a sustain.
+  // am — Buzz Roll: alternating hands (R L R L) where each stroke is PRESSED so it
+  // buzzes many times — the buzz lives in the pressure, not the notation, and the
+  // sticking is a plain even alternating pulse (rudiments.json #11). No accent —
+  // the goal is an even sustained texture.
   am: {
     label: "Buzz Roll",
     blurb: "press each stick so it buzzes many times — the smooth sustained roll.",
     pattern: [
-      { hand: "R", count: "1" }, { hand: "R", count: "e" },
-      { hand: "L", count: "&" }, { hand: "L", count: "a" },
-      { hand: "R", count: "2" }, { hand: "R", count: "e" },
-      { hand: "L", count: "&" }, { hand: "L", count: "a" },
+      { hand: "R", count: "1" }, { hand: "L", count: "2" },
+      { hand: "R", count: "3" }, { hand: "L", count: "4" },
     ],
   },
 };

@@ -1,39 +1,15 @@
-import type { ChainDrill, StickingCell } from "../types";
+import type { ChainDrill } from "../types";
 import { drumsFocusFor } from "./focus";
-
-// Inline sticking references for the drills that don't map to a single focus
-// token (counting / sixteenths / play-along / double paradiddle / Moeller / buzz).
-// Rudiment drills reuse drumsFocusFor(token).pattern instead — ONE sticking source.
-const EIGHTHS_BAR: StickingCell[] = [
-  { hand: "R", accent: true, count: "1" }, { hand: "L", count: "&" },
-  { hand: "R", count: "2" }, { hand: "L", count: "&" },
-  { hand: "R", count: "3" }, { hand: "L", count: "&" },
-  { hand: "R", count: "4" }, { hand: "L", count: "&" },
-];
-const SIXTEENTHS_BAR: StickingCell[] = ["1", "e", "&", "a", "2", "e", "&", "a", "3", "e", "&", "a", "4", "e", "&", "a"].map(
-  (count, i) => ({ hand: (i % 2 === 0 ? "R" : "L") as "R" | "L", accent: i % 4 === 0, count }),
-);
-// A backbeat accent pattern over eighths: accents land on beats 2 and 4 (the snare
-// backbeat) — what "play along" trains you to place inside a real groove.
-const BACKBEAT_BAR: StickingCell[] = [
-  { hand: "R", count: "1" }, { hand: "L", count: "&" },
-  { hand: "R", accent: true, count: "2" }, { hand: "L", count: "&" },
-  { hand: "R", count: "3" }, { hand: "L", count: "&" },
-  { hand: "R", accent: true, count: "4" }, { hand: "L", count: "&" },
-];
-// Double paradiddle, R-lead group: R L R L R R over two beats of triplets.
-const DOUBLE_PARADIDDLE_BAR: StickingCell[] = [
-  { hand: "R", accent: true, count: "1" }, { hand: "L", count: "&" }, { hand: "R", count: "a" },
-  { hand: "L", count: "2" }, { hand: "R", count: "&" }, { hand: "R", count: "a" },
-];
-// Moeller whip: one accent-tap-tap triplet on a single hand (down / tap / up).
-const MOELLER_BAR: StickingCell[] = [
-  { hand: "R", accent: true, count: "1" }, { hand: "R", count: "&" }, { hand: "R", count: "a" },
-];
-// Buzz / press roll: alternating pressed strokes on the quarter-note pulse.
-const BUZZ_BAR: StickingCell[] = [
-  { hand: "R", count: "1" }, { hand: "L", count: "2" }, { hand: "R", count: "3" }, { hand: "L", count: "4" },
-];
+// Non-token reference stickings (counting / sixteenths / play-along / double
+// paradiddle / Moeller) live in patterns.ts; token-mapped rudiments reuse
+// drumsFocusFor(token).pattern — the ONE sticking source either way.
+import {
+  EIGHTHS_BAR,
+  SIXTEENTHS_BAR,
+  BACKBEAT_BAR,
+  DOUBLE_PARADIDDLE_BAR,
+  MOELLER_BAR,
+} from "./patterns";
 
 // Drums chain drills — one per Tier-0 node, each the node's nightly BPM-ladder
 // practice. Every drill soft-prefers the "C" rotation token (single strokes, the
@@ -211,7 +187,8 @@ export const DRUMS_CHAIN_DRILLS: ChainDrill[] = [
     minutes: 4,
     ghostKey: "C",
     pillar: "technique",
-    bpmLadder: { startBpm: 60, targetBpm: 90, step: 5, advanceAfterSuccesses: 3 },
+    // roadmap.json stage 10 + the paired lesson both put 16ths at 70–90 BPM.
+    bpmLadder: { startBpm: 70, targetBpm: 90, step: 5, advanceAfterSuccesses: 3 },
     pattern: SIXTEENTHS_BAR,
     steps: [
       { type: "tone", durationSec: 45, instruction: "Count '1 e & a' out loud slowly before you play, four even syllables per beat." },
@@ -376,7 +353,7 @@ export const DRUMS_CHAIN_DRILLS: ChainDrill[] = [
     ghostKey: "am",
     pillar: "technique",
     bpmLadder: { startBpm: 70, targetBpm: 90, step: 5, advanceAfterSuccesses: 3 },
-    pattern: BUZZ_BAR,
+    pattern: drumsFocusFor("am").pattern,
     steps: [
       { type: "tone", durationSec: 45, instruction: "Press one stick into the pad and listen for an even, sustained buzz. Repeat on the other hand." },
       { type: "tone", durationSec: 60, instruction: "Alternate hands so the buzzes overlap into one smooth, unbroken sound." },

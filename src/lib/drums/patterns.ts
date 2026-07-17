@@ -1,0 +1,42 @@
+// Named drums reference stickings for the skills that don't map to a single
+// rotation token (counting / sixteenths / play-along / double paradiddle /
+// Moeller). Token-mapped rudiments (singles/doubles/accents/paradiddle/five-
+// stroke/flam/drag/buzz) get their sticking from focus.ts — the ONE token
+// interpreter. These non-token references live here so the RhythmGrid drill
+// reference AND a glossary "hear" demo read from the same array (no re-authored,
+// drifting stickings). Pure data; StickingCell.count is display-only (playSticking
+// reads only hand/accent/rest).
+
+import type { StickingCell } from "../types";
+
+/** One bar of eighth notes, R L alternating — the counting drill reference. */
+export const EIGHTHS_BAR: StickingCell[] = [
+  { hand: "R", accent: true, count: "1" }, { hand: "L", count: "&" },
+  { hand: "R", count: "2" }, { hand: "L", count: "&" },
+  { hand: "R", count: "3" }, { hand: "L", count: "&" },
+  { hand: "R", count: "4" }, { hand: "L", count: "&" },
+];
+
+/** One bar of sixteenth notes counted "1 e & a …", accent on each main beat. */
+export const SIXTEENTHS_BAR: StickingCell[] = [
+  "1", "e", "&", "a", "2", "e", "&", "a", "3", "e", "&", "a", "4", "e", "&", "a",
+].map((count, i) => ({ hand: (i % 2 === 0 ? "R" : "L") as "R" | "L", accent: i % 4 === 0, count }));
+
+/** Backbeat accents on beats 2 and 4 over eighths — the "play along" reference. */
+export const BACKBEAT_BAR: StickingCell[] = [
+  { hand: "R", count: "1" }, { hand: "L", count: "&" },
+  { hand: "R", accent: true, count: "2" }, { hand: "L", count: "&" },
+  { hand: "R", count: "3" }, { hand: "L", count: "&" },
+  { hand: "R", accent: true, count: "4" }, { hand: "L", count: "&" },
+];
+
+/** Double paradiddle, R-lead group: R L R L R R across two beats of triplets. */
+export const DOUBLE_PARADIDDLE_BAR: StickingCell[] = [
+  { hand: "R", accent: true, count: "1" }, { hand: "L", count: "&" }, { hand: "R", count: "a" },
+  { hand: "L", count: "2" }, { hand: "R", count: "&" }, { hand: "R", count: "a" },
+];
+
+/** Moeller whip: one accent-tap-tap triplet on a single hand (down / tap / up). */
+export const MOELLER_BAR: StickingCell[] = [
+  { hand: "R", accent: true, count: "1" }, { hand: "R", count: "&" }, { hand: "R", count: "a" },
+];

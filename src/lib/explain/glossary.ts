@@ -31,9 +31,11 @@ import {
 } from "../audio";
 import type { FretPosition, StickingCell } from "../types";
 import { AM_PENT_BOX1, AM_BLUES_BOX1 } from "../guitar/scaleShapes";
-// Reuse the ONE drums sticking interpreter so a glossary "hear" plays the exact
-// rudiment the curriculum teaches (no re-authored, drifting stickings).
+// Reuse the ONE drums sticking interpreter + the shared non-token references so a
+// glossary "hear" plays the exact rudiment the curriculum teaches (no re-authored,
+// drifting stickings).
 import { drumsFocusFor } from "../drums/focus";
+import { SIXTEENTHS_BAR, MOELLER_BAR } from "../drums/patterns";
 
 export type SeeKind = "fretboard" | "keyboard" | "chord-diagram" | "text";
 
@@ -79,14 +81,6 @@ const DEMO_LOUD_SOFT: StickingCell[] = [
 const DEMO_ROLL: StickingCell[] = [
   { hand: "R", accent: true }, { hand: "L" }, { hand: "R" }, { hand: "L" },
   { hand: "R" }, { hand: "L" }, { hand: "R" }, { hand: "L" },
-];
-const DEMO_SIXTEENTHS: StickingCell[] = Array.from({ length: 16 }, (_, i) => ({
-  hand: (i % 2 === 0 ? "R" : "L") as "R" | "L",
-  accent: i % 4 === 0,
-}));
-// The Moeller whip as a demo: one accent then two taps (down / tap / up).
-const DEMO_MOELLER: StickingCell[] = [
-  { hand: "R", accent: true }, { hand: "R" }, { hand: "R" },
 ];
 
 // ── The GLOSSARY ──────────────────────────────────────────────────────────
@@ -1355,7 +1349,7 @@ export const GLOSSARY: GlossaryEntry[] = [
     aliases: ["sixteenth notes", "sixteenths", "sixteenth note", "16th notes"],
     what: "Notes that split each beat into four even parts, counted '1 e & a' — twice as dense as eighth notes.",
     why: "Most busy grooves and quick fills live at this subdivision, so counting and playing sixteenths evenly is the door to real drum parts.",
-    hear: () => hear(() => playSticking(DEMO_SIXTEENTHS, 300)),
+    hear: () => hear(() => playSticking(SIXTEENTHS_BAR, 300)),
     seeKind: "text",
     seeText: "Each beat split into four even ticks — 1 e & a, 2 e & a — sixteen hits in a bar.",
   },
@@ -1425,7 +1419,7 @@ export const GLOSSARY: GlossaryEntry[] = [
     aliases: ["moeller", "whip stroke", "moeller technique", "moeller method"],
     what: "A relaxed whipping arm motion that chains a down stroke, a rebound tap, and an up stroke into one flowing move, using gravity for speed and power.",
     why: "It is how drummers play fast and loud with little effort — but it is built on the four strokes, so it comes only once those are automatic.",
-    hear: () => hear(() => playSticking(DEMO_MOELLER, 80)),
+    hear: () => hear(() => playSticking(MOELLER_BAR, 80)),
     seeKind: "text",
     seeText: "One accent, then two taps, in a single whipping motion — down, tap, up.",
   },
