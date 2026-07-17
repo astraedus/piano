@@ -7,6 +7,35 @@ const SEE_KINDS = new Set(["fretboard", "keyboard", "chord-diagram", "text"]);
 // Scientific Pitch Notation: letter A-G, optional # or b, octave (e.g. "C4", "F#5").
 const SPN = /^[A-Ga-g][#b]?-?\d+$/;
 
+// A SEE payload must carry the data its seeKind dispatches on. fretboard now
+// dispatches on seePositions (authored string/fret dots), NOT seeNotes — a guitar
+// pitch maps to several spots, so positions are the honest, unambiguous view.
+type SeeLike = {
+  seeKind: string;
+  seeNotes?: string[];
+  seePositions?: { string: number; fret: number }[];
+  seeChordShape?: number[];
+  seeText?: string;
+};
+function validateSee(see: SeeLike, where: string) {
+  if (see.seeKind === "keyboard") {
+    expect(Array.isArray(see.seeNotes), `seeNotes required for ${where}`).toBe(true);
+    expect(see.seeNotes!.length, `seeNotes non-empty for ${where}`).toBeGreaterThan(0);
+  }
+  if (see.seeKind === "fretboard") {
+    expect(Array.isArray(see.seePositions), `seePositions required for ${where}`).toBe(true);
+    expect(see.seePositions!.length, `seePositions non-empty for ${where}`).toBeGreaterThan(0);
+  }
+  if (see.seeKind === "chord-diagram") {
+    expect(Array.isArray(see.seeChordShape), `seeChordShape required for ${where}`).toBe(true);
+    expect(see.seeChordShape!.length, `chord shape is 6 strings for ${where}`).toBe(6);
+  }
+  if (see.seeKind === "text") {
+    expect(typeof see.seeText, `seeText required for ${where}`).toBe("string");
+    expect(see.seeText!.length, `seeText non-empty for ${where}`).toBeGreaterThan(0);
+  }
+}
+
 // Node ids whose subject is a single glossary concept — every nodeToTermId value
 // must resolve, or a TermChip on the tree would point at nothing. Mirrors the
 // NODE_TERM_IDS map in pathFilter.ts.
@@ -20,6 +49,8 @@ const NODE_IDS_WITH_TERMS = [
   "p-t3-ii-v-i", "p-t3-blues", "p-key-C", "p-key-G", "p-key-am",
   // Batch 3b — new subject-nodes whose title chip points at a single term.
   "p-t1-articulation", "p-t2-hands-together",
+  // Visual-pipeline fix — pedal + inversions lessons now render their own term.
+  "p-t2-pedal", "p-t2-inversions",
 ];
 
 const GHOST_KEYS = ["C", "G", "am", "D", "em", "F", "Bb"] as const;
@@ -42,29 +73,61 @@ describe("GLOSSARY integrity", () => {
     }
   });
 
-  it("seeKind matches the SEE payload it dispatches on", () => {
+  it("seeKind matches the SEE payload it dispatches on (primary + overrides)", () => {
     for (const e of GLOSSARY) {
-      if (e.seeKind === "keyboard" || e.seeKind === "fretboard") {
-        expect(Array.isArray(e.seeNotes), `seeNotes required for ${e.id}`).toBe(true);
-        expect(e.seeNotes!.length, `seeNotes non-empty for ${e.id}`).toBeGreaterThan(0);
+      validateSee(e, e.id);
+      for (const [inst, see] of Object.entries(e.seeByInstrument ?? {})) validateSee(see, `${e.id}.${inst}`);
+    }
+  });
+
+  // Class guard for the visual-pipeline bug: EVERY fretboard term must author its
+  // own positions, so none silently renders the identical default box.
+  it("every fretboard term authors seePositions (no silent default box)", () => {
+    const fretboard = GLOSSARY.filter((e) => e.seeKind === "fretboard");
+    expect(fretboard.length).toBeGreaterThan(0);
+    for (const e of fretboard) {
+      expect(e.seePositions, `${e.id} authors seePositions`).toBeDefined();
+      expect(e.seePositions!.length, `${e.id} seePositions non-empty`).toBeGreaterThan(0);
+    }
+  });
+
+  // Class guard for the wrong-instrument bug: a SHARED fretboard concept must
+  // carry a piano keyboard override, so a piano lesson never shows a guitar neck.
+  it("a shared fretboard term has a piano keyboard override", () => {
+    for (const e of GLOSSARY) {
+      if (e.seeKind !== "fretboard") continue;
+      if (e.instrument && e.instrument !== "both") continue; // guitar-only is fine
+      const piano = e.seeByInstrument?.piano;
+      expect(piano, `${e.id} (shared fretboard) has a piano SEE override`).toBeDefined();
+      expect(piano!.seeKind, `${e.id} piano override is a keyboard`).toBe("keyboard");
+    }
+  });
+
+  it("every seeNotes pitch (primary + per-instrument overrides) is valid SPN", () => {
+    for (const e of GLOSSARY) {
+      for (const n of e.seeNotes ?? []) {
+        expect(SPN.test(n), `"${n}" on ${e.id} is valid SPN`).toBe(true);
       }
-      if (e.seeKind === "chord-diagram") {
-        expect(Array.isArray(e.seeChordShape), `seeChordShape required for ${e.id}`).toBe(true);
-        expect(e.seeChordShape!.length, `chord shape is 6 strings for ${e.id}`).toBe(6);
-      }
-      if (e.seeKind === "text") {
-        expect(typeof e.seeText, `seeText required for ${e.id}`).toBe("string");
-        expect(e.seeText!.length, `seeText non-empty for ${e.id}`).toBeGreaterThan(0);
+      for (const [inst, see] of Object.entries(e.seeByInstrument ?? {})) {
+        for (const n of see.seeNotes ?? []) {
+          expect(SPN.test(n), `"${n}" on ${e.id}.${inst} is valid SPN`).toBe(true);
+        }
       }
     }
   });
 
-  it("every seeNotes pitch is valid Scientific Pitch Notation", () => {
-    for (const e of GLOSSARY) {
-      if (!e.seeNotes) continue;
-      for (const n of e.seeNotes) {
-        expect(SPN.test(n), `"${n}" on ${e.id} is valid SPN`).toBe(true);
+  it("every fretboard position is a valid string (1..6) and fret (0..24)", () => {
+    const check = (pos: readonly { string: number; fret: number }[] | undefined, where: string) => {
+      for (const p of pos ?? []) {
+        expect(p.string, `${where} string`).toBeGreaterThanOrEqual(1);
+        expect(p.string, `${where} string`).toBeLessThanOrEqual(6);
+        expect(p.fret, `${where} fret`).toBeGreaterThanOrEqual(0);
+        expect(p.fret, `${where} fret`).toBeLessThanOrEqual(24);
       }
+    };
+    for (const e of GLOSSARY) {
+      check(e.seePositions, e.id);
+      for (const [inst, see] of Object.entries(e.seeByInstrument ?? {})) check(see.seePositions, `${e.id}.${inst}`);
     }
   });
 

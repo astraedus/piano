@@ -7,30 +7,40 @@
 // A lesson ALWAYS gets a relevant visual — for a guitar app, "pure text with no
 // diagram" is the #1 complaint. Exactly ONE visual renders, chosen by priority:
 //   1. node.viz "chord_diagram" | "fretboard_map" | "tab" → the matching guitar
-//      component (ChordDiagram / Fretboard / Tab).
-//   2. node.viz "animation" → a sensible STATIC fallback: a chord diagram if the
-//      node carries a chordShape/cagedShape, else the instrument's default neck
-//      (guitar) / keyboard (piano). Static is fine — we replace "nothing" with a
-//      real, on-system visual.
+//      component (ChordDiagram / Fretboard-with-its-authored-map / Tab).
+//   2. node.viz "animation" (no real renderer) → the BEST available static
+//      visual, in order: the mapped term's TermVisual (a real, on-subject
+//      diagram) → a chord diagram if the node carries a chordShape/cagedShape →
+//      the instrument's default neck (guitar) / keyboard (piano).
 //   3. node maps to a glossary term WITH a visual → that term's TermVisual.
 //   4. None of the above → an instrument-appropriate DEFAULT so the strip is
 //      never empty: guitar → labeled Fretboard (its named strings double as the
 //      "your guitar's names" / anatomy visual); piano → labeled Keyboard.
 //
+// The term visual and default are instrument-aware (node.instrument), so a piano
+// lesson never renders a guitar fretboard for a shared concept.
+//
 // Audio: the node's glossary term (via nodeToTermId) drives the "Hear it" button.
 //   If no term maps, the button is omitted gracefully.
 
 import { useState, useCallback } from "react";
-import type { SkillNode } from "@/lib/types";
+import type { Instrument, SkillNode } from "@/lib/types";
 import { nodeToTermId } from "@/lib/pathFilter";
 import { lookupTerm } from "@/lib/explain/glossary";
 import { ChordDiagram } from "@/lib/guitar/components/ChordDiagram";
 import { CapoTeacher } from "@/components/CapoTeacher";
 import { Fretboard } from "@/lib/guitar/components/Fretboard";
+import { fretboardMapFor } from "@/lib/guitar/scaleShapes";
 import { Tab } from "@/lib/guitar/components/Tab";
 import { Keyboard } from "@/lib/piano/components/Keyboard";
 import { StaffMap } from "@/lib/piano/components/StaffMap";
 import { TermVisual, termHasVisual } from "@/components/explain/TermVisual";
+
+/** The concrete instrument for a node's visuals: "shared" nodes have no single
+ *  instrument, so their term/default visual uses the entry's primary SEE. */
+function nodeInstrument(node: SkillNode): Instrument | undefined {
+  return node.instrument === "shared" ? undefined : node.instrument;
+}
 
 export interface LessonMediaProps {
   node: SkillNode;
@@ -55,8 +65,9 @@ export function LessonMedia({ node }: LessonMediaProps) {
     }
   }, [termEntry, playing]);
 
+  const instrument = nodeInstrument(node);
   const hasAudio = Boolean(termEntry);
-  const termHasVis = Boolean(termEntry && termHasVisual(termEntry));
+  const termHasVis = Boolean(termEntry && termHasVisual(termEntry, instrument));
 
   return (
     <div
@@ -65,7 +76,7 @@ export function LessonMedia({ node }: LessonMediaProps) {
     >
       {/* Visual — exactly one renders, chosen by priority. */}
       <div className="flex items-center justify-center min-h-[72px]">
-        <LessonVisual node={node} termHasVis={termHasVis} termEntry={termEntry} />
+        <LessonVisual node={node} termHasVis={termHasVis} termEntry={termEntry} instrument={instrument} />
       </div>
 
       {/* "Hear it" button */}
@@ -93,10 +104,12 @@ function LessonVisual({
   node,
   termHasVis,
   termEntry,
+  instrument,
 }: {
   node: SkillNode;
   termHasVis: boolean;
   termEntry: ReturnType<typeof lookupTerm>;
+  instrument: Instrument | undefined;
 }) {
   // 0. Node-id special cases — a purpose-built teaching surface beats any generic
   //    default for these lessons, so they win before node.viz / term / default.
@@ -120,12 +133,23 @@ function LessonVisual({
         />
       );
     case "fretboard_map":
-      return <Fretboard ariaLabel={`${node.title} fretboard map`} />;
+      // Each fretboard_map node plots its OWN authored map (Box 1, Box 2, the
+      // natural-note map, …); without one it degrades to the default box.
+      return (
+        <Fretboard
+          positions={fretboardMapFor(node.id)}
+          ariaLabel={`${node.title} fretboard map`}
+        />
+      );
     case "tab":
       return <Tab ariaLabel={`${node.title} tab`} />;
     case "animation":
-      // 2. "animation" has no renderer — fall back to a static visual. Prefer a
-      // chord diagram when the node carries a shape, else the instrument default.
+      // "animation" has no renderer. Prefer the mapped term's real visual (an
+      // on-subject diagram, e.g. palm-muting / string-bending / vibrato), then a
+      // chord diagram if the node carries a shape, then the instrument default.
+      if (termEntry && termHasVis) {
+        return <TermVisual entry={termEntry} instrument={instrument} />;
+      }
       if (node.chordShape || node.cagedShape) {
         return (
           <ChordDiagram
@@ -140,7 +164,7 @@ function LessonVisual({
 
   // 3. A mapped glossary term with a visual.
   if (termEntry && termHasVis) {
-    return <TermVisual entry={termEntry} />;
+    return <TermVisual entry={termEntry} instrument={instrument} />;
   }
 
   // 4. Instrument-appropriate default — the strip is never empty for a lesson.

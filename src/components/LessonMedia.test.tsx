@@ -24,8 +24,12 @@ vi.mock("@/components/CapoTeacher", () => ({
 }));
 
 vi.mock("@/lib/guitar/components/Fretboard", () => ({
-  Fretboard: ({ ariaLabel }: { ariaLabel?: string }) => (
-    <div data-testid="fretboard" aria-label={ariaLabel} />
+  Fretboard: ({ ariaLabel, positions }: { ariaLabel?: string; positions?: unknown[] }) => (
+    <div
+      data-testid="fretboard"
+      aria-label={ariaLabel}
+      data-positions={String(positions?.length ?? 0)}
+    />
   ),
 }));
 
@@ -51,8 +55,14 @@ vi.mock("@/lib/piano/components/StaffMap", () => ({
 // real guitar/piano components. Uses the same data-testids so assertions work.
 vi.mock("@/components/explain/TermVisual", () => {
   return {
-    TermVisual: ({ entry }: { entry: { seeKind: string; title: string } }) => (
-      <div data-testid="term-visual" data-seekind={entry.seeKind}>
+    TermVisual: ({
+      entry,
+      instrument,
+    }: {
+      entry: { seeKind: string; title: string };
+      instrument?: string;
+    }) => (
+      <div data-testid="term-visual" data-seekind={entry.seeKind} data-instrument={instrument ?? ""}>
         {entry.title}
       </div>
     ),
@@ -173,6 +183,61 @@ const staffNode: SkillNode = {
   prereqs: ["p-t0-keyboard-map"],
   masteryDrill: "Name treble + bass clef notes on sight.",
   unlock: "Decode a basic score.",
+};
+
+// viz:"animation" whose node maps to a term WITH a visual — the term's real
+// diagram must win over the static default (bug 2). id maps via the real
+// nodeToTermId to "palm-muting".
+const animationWithTermNode: SkillNode = {
+  id: "g-t1-palmmute",
+  instrument: "guitar",
+  title: "Palm Muting",
+  tier: 1,
+  category: "technique",
+  prereqs: [],
+  masteryDrill: "Rest the palm near the bridge.",
+  unlock: "The chug.",
+  viz: "animation",
+};
+
+// A fretboard_map node WITH an authored map — must receive its positions (bug 3).
+const fretboardMapNode: SkillNode = {
+  id: "g-t2-pent-box2",
+  instrument: "guitar",
+  title: "Minor Pentatonic — Box 2 + Connect",
+  tier: 2,
+  category: "scales",
+  prereqs: [],
+  masteryDrill: "Box1→Box2 unbroken.",
+  unlock: "Leave first position.",
+  viz: "fretboard_map",
+};
+
+// A fretboard_map node with NO authored map — degrades to the default box.
+const unmappedFretboardMapNode: SkillNode = {
+  id: "g-tX-nomap",
+  instrument: "guitar",
+  title: "Unmapped Map",
+  tier: 2,
+  category: "scales",
+  prereqs: [],
+  masteryDrill: "…",
+  unlock: "…",
+  viz: "fretboard_map",
+};
+
+// A piano lesson mapping to a SHARED term — TermVisual must get instrument="piano"
+// so it can show a keyboard, not a guitar fretboard (bug 4). id maps to
+// "improvisation" via the real nodeToTermId.
+const pianoSharedTermNode: SkillNode = {
+  id: "p-t1-first-improv",
+  instrument: "piano",
+  title: "First Improvisation",
+  tier: 1,
+  category: "expression",
+  prereqs: [],
+  masteryDrill: "Noodle over Am.",
+  unlock: "Your own voice.",
 };
 
 // ── Tests ────────────────────────────────────────────────────────────────────
@@ -390,6 +455,67 @@ describe("LessonMedia", () => {
       // node.viz wins; TermVisual must not also render.
       expect(screen.getByTestId("chord-diagram")).toBeTruthy();
       expect(screen.queryByTestId("term-visual")).toBeNull();
+    });
+  });
+
+  describe("(j) viz:animation prefers the mapped term's visual over the static default", () => {
+    it("renders the term's real visual (not the bare default) for an animation node with a visual term", () => {
+      mockLookupTerm.mockReturnValue({
+        id: "palm-muting",
+        title: "Palm Muting",
+        aliases: [],
+        what: "...",
+        why: "...",
+        hear: vi.fn().mockResolvedValue(undefined),
+        seeKind: "fretboard",
+        seePositions: [{ string: 1, fret: 0 }],
+      });
+      render(<LessonMedia node={animationWithTermNode} />);
+      const tv = screen.getByTestId("term-visual");
+      expect(tv).toBeTruthy();
+      expect(tv.getAttribute("data-seekind")).toBe("fretboard");
+      // the static default fretboard must NOT also render
+      expect(screen.queryByTestId("fretboard")).toBeNull();
+    });
+
+    it("still falls back to the default when an animation node has no term", () => {
+      mockLookupTerm.mockReturnValue(undefined);
+      render(<LessonMedia node={animationNode} />);
+      expect(screen.getByTestId("fretboard")).toBeTruthy();
+      expect(screen.queryByTestId("term-visual")).toBeNull();
+    });
+  });
+
+  describe("(k) fretboard_map nodes receive their own authored positions", () => {
+    it("passes a non-empty positions set to the Fretboard for a mapped node", () => {
+      mockLookupTerm.mockReturnValue(undefined);
+      render(<LessonMedia node={fretboardMapNode} />);
+      const fb = screen.getByTestId("fretboard");
+      expect(Number(fb.getAttribute("data-positions"))).toBeGreaterThan(0);
+    });
+
+    it("degrades to the default (no positions) for an unmapped fretboard_map node", () => {
+      mockLookupTerm.mockReturnValue(undefined);
+      render(<LessonMedia node={unmappedFretboardMapNode} />);
+      expect(screen.getByTestId("fretboard").getAttribute("data-positions")).toBe("0");
+    });
+  });
+
+  describe("(l) the term visual is instrument-aware (no guitar fretboard on a piano lesson)", () => {
+    it("passes instrument='piano' to TermVisual for a piano lesson's shared term", () => {
+      mockLookupTerm.mockReturnValue({
+        id: "improvisation",
+        title: "Improvisation",
+        aliases: [],
+        what: "...",
+        why: "...",
+        hear: vi.fn().mockResolvedValue(undefined),
+        seeKind: "fretboard",
+        seePositions: [{ string: 6, fret: 5 }],
+        seeByInstrument: { piano: { seeKind: "keyboard", seeNotes: ["A4"] } },
+      });
+      render(<LessonMedia node={pianoSharedTermNode} />);
+      expect(screen.getByTestId("term-visual").getAttribute("data-instrument")).toBe("piano");
     });
   });
 });
