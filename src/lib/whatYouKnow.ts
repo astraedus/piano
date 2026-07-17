@@ -63,6 +63,8 @@ interface WhatYouKnowInput {
   earLevel: EarLevel;
   sessions: { earResults?: { correctIds: string[]; wrongIds: string[] } }[];
   pieces: Piece[];
+  /** Active module's focusKind — drives the ear-level label ladder (tonal vs rhythm). */
+  focusKind?: "key" | "chord" | "rudiment";
 }
 
 /** Plain, tappable-friendly name for a node (theory name, never the soul label). */
@@ -75,7 +77,7 @@ function plainTitle(node: SkillNode): string {
  * no I/O, no React. Every field is derived from an already-recorded signal.
  */
 export function buildWhatYouKnow(input: WhatYouKnowInput): WhatYouKnowSummary {
-  const { nodes, progress, skillReps, keyDepths, earLevel, sessions, pieces } = input;
+  const { nodes, progress, skillReps, keyDepths, earLevel, sessions, pieces, focusKind } = input;
 
   const status = resolveStatus(nodes, progress);
   const skills = skillLearnedCount(nodes, progress);
@@ -113,7 +115,7 @@ export function buildWhatYouKnow(input: WhatYouKnowInput): WhatYouKnowSummary {
     }))
     .sort((a, b) => b.depth - a.depth || a.name.localeCompare(b.name));
 
-  const ear = patternAxis(earLevel, sessions.map((s) => s.earResults));
+  const ear = patternAxis(earLevel, sessions.map((s) => s.earResults), focusKind);
 
   const sortedPieces = [...pieces].sort((a, b) => a.startedAt.localeCompare(b.startedAt));
 

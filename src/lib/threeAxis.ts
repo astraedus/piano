@@ -127,6 +127,7 @@ interface EarResults {
 export function patternAxis(
   earLevel: EarLevel,
   sessionEarResults: (EarResults | undefined)[],
+  focusKind?: "key" | "chord" | "rudiment",
 ): PatternAxis {
   let correct = 0;
   let total = 0;
@@ -138,7 +139,7 @@ export function patternAxis(
   return {
     earLevel,
     maxLevel: MAX_EAR_LEVEL,
-    label: earLevelLabel(earLevel),
+    label: earLevelLabel(earLevel, focusKind),
     accuracy: total > 0 ? correct / total : null,
     roundsAnswered: total,
   };

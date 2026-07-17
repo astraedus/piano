@@ -96,6 +96,18 @@ describe("helpers", () => {
     expect(earLevelLabel(5)).toBe("Progressions");
     expect(earLevelLabel(7)).toBe("Progressions");
   });
+
+  it("earLevelLabel serves the rhythm ladder for non-tonal (rudiment) modules — never tonal names (QA 2026-07-17)", () => {
+    expect(earLevelLabel(1, "rudiment")).toBe("Beat Divisions");
+    expect(earLevelLabel(4, "rudiment")).toBe("Accent Placement");
+    expect(earLevelLabel(5, "rudiment")).toBe("Rudiments by Ear");
+    for (const level of [1, 2, 3, 4, 5, 6, 7] as const) {
+      expect(earLevelLabel(level, "rudiment")).not.toMatch(/major|minor|scale|chord|cadence|progression/i);
+    }
+    // tonal callers are unchanged by the new param
+    expect(earLevelLabel(1, "key")).toBe("Major vs Minor");
+    expect(earLevelLabel(3, "chord")).toBe("Chord Quality");
+  });
 });
 
 describe("maxAllowedEarLevel — honest gating", () => {

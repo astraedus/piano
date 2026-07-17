@@ -18,8 +18,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Piano",
-  description: "A piano app whose endpoint is musical expression and the ability to play by ear.",
+  title: "Music Practice",
+  description: "A practice app whose endpoint is musical expression and the ability to play by ear.",
 };
 
 export const viewport: Viewport = {
