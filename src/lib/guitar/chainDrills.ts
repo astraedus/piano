@@ -497,6 +497,62 @@ const RAW_GUITAR_CHAIN_DRILLS: ChainDrill[] = [
     closingNote: "Your first finger just learned to lie flat and hold two strings at once. That is the exact motor skill the full six string barre needs next.",
   },
 
+  // ───── Batch 3b — breadth (blues note, bend types, driving rhythm) ─────
+  {
+    id: "g-t2-blues-note-chain",
+    instrument: "guitar",
+    phase: 2,
+    name: "the blues note",
+    soulName: "The Blue Note",
+    minutes: 6,
+    ghostKey: "am",
+    pillar: "improv",
+    steps: [
+      { type: "scale", durationSec: 60,  instruction: "Run Am pentatonic Box 1 up and down once to warm the shape, alternate-picked. This is the box you already own, five notes." },
+      { type: "tone",  durationSec: 75,  instruction: "Find the blues note: the A string, sixth fret. It sits right between the D at the fifth fret and the E at the seventh. Pick it on its own and hear how tense and unresolved it is." },
+      { type: "tone",  durationSec: 90,  instruction: "Slink through it: slide from the fifth fret up into the blues note at the sixth, then push on up to the E at the seventh. Slow and greasy. Never park on the blues note, always move off it." },
+      { type: "improv", durationSec: 120, instruction: "Put on an Am groove and improvise using Box 1, but pass through the blues note on the way between the D and the E. One note, and your solo just went from clean to bluesy." },
+      { type: "song",  durationSec: 45,  instruction: "That tense passing note is the whole flavour of blues-rock lead. Aim for it, slide off it, and you sound like the record." },
+    ],
+    closingNote: "One extra note turned your pentatonic box into the blues scale. The blues note is the single highest-value note in rock and blues lead, and now it is in your hands.",
+  },
+  {
+    id: "g-t2-bend-half-chain",
+    instrument: "guitar",
+    phase: 2,
+    name: "half-step, unison and held bends",
+    soulName: "Bends That Sit In Tune",
+    minutes: 6,
+    ghostKey: "am",
+    pillar: "expression",
+    steps: [
+      { type: "tone",  durationSec: 75,  instruction: "Half-step bend: B string, seventh fret. Bend up only until it matches the pitch of the eighth fret, one fret's worth. This small bend is the everyday one, and stopping it in tune is the whole skill." },
+      { type: "tone",  durationSec: 60,  instruction: "Held bend: bend the B string at the seventh fret up a whole step to the ninth fret's pitch, then hold it dead steady while it rings, no drooping. Support the bend with two or three fingers together." },
+      { type: "tone",  durationSec: 90,  instruction: "Unison bend: hold the B string at the fifth fret and let it ring. Now bend the G string at the seventh fret up a whole step until it matches that exact pitch, two strings crying as one." },
+      { type: "improv", durationSec: 75,  instruction: "Over an Am groove, work all three into a phrase: a half-step bend for tension, a held bend that sits and sings, a unison bend for a thick vocal cry." },
+      { type: "song",  durationSec: 30,  instruction: "Check every bend against a fresh fretted note. In tune or it is worse than no bend at all." },
+    ],
+    closingNote: "Whole-step bends were step one. Half-step, held, and unison bends are what actually fill real solos, and now every one of them can land in tune.",
+  },
+  {
+    id: "g-t1-drive-chain",
+    instrument: "guitar",
+    phase: 1,
+    name: "driving rhythm: down-picked eighths and gallop",
+    soulName: "The Rock Engine",
+    minutes: 6,
+    ghostKey: "E",
+    pillar: "technique",
+    steps: [
+      { type: "tone",  durationSec: 75,  instruction: "Down-picked straight eighth notes on E5, every stroke a downstroke, at 90bpm. Count one-and-two-and. Keep the wrist loose so it does not tire, and keep every hit exactly the same volume." },
+      { type: "tone",  durationSec: 60,  instruction: "Hold the drive for a full minute without slowing or getting choppy. This is a stamina skill, that steady down-picked wall is the whole engine of punk and metal rhythm." },
+      { type: "tone",  durationSec: 75,  instruction: "The gallop: palm-mute the strings and pick one long note then two quick ones per beat, da, da-da. Keep it tight and even. That chugging horse-hooves feel is the gallop." },
+      { type: "progression", durationSec: 90, instruction: "Drive E5, then G5, then A5, two beats each, alternating a bar of straight down-picked eighths with a bar of the muted gallop. Switch cleanly between the two feels." },
+      { type: "song",  durationSec: 60,  instruction: "Blitzkrieg Bop runs on pure down-picked eighth-note power chords. Play it at a comfortable tempo and just do not stop, let the drive carry you." },
+    ],
+    closingNote: "You now have the rock engine: a relentless down-picked wall and a tight palm-muted gallop. This is the rhythm feel under most of the rock, punk, and metal you love.",
+  },
+
   // ───── Curriculum #2 — timed chord-transition fluency ─────
   // A TRANSITION drill (transitionPairId set): the slot renders the 60-second
   // clean-change counter. Clearing ~30/min marks g-trans-G-C learned, gating the

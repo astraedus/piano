@@ -217,6 +217,26 @@ export const GUITAR_NODES: SkillNode[] = [
     pathTags: ["just-play", "play-with-soul", "go-deep"],
   },
   {
+    id: "g-t1-drive",
+    instrument: "guitar",
+    title: "Driving Rhythm — Down-Picked 8ths & Gallop",
+    tier: 1,
+    category: "rhythm",
+    // Batch 3b (G8) — the rock/punk engine-room rhythm. Today the only TAUGHT
+    // strum is the folk D-DU-UDU (g-t1-strum); down-picked straight eighth notes
+    // and the palm-muted gallop are implied by downpick + palm mute but never
+    // taught as a skill. The electric counterpart of g-t1-strum, so same rhythm
+    // category, same tier, all three paths. Prereqs: power chords (the material)
+    // + palm muting (the gallop's mute); both tier 1, downpicking transitive.
+    prereqs: ["g-t1-power", "g-t1-palmmute"],
+    masteryDrill: "Down-picked straight eighth notes on E5 at 90bpm for one minute, every downstroke dead even. Then a palm-muted gallop (one long, two short) over E5→G5→A5, muted strokes tight and controlled.",
+    unlock: "Can drive a rock rhythm with relentless, even down-picked eighth notes and switch on the palm-muted gallop — the engine-room feel behind punk and metal.",
+    chainDrillId: "g-t1-drive-chain",
+    soulTitle: "The Rock Engine",
+    keepTitle: "Driving Rhythm (Down-Picked 8ths & Gallop)",
+    pathTags: ["just-play", "play-with-soul", "go-deep"],
+  },
+  {
     id: "g-t1-tabrhythm",
     instrument: "guitar",
     title: "Tab Rhythm Reading",
@@ -298,7 +318,14 @@ export const GUITAR_NODES: SkillNode[] = [
     title: "String Bending — Whole Step",
     tier: 2,
     category: "technique",
-    prereqs: ["g-t2-hammer", "g-t2-slide"],
+    // Batch 3b re-gate: was [g-t2-hammer, g-t2-slide], neither of which a bend
+    // mechanically needs (legato is a different motion). Bending needs a cleanly
+    // fretted, well-supported note, so gate on g-t1-fretting — the tree's finger
+    // strength/placement foundation (no separate strength node exists). This lets
+    // THE electric expressive technique arrive right after fretting instead of
+    // waiting on the whole legato track. Dependents (vibrato, licks, bendaccuracy,
+    // and the new g-t2-bend-half) are unaffected; the DAG stays acyclic.
+    prereqs: ["g-t1-fretting"],
     masteryDrill: "B fret7→sound of fret9, in-tune 8/10 vs reference",
     unlock: "The blues voice",
     viz: "animation",
@@ -323,6 +350,29 @@ export const GUITAR_NODES: SkillNode[] = [
     pathTags: ["play-with-soul", "go-deep"],
   },
   {
+    id: "g-t2-bend-half",
+    instrument: "guitar",
+    title: "Half-Step, Unison & Held Bends",
+    tier: 2,
+    category: "technique",
+    // Batch 3b (G6) — extends the bending track. g-t2-bend teaches only the
+    // whole-step bend; the half-step bend is more common and the everyday bend of
+    // real solos, and unison/held bends are the control skills (match a bent note
+    // to a held one, keep a bend sitting steady in tune). Authored as a focused
+    // SIBLING of g-t2-bend rather than folding into it: one node = one skill here,
+    // and the whole-step node's job is "learn to bend at all" — overloading it
+    // with three more bend types would muddy that. Depends on g-t2-bend (you must
+    // bend before you can bend precisely); a leaf, so it gates nothing existing.
+    prereqs: ["g-t2-bend"],
+    masteryDrill: "Bend the B string up by one fret's worth of pitch and match it exactly; hold a whole-step bend rock steady while it rings out; then bend one string up until it matches a note fretted on the string next to it.",
+    unlock: "Can bend by a half step, hold a bend steady and in tune, and match a bent string to a held one — the everyday bends that fill real solos.",
+    viz: "animation",
+    chainDrillId: "g-t2-bend-half-chain",
+    soulTitle: "Bends That Sit In Tune",
+    keepTitle: "Half-Step, Unison & Held Bends",
+    pathTags: ["play-with-soul", "go-deep"],
+  },
+  {
     id: "g-t2-pent-box1",
     instrument: "guitar",
     title: "Minor Pentatonic — Box 1",
@@ -337,6 +387,27 @@ export const GUITAR_NODES: SkillNode[] = [
     fluencyTest: { prompt: "Improvise over an Am backing track using Box 1 while keeping a steady tap with your foot." },
     soulTitle: "Your First Solo",
     keepTitle: "Minor Pentatonic (Box 1)",
+    pathTags: ["play-with-soul", "go-deep"],
+  },
+  {
+    id: "g-t2-blues-note",
+    instrument: "guitar",
+    title: "The Blues Note — Adding the ♭5",
+    tier: 2,
+    category: "scales",
+    // Batch 3b (G4) — the single highest-ROI lead note in blues-rock: one added
+    // note (the flat five, ♭5) dropped into the Box 1 shape you already own turns
+    // the minor pentatonic into the minor blues scale. Slotted straight after
+    // g-t2-pent-box1 (same shape, one new note). In Am Box 1 the blue note is Eb,
+    // sitting on the A string at fret 6, right between the D at fret 5 and the E
+    // at fret 7. pathTags match pent-box1 (lead/expression territory).
+    prereqs: ["g-t2-pent-box1"],
+    masteryDrill: "Play Am Box 1, and on the way down slide into the blues note on the A string sixth fret, from the fifth fret up to it and off again. Improvise two minutes leaning on that one note over an Am groove.",
+    unlock: "Can drop in the one blues note that turns your pentatonic box into the blues scale — the bluesy tension every rock and blues solo leans on.",
+    viz: "fretboard_map",
+    chainDrillId: "g-t2-blues-note-chain",
+    soulTitle: "The Blue Note",
+    keepTitle: "Blues Scale (Pentatonic + ♭5)",
     pathTags: ["play-with-soul", "go-deep"],
   },
   {

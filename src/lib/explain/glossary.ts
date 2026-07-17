@@ -993,6 +993,66 @@ export const GLOSSARY: GlossaryEntry[] = [
     seeChordShape: [-1, -1, 3, 2, 1, 1],
     instrument: "guitar",
   },
+
+  // ---- Batch 3b (guitar breadth) ----
+  {
+    id: "blues-note",
+    title: "The Blues Note",
+    aliases: ["blues note", "blue note", "flat five", "flat fifth", "flatted fifth"],
+    what: "One extra note, the flat five (written ♭5), that sits a half step below the fifth note of the scale, giving the tense, gritty flavour of the blues.",
+    why: "Dropped into the minor pentatonic box you already know, this single note is the highest-value note in blues and rock lead, the tension that makes a line sound bluesy instead of plain.",
+    hear: () => hear(() => playSequence(["D4", "D#4", "E4"], { noteDurationSec: 0.5 })),
+    seeKind: "fretboard",
+    seeNotes: ["A4", "C5", "D5", "D#5", "E5", "G5", "A5"],
+    instrument: "guitar",
+  },
+  {
+    id: "blues-scale",
+    title: "Blues Scale",
+    aliases: ["blues scale", "minor blues scale", "six-note blues scale"],
+    what: "The minor pentatonic scale with one extra note, the blues note, added in, giving a darker, greasier six-note scale.",
+    why: "It is the sound of nearly every blues and rock solo, and you build it from a shape you already own just by adding one note.",
+    hear: () => hear(() => playSequence(["A4", "C5", "D5", "D#5", "E5", "G5", "A5"])),
+    seeKind: "fretboard",
+    seeNotes: ["A4", "C5", "D5", "D#5", "E5", "G5", "A5"],
+    instrument: "guitar",
+  },
+  {
+    id: "half-step-bend",
+    title: "Half-Step Bend",
+    aliases: ["half-step bend", "half step bend", "semitone bend"],
+    what: "A string bend that raises the pitch by just one fret's worth, the smallest common bend.",
+    why: "It is actually the more common bend in real music, and its short travel makes it the easiest bend to land exactly in tune.",
+    hear: () => hear(() => playBend("F#4", "G4")),
+    seeKind: "fretboard",
+    seeNotes: ["F#4", "G4"],
+    instrument: "guitar",
+  },
+  {
+    id: "unison-bend",
+    title: "Unison Bend",
+    aliases: ["unison bend", "unison bends"],
+    what: "Bending one string up until it matches a note held on the string beside it, so two strings ring the exact same pitch as one thick note.",
+    why: "It gives a fat, crying, vocal shout heard all over blues and rock lead, from Chuck Berry to Hendrix.",
+    hear: () => hear(async () => {
+      await playSequence(["E4"], { noteDurationSec: 0.5 });
+      await playBend("D4", "E4");
+    }),
+    seeKind: "fretboard",
+    seeNotes: ["D4", "E4"],
+    instrument: "guitar",
+  },
+  {
+    id: "gallop",
+    title: "The Gallop",
+    aliases: ["gallop", "gallop rhythm", "palm-muted gallop", "galloping rhythm"],
+    what: "A palm-muted rhythm of one long note then two quick ones on each beat, giving a tight, chugging, horse-hooves feel.",
+    why: "It is the driving muted engine behind countless rock and metal riffs, the rhythm that turns power chords into forward motion.",
+    hear: () => hear(() => playMutedChug(["E2", "B2"], 6)),
+    seeKind: "text",
+    seeText: "One long note then two quick ones on each beat, palm-muted: da, da-da, da, da-da, the chugging horse-hooves feel of metal rhythm.",
+    instrument: "guitar",
+  },
 ];
 
 /**

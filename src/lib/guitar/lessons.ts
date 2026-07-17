@@ -1028,4 +1028,92 @@ export const GUITAR_LESSONS: Record<string, NodeLesson> = {
       "note": "Its instantly recognizable C, G, Am, F progression leans on this exact F chord. Play it with the small F shape you just learned and the whole song is already in your hands."
     }
   },
+
+  // ── Batch 3b — breadth (blues note, bend types, driving rhythm) ────────────
+  "g-t2-blues-note": {
+    "what": "The blues note is one single extra note you drop into the minor pentatonic box you already play. Musicians call it the flat five, written ♭5, because it sits a half step below the fifth note of the scale. Add it to the pentatonic and the whole thing becomes the blues scale, the darker, greasier cousin of the box you already know.",
+    "why": "This one note is the single highest value note in blues and rock lead. It is the tension that makes a line sound bluesy instead of clean and polite. Almost every blues and rock solo you have ever loved leans on it, and you already own every other note around it, so this is the cheapest upgrade to your soloing you will ever make.",
+    "steps": [
+      {
+        "do": "Play your Am pentatonic Box 1 up and down once to wake the shape up. These are the five notes you already know: A, C, D, E, and G. Nothing new yet.",
+        "feel": "The familiar box, home base for the one note you are about to add."
+      },
+      {
+        "do": "Find the blues note. On the A string, the fifth fret is D and the seventh fret is E. The blues note is the fret squeezed between them, the A string sixth fret. Pick it on its own and really listen.",
+        "feel": "Tense, unresolved, itching to move somewhere. That restless sound is exactly the point."
+      },
+      {
+        "do": "Slink through it, never park on it. Slide from the fifth fret up into the blues note at the sixth, then keep going up to the E at the seventh. Slow and greasy, like a voice sliding up to a word.",
+        "feel": "The blues note is a doorway you pass through, not a room you sit in."
+      },
+      {
+        "do": "Now improvise over an Am groove using Box 1, but each time you travel between the D and the E, pass through the blues note. Let it be a quick, sliding, in between sound.",
+        "feel": "One added note, and your clean pentatonic just turned bluesy."
+      }
+    ],
+    "goodWhen": "You can find the blues note without hunting for it, slide smoothly into and out of it, and drop it into an Am solo so the line sounds bluesy instead of plain, without ever letting it sit there and sour.",
+    "watchOut": "The number one mistake is landing on the blues note and holding it, which sounds sour and wrong, because it is a passing note and not a home note. Fix it by always moving off it right away, sliding up to the E or back down to the D, so it colours the line instead of clashing with it.",
+    "song": {
+      "name": "Sunshine of Your Love (Cream)",
+      "note": "Clapton's blues rock lead lives on exactly this tense passing note. Once your ear learns the blues note, you will start hearing it slink through solo after solo."
+    }
+  },
+
+  "g-t2-bend-half": {
+    "what": "You already bend a whole step, pushing the string all the way up to the pitch two frets higher. This lesson adds the three bends that fill real solos: the half-step bend, which climbs only one fret's worth of pitch, the held bend, where you push up and hold the note dead steady, and the unison bend, where you bend one string until it matches a note ringing on the string beside it.",
+    "why": "The half-step bend is actually the more common bend in real music, and it is easier to land in tune because it travels a shorter distance. Holding a bend rock steady is what makes it sing instead of droop, and a unison bend gives you that thick, crying, two strings as one sound all over blues and rock. Together they are the everyday bending vocabulary, far more useful than the single whole-step bend on its own.",
+    "steps": [
+      {
+        "do": "Half-step bend first. Fret the B string at the seventh fret, then push the string up until its pitch matches the eighth fret, only one fret's worth. Check it against the actual eighth fret note. It is a small move, and stopping it exactly in tune is the entire skill.",
+        "feel": "A short, precise push, not a heave. Your ear, not your muscle, tells you when to stop."
+      },
+      {
+        "do": "Held bend next. Bend the B string at the seventh fret up a whole step to the ninth fret's pitch, then just hold it there, dead still, while the note rings out. Back the bending finger up with the two fingers behind it for strength.",
+        "feel": "The note should sit locked in tune with no drooping or wobble until you choose to release it."
+      },
+      {
+        "do": "Unison bend. Hold the B string at the fifth fret and let it ring. Now bend the G string at the seventh fret up a whole step until it lands on that exact same pitch, so the two strings ring as one thick note.",
+        "feel": "When they lock into unison the sound suddenly thickens and the wavering stops. That lock is the target."
+      },
+      {
+        "do": "Put all three into a phrase over an Am groove: a half-step bend for a little cry, a held bend that sits and sings, a unison bend for a fat vocal shout. Release each one under control.",
+        "feel": "Each bend lands where you aimed it and stays in tune, instead of sailing past."
+      }
+    ],
+    "goodWhen": "You can bend a half step and stop it perfectly in tune, hold a whole-step bend rock steady without it sagging, and lock a unison bend so the two strings ring as one, every bend checked honestly against a fresh fretted note.",
+    "watchOut": "The number one mistake is treating every bend as the same big push and overshooting the small ones, so the half-step bend sails right past its target. Fix it by leading with your ear: bend slowly toward the pitch you want and stop the instant it matches, rather than yanking to a fixed distance.",
+    "song": {
+      "name": "Texas Flood (Stevie Ray Vaughan)",
+      "note": "Stevie Ray Vaughan's blues is a masterclass in exactly these bends, small crying half steps, long held notes, and thick unison bends, every one sitting perfectly in tune."
+    }
+  },
+
+  "g-t1-drive": {
+    "what": "This is the engine room rhythm of rock, and it comes in two flavours. Down-picked straight eighth notes means striking every beat and every in between with a downward pick stroke, building a relentless, even wall of sound. The palm-muted gallop rests your picking hand on the strings and chops out a tight one long, two short pattern, a chugging, horse hooves feel.",
+    "why": "The only strumming taught so far is the gentle folk pattern, but rock, punk, and metal run on a completely different feel: driving, aggressive, and locked hard to the beat. Down-picking gives every note the same heavy, consistent attack, and the gallop is the tight muted chug behind countless riffs. This is the rhythm skill that makes power chords actually sound like rock instead of just ringing out.",
+    "steps": [
+      {
+        "do": "Start with straight down-picked eighth notes on an E5 power chord. Strike on every count and every in between, one and two and, always with a downstroke, at a slow steady tempo. Keep every hit the same volume.",
+        "feel": "A loose wrist doing the work, not a tense arm. If your forearm burns, you are gripping too hard."
+      },
+      {
+        "do": "Hold that even down-picked drive for a full minute without slowing down or getting choppy. Speed comes later, staying perfectly even is the goal right now.",
+        "feel": "A steady, unbroken wall of sound, each stroke a carbon copy of the one before it."
+      },
+      {
+        "do": "Now the gallop. Rest the edge of your picking hand on the strings near the bridge to mute them, and pick one long note then two quick ones on each beat, da, da da. Keep it palm-muted and tight.",
+        "feel": "A galloping, chugging feel, like horse hooves, chunky rather than ringing."
+      },
+      {
+        "do": "Put them together over a short riff: drive E5, then G5, then A5, alternating a bar of straight down-picked eighths with a bar of the muted gallop. Switch cleanly between the ringing wall and the tight chug.",
+        "feel": "Two clearly different rhythm feels that you can flip between on command."
+      }
+    ],
+    "goodWhen": "You can hold a minute of even down-picked eighth notes without tiring or slowing, chop out a tight palm-muted gallop, and switch cleanly between the two over a moving power-chord riff.",
+    "watchOut": "The number one mistake is sneaking in upstrokes as you tire, which instantly makes the drive sound uneven and floppy. Fix it by slowing right down to a tempo where every stroke can be a real, controlled downstroke, and only speeding up once the wall stays perfectly even.",
+    "song": {
+      "name": "Blitzkrieg Bop (Ramones)",
+      "note": "The Ramones built whole songs on pure down-picked eighth-note power chords and almost nothing else. Play along and you are running the exact engine this lesson teaches."
+    }
+  },
 };
