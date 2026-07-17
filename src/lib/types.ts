@@ -201,6 +201,13 @@ export interface EarChoice {
   // V4 — glossary key so an ear-round choice label becomes a tappable TermChip.
   termId?: string;
 }
+// Ear-level gating: node ids that must ALL be `learned` before that level's ear
+// content may appear. Keyed by the ear level it guards. L1 is ungated (the entry
+// round is always allowed); a level with no entry here is unrestricted. A module
+// that omits earLevelGates entirely is fully unrestricted (opt-in gating). See
+// earProgression.maxAllowedEarLevel for the prefix semantics.
+export type EarLevelGates = Partial<Record<2 | 3 | 4 | 5, string[]>>;
+
 export interface EarRound {
   id: string;
   type: EarRoundType;
@@ -338,7 +345,7 @@ export interface SkillReviewEntry {
 }
 
 export interface AppState {
-  version: 5;                   // v1→v2→v3→v4→v5 migrations in storage.ts
+  version: 6;                   // v1→…→v6 migrations in storage.ts
   instrument: Instrument;       // NEW — active instrument for this profile
   firstOpenedAt?: string;       // ISO
   name?: string;                // optional display name
@@ -347,6 +354,14 @@ export interface AppState {
   phase: Phase;
   grade: Grade;
   earLevel: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  // The floor for how high ear content may go regardless of what the skill tree
+  // has taught — the user's self-reported level at onboarding. The EFFECTIVE ear
+  // level is max(what the tree has taught, this floor), so a genuinely-advanced
+  // learner who says so is trusted, while auto-advance can only exceed the floor
+  // once the tree has actually taught the content (earProgression.maxAllowedEarLevel).
+  // Absent → treated as 1 (existing users are clamped to tree-taught content; the
+  // v5→v6 migration writes 1 for every pre-existing profile).
+  earLevelFloor?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   currentPieceId?: string;
   // Per-instrument snapshot of the current piece, so switching instruments never
   // surfaces (say) a piano piece while guitar is active. Reconciled in the header

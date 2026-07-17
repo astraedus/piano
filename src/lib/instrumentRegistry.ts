@@ -24,6 +24,7 @@ import type {
   Phase,
   KeyId,
   EarRound,
+  EarLevelGates,
 } from "./types";
 
 // Minimal tab payload shape; the guitar module (P4) defines the concrete data
@@ -101,6 +102,15 @@ export interface InstrumentModule {
    * (Piano leaves this undefined → keeps using the shared generator unchanged.)
    */
   earRounds?: EarRound[] | ((level: EarRound["level"], focusId: string) => EarRound);
+  /**
+   * Ear-level gating: node ids that must ALL be `learned` before that level's ear
+   * content may appear. Enforces honesty — the app never quizzes a learner on
+   * material (scale degrees, chord quality, cadences, progressions) it has not
+   * taught them. Absent → this instrument's ear content is ungated. Consumed by
+   * earProgression.maxAllowedEarLevel / effectiveEarLevel at every round-generation,
+   * advancement, and display site.
+   */
+  earLevelGates?: EarLevelGates;
 
   // injected visuals — the ONLY instrument-coupled components
   InstrumentVisual: ComponentType<InstrumentVisualProps>;

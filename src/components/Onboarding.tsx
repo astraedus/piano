@@ -122,6 +122,11 @@ export function Onboarding() {
       phase: option.phase,
       grade: option.grade,
       earLevel: option.earLevel,
+      // The self-reported level is the FLOOR: ear content can go this high even
+      // before the skill tree has taught it (we trust an advanced learner who says
+      // so). Auto-advance can only push ABOVE this floor once the gate nodes are
+      // learned (earProgression.maxAllowedEarLevel / effectiveEarLevel).
+      earLevelFloor: option.earLevel,
       // weekId must be a real ISO-week id (matches ghostKeyFor) so the seeded
       // ghost actually applies this first week, then naturally expires (B5).
       ghostOverride: { key: option.ghost, weekId: weekIdOf(new Date()) },

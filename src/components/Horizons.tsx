@@ -5,6 +5,7 @@ import { KEY_META } from "@/lib/music";
 import { getModuleSync } from "@/lib/instrumentRegistry";
 import { nextToLearn } from "@/lib/skillTree";
 import { abilityAxis, generationAxis, patternAxis } from "@/lib/threeAxis";
+import { effectiveEarLevel } from "@/lib/earProgression";
 import { weekHorizon } from "@/lib/todayPlan";
 import { completionFraction } from "@/lib/skillSummary";
 import { fmtTotalTime } from "@/lib/format";
@@ -58,7 +59,10 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
   const progress = state.skillProgress ?? {};
   const generation = generationAxis(nodes, progress, state.pieces ?? [], state.arc ?? []);
   const ability = abilityAxis(nodes, progress, state.level ?? 1);
-  const pattern = patternAxis(state.earLevel, (state.sessions ?? []).map((s) => s.earResults));
+  // Show the EFFECTIVE (gate-clamped) ear level, not a stored ratchet the learner
+  // can't actually access yet — the card must never claim a level the curriculum
+  // hasn't earned.
+  const pattern = patternAxis(effectiveEarLevel(state, module?.earLevelGates), (state.sessions ?? []).map((s) => s.earResults));
 
   return (
     <section className="border-t border-[color:var(--rule)] pt-8 mt-10 space-y-8">

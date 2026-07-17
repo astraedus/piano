@@ -1,4 +1,4 @@
-// Ear-level auto-advance — pure decision logic, fully testable.
+// Ear-level auto-advance + honest gating — pure decision logic, fully testable.
 //
 // The Pattern-Recognition axis (`earLevel`, 1..7) was a dead onboarding remnant:
 // set once, never advanced, never shown. This module gives it a live signal.
@@ -6,6 +6,16 @@
 // Only L1..L5 have authored ear-round content (earRounds.ts). L6/L7 generate
 // nothing distinct, so we CAP advancement at L5. That cap is correct and honest,
 // not a TODO — advancing past 5 would surface no new content.
+//
+// GATING (maxAllowedEarLevel / effectiveEarLevel): the ear ladder must never
+// quiz a learner on material the curriculum has not taught (scale degrees at L2,
+// chord quality at L3, cadences at L4, progressions at L5 — all Roman-numeral /
+// theory content). The effective level is max(what the skill tree has TAUGHT,
+// what the user CLAIMED at onboarding), so an advanced learner who self-reports
+// is trusted, but accuracy alone can only push past the claimed floor once the
+// gate nodes are learned.
+
+import type { AppState, EarLevelGates, SkillProgress } from "./types";
 
 /** Levels with authored ear-round content. Advancement never exceeds this. */
 export const MAX_EAR_LEVEL = 5;
@@ -77,4 +87,63 @@ export function earLevelLabel(level: EarLevel): string {
     case 5: return "Progressions";
     default: return "Progressions";
   }
+}
+
+/** Clamp any number into the valid 1..7 ear-level range. */
+function asEarLevel(n: number): EarLevel {
+  return Math.max(1, Math.min(7, Math.round(n))) as EarLevel;
+}
+
+/**
+ * The highest ear level the learner may access, given the instrument's gates,
+ * their skill progress, and their claimed onboarding floor.
+ *
+ * Rule: allowed = max(what the tree has TAUGHT, what the user CLAIMED), capped at
+ * MAX_EAR_LEVEL. "What the tree has taught" is the highest level L such that the
+ * gate for EVERY level ≤ L is satisfied (a strict prefix — the first unsatisfied
+ * gate stops the climb). A level with no gate configured is treated as satisfied,
+ * so gating is opt-in per level and per module (undefined gates → fully open).
+ *
+ * A gate is satisfied when every listed node id is `learned` in skillProgress.
+ */
+export function maxAllowedEarLevel(
+  gates: EarLevelGates | undefined,
+  skillProgress: Record<string, SkillProgress> | undefined,
+  claimedFloor: EarLevel,
+): EarLevel {
+  const learned = (id: string): boolean => skillProgress?.[id]?.status === "learned";
+  const gateSatisfied = (level: 2 | 3 | 4 | 5): boolean => {
+    const required = gates?.[level];
+    if (!required || required.length === 0) return true; // no gate → open
+    return required.every(learned);
+  };
+
+  // Walk levels upward; stop at the first level whose gate isn't met (prefix rule).
+  let taughtMax: EarLevel = 1;
+  for (const level of [2, 3, 4, 5] as const) {
+    if (level > MAX_EAR_LEVEL) break;
+    if (!gateSatisfied(level)) break;
+    taughtMax = level;
+  }
+
+  return asEarLevel(Math.min(MAX_EAR_LEVEL, Math.max(taughtMax, claimedFloor)));
+}
+
+/** The subset of AppState the effective-level resolver needs. */
+type EarLevelStateSlice = Pick<AppState, "earLevel" | "earLevelFloor" | "skillProgress">;
+
+/**
+ * The ear level actually presented/generated for a learner: their stored ratchet
+ * level, clamped down to what the gates + floor allow. This is the ONE shared
+ * clamp every round-generation and display site uses so no surface can offer a
+ * level the curriculum hasn't earned. (Advancement in sessions.ts uses the raw
+ * maxAllowedEarLevel so it can ratchet without demoting a level already reached.)
+ */
+export function effectiveEarLevel(
+  state: EarLevelStateSlice,
+  gates: EarLevelGates | undefined,
+): EarLevel {
+  const floor = asEarLevel(state.earLevelFloor ?? 1);
+  const cap = maxAllowedEarLevel(gates, state.skillProgress, floor);
+  return Math.min(state.earLevel, cap) as EarLevel;
 }

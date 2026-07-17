@@ -41,6 +41,18 @@ describe("guitar module", () => {
       expect(guitarModule.warmups[id]).toBeDefined();
     }
   });
+
+  // A typo'd earLevelGates node id can never become `learned`, so it would silently
+  // cap that ear level forever. Guard the whole class of that dead-link bug.
+  it("every earLevelGates node id resolves to a real guitar node", () => {
+    const ids = new Set(GUITAR_NODES.map((n) => n.id));
+    const gates = guitarModule.earLevelGates ?? {};
+    const gated = Object.values(gates).flat();
+    expect(gated.length).toBeGreaterThan(0); // guitar ear content IS gated
+    for (const id of gated) {
+      expect(ids.has(id), `earLevelGates references missing node "${id}"`).toBe(true);
+    }
+  });
 });
 
 describe("every guitar chain drill + warmup + song is instrument-tagged", () => {

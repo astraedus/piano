@@ -593,9 +593,19 @@ describe("endSession — earLevel auto-advance", () => {
     return { id: `prior-${idn}`, ...earLog(correct, wrong) };
   }
 
-  it("advances earLevel one step after a strong recent window", () => {
+  // Advancement is now GATED: accuracy can only push the level up to what the
+  // skill tree has taught (piano gates: L2←p-key-C, L3←+p-key-am, L4/L5←pop-formula)
+  // OR the claimed onboarding floor. These tests seed the gate nodes so they
+  // isolate the accuracy behavior; the gate-blocking behavior is tested separately.
+  const taughtTo = {
+    l3: { "p-key-C": learned(), "p-key-am": learned() },
+    l5: { "p-key-C": learned(), "p-key-am": learned(), "p-t2-pop-formula": learned() },
+  };
+
+  it("advances earLevel one step after a strong recent window (gate permits)", () => {
     const state = stateWith({
       earLevel: 2,
+      skillProgress: taughtTo.l3, // L3 gate open
       sessions: [priorEarSession(1, 3, 0), priorEarSession(2, 3, 0)],
     });
     // This session adds 3 more correct → 9/9 over the window → advance L2 → L3.
@@ -604,9 +614,10 @@ describe("endSession — earLevel auto-advance", () => {
     expect(next.arc.some((e) => e.kind === "ear-level-up")).toBe(true);
   });
 
-  it("holds earLevel when recent accuracy is below threshold", () => {
+  it("holds earLevel when recent accuracy is below threshold (even with the gate open)", () => {
     const state = stateWith({
       earLevel: 2,
+      skillProgress: taughtTo.l3, // gate would allow L3; accuracy is what holds it
       sessions: [priorEarSession(1, 1, 2), priorEarSession(2, 1, 2)],
     });
     const { state: next } = endSession(state, earLog(1, 2), new Date("2026-06-07T10:30:00Z"));
@@ -617,6 +628,7 @@ describe("endSession — earLevel auto-advance", () => {
   it("never advances past L5 (content cap)", () => {
     const state = stateWith({
       earLevel: 5,
+      skillProgress: taughtTo.l5, // gate fully open; the L5 content cap is what holds
       sessions: [priorEarSession(1, 3, 0), priorEarSession(2, 3, 0)],
     });
     const { state: next } = endSession(state, earLog(3, 0), new Date("2026-06-07T10:30:00Z"));
@@ -627,6 +639,7 @@ describe("endSession — earLevel auto-advance", () => {
   it("graces a single bad round inside an otherwise-strong window", () => {
     const state = stateWith({
       earLevel: 3,
+      skillProgress: taughtTo.l5, // L4 gate open
       sessions: [priorEarSession(1, 3, 0), priorEarSession(2, 3, 0)],
     });
     // 8 correct, 1 wrong over the window = 0.888 ≥ 0.8 → advance.
@@ -640,6 +653,7 @@ describe("endSession — earLevel auto-advance", () => {
     // though every prior round in the window was correct.
     let state = stateWith({
       earLevel: 2,
+      skillProgress: taughtTo.l5, // gate open through L5 so the ratchet, not the gate, limits
       sessions: [priorEarSession(1, 3, 0), priorEarSession(2, 3, 0)],
     });
 
@@ -650,5 +664,45 @@ describe("endSession — earLevel auto-advance", () => {
     const second = endSession(state, earLog(3, 0), new Date("2026-06-08T10:30:00Z"));
     expect(second.state.earLevel).toBe(4); // exactly one more, never skips to 5
     expect(second.state.earLevel - first.state.earLevel).toBe(1);
+  });
+
+  // ── Gate regression: accuracy cannot outrun the curriculum ──
+  it("a fresh beginner (empty tree, floor 1) never advances past L1, however many perfect sessions", () => {
+    let state = stateWith({ earLevel: 1, earLevelFloor: 1, skillProgress: {} });
+    for (let day = 0; day < 10; day++) {
+      const date = new Date(`2026-06-${String(10 + day).padStart(2, "0")}T10:30:00Z`);
+      state = endSession(state, earLog(3, 0), date).state;
+    }
+    expect(state.earLevel).toBe(1); // clamped by the empty tree + floor 1
+    expect(state.arc.some((e) => e.kind === "ear-level-up")).toBe(false);
+  });
+
+  it("a learner taught only C major climbs to L2 and stops there (no cadence content)", () => {
+    let state = stateWith({
+      earLevel: 1,
+      earLevelFloor: 1,
+      skillProgress: { "p-key-C": learned() }, // L2 gate open, L3 gate (p-key-am) closed
+    });
+    for (let day = 0; day < 12; day++) {
+      const date = new Date(`2026-06-${String(10 + day).padStart(2, "0")}T10:30:00Z`);
+      state = endSession(state, earLog(3, 0), date).state;
+    }
+    expect(state.earLevel).toBe(2); // capped at L2 by the unmet L3 gate
+  });
+
+  it("does not DEMOTE a level already reached when the gate is behind it (migrated user)", () => {
+    // A migrated user whose stored earLevel drifted up to 4 but whose floor is now
+    // 1 and whose tree teaches nothing: advancement must hold (not advance) without
+    // demoting the stored ratchet — the effective level is clamped for display/
+    // generation, but the stored number never ratchets backward.
+    const state = stateWith({
+      earLevel: 4,
+      earLevelFloor: 1,
+      skillProgress: {},
+      sessions: [priorEarSession(1, 3, 0), priorEarSession(2, 3, 0)],
+    });
+    const { state: next } = endSession(state, earLog(3, 0), new Date("2026-06-07T10:30:00Z"));
+    expect(next.earLevel).toBe(4); // held, not demoted, not advanced
+    expect(next.arc.some((e) => e.kind === "ear-level-up")).toBe(false);
   });
 });

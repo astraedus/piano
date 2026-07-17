@@ -13,7 +13,8 @@ import { PieceSlot } from "./slots/PieceSlot";
 import { ChainDrillSlot } from "./slots/ChainDrillSlot";
 import { EarMomentSlot } from "./slots/EarMomentSlot";
 import { FreeSlot } from "./slots/FreeSlot";
-import { generateEarRound } from "@/lib/earRounds";
+import { generateEarRoundForModule } from "@/lib/earRounds";
+import { effectiveEarLevel } from "@/lib/earProgression";
 import { drillRepId, scaleRepId, pieceRepId } from "@/lib/types";
 import type { EarRound } from "@/lib/types";
 import { UnlockCardModal } from "./UnlockCardModal";
@@ -67,13 +68,18 @@ export function PracticeStand() {
     return computeTodayPlan(state, new Date(), mode);
   }, [state, ready, justPlayParam]);
 
-  // Ear rounds: generate 3 rounds keyed by session+round
+  // Ear rounds: generate 3 rounds keyed by session+round, using the ACTIVE
+  // instrument's generator (guitar serves its own interval/quality/power rounds;
+  // piano falls back to the shared generator). The level is clamped to what the
+  // curriculum has actually taught (effectiveEarLevel), so the honest gate holds —
+  // a beginner never gets cadence/progression rounds on accuracy alone.
+  const earLevel = effectiveEarLevel(state, module?.earLevelGates);
   const earRounds: EarRound[] = useMemo(() => {
     if (!plan || plan.mode === "first-back" || plan.mode === "just-play") return [];
     const out: EarRound[] = [];
-    for (let i = 0; i < 3; i++) out.push(generateEarRound(state.earLevel, plan.ghostKey));
+    for (let i = 0; i < 3; i++) out.push(generateEarRoundForModule(module, earLevel, plan.ghostKey));
     return out;
-  }, [plan, state.earLevel]);
+  }, [plan, module, earLevel]);
 
   const [earCorrect, setEarCorrect] = useState<string[]>([]);
   const [earWrong, setEarWrong] = useState<string[]>([]);

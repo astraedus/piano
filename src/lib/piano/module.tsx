@@ -103,6 +103,24 @@ export const pianoModule: InstrumentModule = {
   focusLabel: pianoFocusLabel,
   progressMapKind: "keymap",
   scaleFingeringCue: (keyId, hand) => tuckCue(keyId, hand),
+  // Honest ear gating (see earProgression.maxAllowedEarLevel). Each level's ear
+  // content may only appear once the curriculum has actually taught it:
+  //   L2 scale-degree rounds  → p-key-C: the first scale is where a "scale degree" is taught.
+  //   L3 chord-quality rounds → p-key-C + p-key-am: both a major AND a minor triad
+  //       have been heard/played (p-key-am's own unlock is "Hear major vs minor reliably").
+  //   L4 cadence rounds (V-I / IV-I / ii-V-I, Roman-numeral labels) → p-t2-pop-formula:
+  //       the first node where the learner internalises chords moving in a functional
+  //       progression. Earlier keys only *contain* I-IV-V-I inside a drill; cadences as a
+  //       named, ear-identified idea aren't real until the pop formula (ii-V-I proper is
+  //       tier-3 jazz, too strict a gate for basic cadences).
+  //   L5 progression rounds (I–V–vi–IV etc.) → p-t2-pop-formula: this node IS the pop
+  //       formula, so it's the exact, honest gate for hearing four-chord progressions.
+  earLevelGates: {
+    2: ["p-key-C"],
+    3: ["p-key-C", "p-key-am"],
+    4: ["p-t2-pop-formula"],
+    5: ["p-t2-pop-formula"],
+  },
   InstrumentVisual: PianoInstrumentVisual,
   NotationVisual: PianoNotationVisual,
 };

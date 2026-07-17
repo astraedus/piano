@@ -8,6 +8,7 @@ import {
   migrateV2toV3,
   migrateV3toV4,
   migrateV4toV5,
+  migrateV5toV6,
   migrateToCurrent,
   defaultState,
   importStateJson,
@@ -194,53 +195,103 @@ describe("migrateV4toV5 (pure)", () => {
   });
 });
 
+describe("migrateV5toV6 (pure)", () => {
+  // A representative v5 blob: full practice history + gamification + review queue +
+  // soul-first paths, but NO ear-level floor yet (an existing user's real shape).
+  function v5Blob(): Record<string, unknown> {
+    const v3 = { ...migrateV2toV3(v2Blob()), version: 3 } as unknown as Record<string, unknown>;
+    const v4 = { ...migrateV3toV4(v3), version: 4 } as unknown as Record<string, unknown>;
+    return { ...migrateV4toV5(v4) };
+  }
+
+  it("injects earLevelFloor default 1 (clamps existing users to tree-taught content)", () => {
+    const m = migrateV5toV6(v5Blob());
+    expect(m.version).toBe(6);
+    expect(m.earLevelFloor).toBe(1);
+    // The clamp intent: the stored earLevel is preserved (v2Blob had 5) but the
+    // FLOOR is 1, so effective ear content falls back to what the tree taught.
+    expect(m.earLevel).toBe(5);
+  });
+
+  it("preserves an existing earLevelFloor (idempotent)", () => {
+    const blob = { ...v5Blob(), version: 6, earLevelFloor: 4 };
+    const m = migrateV5toV6(blob);
+    expect(m.earLevelFloor).toBe(4);
+  });
+
+  it("preserves the practice + soul-first data carried up from v5", () => {
+    const m = migrateV5toV6(v5Blob());
+    expect(m.instrument).toBe("guitar");
+    expect(m.skillProgress?.["g-t0-anatomy"]?.status).toBe("learned");
+    expect(m.theoryEnabled).toBe(false);
+    expect(m.skillReview).toEqual({});
+  });
+});
+
 describe("migrateToCurrent ladder", () => {
-  it("runs a v1 blob all the way to v5 (instrument + gamification + review queue + paths)", () => {
+  it("runs a v1 blob all the way to v6 (instrument + gamification + review queue + paths + ear floor)", () => {
     const m = migrateToCurrent(v1Blob());
-    expect(m.version).toBe(5);
+    expect(m.version).toBe(6);
     expect(m.instrument).toBe("piano");
     expect(m.xp).toBe(0);
     expect(m.skillReview).toEqual({});
     expect(m.learningPath).toBeUndefined();
     expect(m.theoryEnabled).toBe(false);
+    expect(m.earLevelFloor).toBe(1); // existing user clamped to tree-taught content
     // v1→v2 arc rewrite still happened en route
     expect(m.arc.find((e) => e.id.startsWith("piano-begins"))?.kind).toBe("instrument-begins");
   });
 
-  it("runs a v2 blob to v5 without re-running the v1→v2 instrument injection", () => {
+  it("runs a v2 blob to v6 without re-running the v1→v2 instrument injection", () => {
     const m = migrateToCurrent(v2Blob());
-    expect(m.version).toBe(5);
+    expect(m.version).toBe(6);
     expect(m.instrument).toBe("guitar"); // preserved, not forced to piano
     expect(m.xp).toBe(0);
     expect(m.skillReview).toEqual({});
     expect(m.theoryEnabled).toBe(false);
+    expect(m.earLevelFloor).toBe(1);
   });
 
-  it("runs a v3 blob to v5, layering review queue + paths (gamification untouched)", () => {
+  it("runs a v3 blob to v6, layering review queue + paths + ear floor (gamification untouched)", () => {
     const v3 = { ...migrateV2toV3(v2Blob()), version: 3, xp: 420, level: 4 } as unknown as Record<string, unknown>;
     const m = migrateToCurrent(v3);
-    expect(m.version).toBe(5);
+    expect(m.version).toBe(6);
     expect(m.xp).toBe(420); // preserved, not reset to 0
     expect(m.level).toBe(4);
     expect(m.skillReview).toEqual({});
     expect(m.learningPath).toBeUndefined();
+    expect(m.earLevelFloor).toBe(1);
   });
 
-  it("runs a v4 blob to v5, layering only the soul-first defaults", () => {
+  it("runs a v4 blob to v6, layering the soul-first defaults + ear floor", () => {
     const v4 = { ...migrateV3toV4({ ...migrateV2toV3(v2Blob()), version: 3 } as unknown as Record<string, unknown>), xp: 99 } as unknown as Record<string, unknown>;
     const m = migrateToCurrent(v4);
-    expect(m.version).toBe(5);
+    expect(m.version).toBe(6);
     expect(m.xp).toBe(99); // preserved
     expect(m.theoryEnabled).toBe(false);
     expect(m.learningPath).toBeUndefined();
+    expect(m.earLevelFloor).toBe(1);
+  });
+
+  it("runs a v5 blob to v6, layering only the ear floor (paths untouched)", () => {
+    const v5 = {
+      ...migrateV4toV5({ ...migrateV3toV4({ ...migrateV2toV3(v2Blob()), version: 3 } as unknown as Record<string, unknown>), version: 4 } as unknown as Record<string, unknown>),
+      learningPath: "go-deep",
+      theoryEnabled: true,
+    } as unknown as Record<string, unknown>;
+    const m = migrateToCurrent(v5);
+    expect(m.version).toBe(6);
+    expect(m.learningPath).toBe("go-deep"); // preserved
+    expect(m.theoryEnabled).toBe(true);
+    expect(m.earLevelFloor).toBe(1);
   });
 });
 
-describe("loadState v1→v5 round-trip via localStorage", () => {
+describe("loadState v1→v6 round-trip via localStorage", () => {
   it("reads a legacy piano.state blob, migrates it to current, and persists under practice.state", () => {
     window.localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(v1Blob()));
     const loaded = loadState();
-    expect(loaded.version).toBe(5);
+    expect(loaded.version).toBe(6);
     expect(loaded.instrument).toBe("piano");
     expect(loaded.name).toBe("Anti");
     // gamification defaults injected by the v2→v3 step
@@ -252,11 +303,13 @@ describe("loadState v1→v5 round-trip via localStorage", () => {
     // soul-first defaults injected by the v4→v5 step
     expect(loaded.learningPath).toBeUndefined();
     expect(loaded.theoryEnabled).toBe(false);
+    // ear floor injected by the v5→v6 step (existing user clamped to tree-taught)
+    expect(loaded.earLevelFloor).toBe(1);
 
     // migrated blob is now written to the current key at current version
     const newRaw = window.localStorage.getItem(STORAGE_KEY);
     expect(newRaw).toBeTruthy();
-    expect(JSON.parse(newRaw!).version).toBe(5);
+    expect(JSON.parse(newRaw!).version).toBe(6);
   });
 
   it("leaves the legacy piano.state key in place as a backup", () => {
@@ -287,7 +340,7 @@ describe("loadState v1→v5 round-trip via localStorage", () => {
     const loaded = loadState();
     expect(loaded.name).toBe("Round");
     expect(loaded.phase).toBe(4);
-    expect(loaded.version).toBe(5);
+    expect(loaded.version).toBe(6);
   });
 });
 
@@ -296,9 +349,10 @@ describe("importStateJson", () => {
     const ok = importStateJson(JSON.stringify(v1Blob()));
     expect(ok).toBe(true);
     const loaded = loadState();
-    expect(loaded.version).toBe(5);
+    expect(loaded.version).toBe(6);
     expect(loaded.instrument).toBe("piano");
     expect(loaded.xp).toBe(0);
+    expect(loaded.earLevelFloor).toBe(1);
   });
 
   it("rejects invalid json", () => {

@@ -40,6 +40,19 @@ describe("piano module", () => {
       expect(pianoModule.warmups[id]).toBeDefined();
     }
   });
+
+  // Every earLevelGates node id must resolve to a real skill node. A typo'd gate id
+  // can never become `learned`, so it would silently cap that ear level FOREVER —
+  // exactly the kind of dead-link the whole gating feature exists to prevent.
+  it("every earLevelGates node id resolves to a real piano node", () => {
+    const ids = new Set(PIANO_NODES.map((n) => n.id));
+    const gates = pianoModule.earLevelGates ?? {};
+    const gated = Object.values(gates).flat();
+    expect(gated.length).toBeGreaterThan(0); // piano ear content IS gated
+    for (const id of gated) {
+      expect(ids.has(id), `earLevelGates references missing node "${id}"`).toBe(true);
+    }
+  });
 });
 
 describe("every piano chain drill + warmup is instrument-tagged", () => {

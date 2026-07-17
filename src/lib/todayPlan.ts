@@ -15,6 +15,7 @@ import { dueReviews } from "./skillReview";
 import { miniShelfLineFor } from "./miniShelfLines";
 import { formatNorthStarNudge } from "./format";
 import { getModuleSync, type InstrumentModule } from "./instrumentRegistry";
+import { effectiveEarLevel } from "./earProgression";
 
 // Resolve the active instrument's module from the sync cache, falling back to
 // piano (plan §6 todayPlan). The piano module is imported at app init so the
@@ -154,8 +155,9 @@ export function computeTodayPlan(state: AppState, date: Date, overrideMode?: Tod
   // Ear round: if the instrument module supplies its own ear-training set/generator
   // (guitar will, B1), pull from there; otherwise leave null so the Stand keeps
   // generating piano ear rounds independently via the shared earRounds.ts (existing
-  // behavior — piano's module.earRounds is undefined).
-  const earRound = earRoundFromModule(module, state.earLevel, ghostKey);
+  // behavior — piano's module.earRounds is undefined). The level is clamped to what
+  // the curriculum has taught (effectiveEarLevel) so no honest-gating layer is bypassed.
+  const earRound = earRoundFromModule(module, effectiveEarLevel(state, module?.earLevelGates), ghostKey);
 
   return {
     mode,
