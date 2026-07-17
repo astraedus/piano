@@ -5,21 +5,26 @@
 // OPAQUE rotation tokens (design decision 1): the token is never shown as a key;
 // module.focusLabel maps it to a rudiment name (focus.ts is the ONE interpreter).
 //
-// Stage A ships only the four Tier-0 foundation nodes — no singles/doubles/accents
-// nodes or drills yet — so the rotation is the single token "C" (singles), the
-// through-line of ALL foundational pad work (you play single strokes while
-// learning grip, rebound, the four strokes, and the click). Shipping the doc's
-// full phase-1 set [C, G, D] now would surface "Rudiment of the Week: Double
-// Stroke Roll" with no doubles content anywhere. Stage B widens this rotation as
-// it adds the Tier-1+ rudiment nodes; the full 8-token map already lives in
-// focus.ts, ready for that.
+// Stage B fills the rotation now that the Tier-1+ rudiment nodes + drills exist
+// (design doc "Rudiment of the Week rotation"):
+//   phase 1 : singles, doubles, accents        → tokens C, G, D
+//   phase 2+: adds paradiddle, five-stroke,
+//             flam, drag, buzz                  → tokens A, E, F, B, am
+// Every token resolves to a rudiment via focus.ts, and every token has real
+// Tier-1+ content (a node + a chain drill) — so "Rudiment of the Week: <name>"
+// never surfaces with nothing behind it. drums onboarding starts everyone at
+// phase 1; the full 8-token set is reachable as later phases would be, but the
+// honest sequencing gate is the skill DAG (prereqs), not the phase.
 
 import type { KeyId, Phase } from "../types";
 
+const PHASE_1: KeyId[] = ["C", "G", "D"];
+const PHASE_2_PLUS: KeyId[] = ["C", "G", "D", "A", "E", "F", "B", "am"];
+
 export const DRUMS_GHOST_ROTATION: Record<Phase, KeyId[]> = {
-  1: ["C"],
-  2: ["C"],
-  3: ["C"],
-  4: ["C"],
-  5: ["C"],
+  1: PHASE_1,
+  2: PHASE_2_PLUS,
+  3: PHASE_2_PLUS,
+  4: PHASE_2_PLUS,
+  5: PHASE_2_PLUS,
 };

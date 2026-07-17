@@ -4,6 +4,7 @@ import { DRUMS_NODES } from "./skillNodes";
 import { DRUMS_CHAIN_DRILLS } from "./chainDrills";
 import { DRUMS_WARMUPS } from "./warmups";
 import { DRUMS_UNLOCK_LIBRARY } from "./unlocks";
+import { DRUMS_LESSONS } from "./lessons";
 import { getModuleSync, isModuleRegistered } from "../instrumentRegistry";
 import { isAcyclic, resolveStatus, nextToLearn } from "../skillTree";
 
@@ -74,10 +75,31 @@ describe("every drums chain drill + warmup is instrument-tagged", () => {
   });
 });
 
-describe("DRUMS_NODES form a coherent DAG (Stage A: four Tier-0 nodes)", () => {
-  it("has the four Tier-0 foundation nodes", () => {
-    expect(DRUMS_NODES.length).toBe(4);
-    for (const n of DRUMS_NODES) expect(n.tier).toBe(0);
+describe("DRUMS_NODES form a coherent DAG (Stage B: Tiers 0-3, 18 nodes)", () => {
+  it("has the full curriculum: 4 Tier-0 + 14 Tier-1..3 nodes", () => {
+    expect(DRUMS_NODES.length).toBe(18);
+    const byTier = new Map<number, number>();
+    for (const n of DRUMS_NODES) byTier.set(n.tier, (byTier.get(n.tier) ?? 0) + 1);
+    // Design-doc DAG table distribution: 4 / 4 / 5 / 5 across tiers 0..3.
+    expect(byTier.get(0)).toBe(4);
+    expect(byTier.get(1)).toBe(4);
+    expect(byTier.get(2)).toBe(5);
+    expect(byTier.get(3)).toBe(5);
+    for (const n of DRUMS_NODES) expect(n.tier).toBeLessThanOrEqual(3);
+  });
+
+  // Every node ships a full authored lesson (design doc: what/why/steps/goodWhen/
+  // watchOut), never just the masteryDrill one-liner — a placeholder-content guard.
+  it("every node has a complete authored lesson", () => {
+    for (const n of DRUMS_NODES) {
+      const lesson = DRUMS_LESSONS[n.id];
+      expect(lesson, `node ${n.id} has an authored lesson`).toBeDefined();
+      expect(lesson.what.length, `${n.id} what`).toBeGreaterThan(0);
+      expect(lesson.why.length, `${n.id} why`).toBeGreaterThan(0);
+      expect(lesson.steps.length, `${n.id} steps`).toBeGreaterThanOrEqual(3);
+      expect(lesson.goodWhen.length, `${n.id} goodWhen`).toBeGreaterThan(0);
+      expect(lesson.watchOut, `${n.id} watchOut`).toBeTruthy();
+    }
   });
 
   it("is acyclic", () => {
