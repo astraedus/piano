@@ -1,0 +1,127 @@
+{
+ "items": [
+  {
+   "name": "1. Setup: posture + pad placement",
+   "detail": "Standing or seated, pad height/angle set so forearms sit roughly parallel to the floor with relaxed shoulders \u2014 the same ergonomics that transfer to snare/kit later (PAS 'Teaching Strategies for Younger Beginners'). Must precede any technique work: bad setup forces compensating tension in the wrist/forearm that gets baked into every stroke trained afterward and is hard to retrain once habitual. Mastery: holds the position for a full 15-20 min session with visibly relaxed shoulders, no mid-session repositioning, no forced wrist bend."
+  },
+  {
+   "name": "2. Matched grip + fulcrum",
+   "detail": "Matched grip only in v1 (both hands identical) \u2014 PAS teaches matched grip to all beginners because it transfers to every percussion instrument, unlike traditional grip's kit-specific tradition. Fulcrum = thumb+index pinch at the stick's balance point (~1/3 from the butt), remaining fingers wrapped loosely (PAS 'Building a Strong Foundation of the Snare Drum Fulcrum'). Must precede stroke work because the fulcrum is the literal hinge every stroke rotates around; getting it wrong here means every later drill reinforces the wrong hinge. Mastery: finds the balance point by feel, holds a relaxed fulcrum in both hands with no wobble and no death-grip, stick doesn't fly out on a light tap."
+  },
+  {
+   "name": "3. Discovering rebound / the bounce",
+   "detail": "Before any named 'stroke,' the student lets the stick fall and bounce off the pad using gravity plus minimal wrist motion \u2014 the pad's tight, consistent surface is exactly why teachers use it here rather than a live head (multiple sources: pad's articulate, predictable rebound is what makes it the technique-building tool it is). Must precede the four stroke types because those are just named combinations of stick-height layered on a rebound the student can already feel; teaching the vocabulary first produces muscled, arm-forced strokes instead of relaxed ones. Mastery: stick bounces back to a predictable, repeatable height on its own with a loose grip, both hands, no restriking with muscle."
+  },
+  {
+   "name": "4. The four stroke types (full, down, tap, up)",
+   "detail": "Full (high-to-high, loud, preps another loud note), down (high-to-low, loud, preps a soft note), tap (low-to-low, soft, preps another soft note), up (low-to-high, prepares a loud note after a soft one) \u2014 the dynamic vocabulary underneath every rudiment, accent pattern, and the Moeller technique later (Black Swamp 'The 4 Essential Snare Drum Strokes'; PAS 'An Analytical Approach to Rudiments'). Sequenced right after rebound discovery because it's the same bounce now performed at controlled, named heights. Mastery: loops full-down-tap-up-full with clearly distinct, consistent heights, matched between R and L hands, at a slow tempo."
+  },
+  {
+   "name": "5. Metronome + one-hand quarter notes",
+   "detail": "Click set to a comfortable tempo (~60-80bpm), one hand only, quarter notes \u2014 explicitly recommended as the easiest metronome on-ramp before adding a second hand or a pattern (Percussion Pros beginner-routine guide; Drum Lessons In Home). Placed here, not day 1, so tempo isn't confounded with an unlearned stroke \u2014 but before any two-hand pattern so timing isn't confounded with sticking difficulty either. Mastery: locks to the click for 1+ minute without drift, can drop out and re-enter cleanly on beat 1."
+  },
+  {
+   "name": "6. Single stroke roll (RLRL) \u2014 first rudiment",
+   "detail": "Alternating R L R L to a click \u2014 the foundational rudiment everything else builds on (Drumeo 'How To Play Rudiments'; PAS rudiment list). The new skill is hand-to-hand matching: R and L must sound identical in tone and volume, which requires the fulcrum (2) and stroke control (4) already in place. Mastery: RLRL indistinguishable between hands across 60-120bpm, comfortable leading with either hand."
+  },
+  {
+   "name": "7. Reading: quarter & eighth notes with counting",
+   "detail": "Notation is introduced only once a reliable single-stroke motor pattern exists to map it onto \u2014 standard drum-reading sequencing goes quarter before eighth before sixteenth (The New Drummer's reading series). Student reads simple quarter/eighth-note single-stroke lines while counting '1 + 2 +' aloud. Mastery: sight-reads an unseen 4-bar quarter/eighth line at a set tempo, counting aloud, with at most 1-2 stumbles."
+  },
+  {
+   "name": "8. Double stroke roll (RRLL) via Stick Control p.5-7",
+   "detail": "George Lawrence Stone's Stick Control is the canonical text; standard practice is starting beginners on p.5's sticking patterns, controlling slow 'half-stroke' bouncing, then opening into true doubles (Brad Allen Drums' Stick Control walkthrough). Doubles are strictly harder than singles \u2014 one hand motion must produce two even strokes via wrist+finger rebound \u2014 so this must follow, not run parallel to, the single stroke roll, or the student is learning hand-matching and rebound-multiplication at once. Mastery: RRLL sounds like two identical strokes per hand (not accent-then-ghost), clean at 80-100bpm."
+  },
+  {
+   "name": "9. Accents / accent-tap patterns",
+   "detail": "Loud/soft accenting layered onto the now-secure single and double strokes using the stage-4 stroke vocabulary (e.g. accent on beat 1, taps on the rest of an 8th-note line). Direct on-ramp to Moeller (13) and to reading dynamics in real notation. Mastery: clean accent-tap 8th-note patterns at 80bpm+, accent relocatable to any subdivision in the beat without the taps changing volume."
+  },
+  {
+   "name": "10. Sixteenth notes & subdivision reading",
+   "detail": "Extends reading (7) to '1-e-+-a' 16th subdivision once 8ths are automatic and doubles (8) give the hands the physical means to play the faster subdivision. Direct prerequisite for paradiddles (11), which are 16th-note groupings. Mastery: counts and plays 16th-note single-stroke patterns from notation at 70-90bpm."
+  },
+  {
+   "name": "11. Single paradiddle (RLRR LRLL) and family",
+   "detail": "Combines the single stroke roll (6) and double stroke roll (8) into one repeating asymmetric sticking \u2014 standard 'third rudiment' in beginner sequencing because both component skills must already be independently solid (Drumeo '5 Easy Drum Rudiments For Beginners' lists single stroke roll, double stroke roll, then paradiddle in that order). New skill: keeping tone even through the hand-lead switch at the 'diddle.' Mastery: loops continuously at 80-110bpm without the diddle rushing or the accent hand tensing, starts on either hand."
+  },
+  {
+   "name": "12. Five stroke roll & measured rolls",
+   "detail": "A fixed-count roll (RRLLR / LLRRL) built directly from the double stroke (8), capped by an accented single stroke. Sits after the paradiddle in common beginner sequencing (Drumeo's essential-rudiments ordering places it after single/double/paradiddle) because doubles must already be buzz-free before adding a fixed count and terminal accent on top. Mastery: clean, non-buzzing 5-stroke roll, accented first and last strokes, at multiple tempos."
+  },
+  {
+   "name": "13. Moeller technique (whip stroke)",
+   "detail": "The Moeller/whip motion \u2014 Sanford Moeller's system, popularized by student Jim Chapin \u2014 chains the down-stroke, rebound tap, and up-stroke (stage 4) into one whipping arm motion for speed and power with less effort (Wikipedia 'Moeller method'; Jim Chapin's 'Moeller Technique: 3 Fundamental Exercises'). Deliberately sequenced late: it is literally those four strokes combined, not a separate technique, so teaching it before stroke-type control (4) and accents (9) are internalized just produces uncontrolled arm-flailing. Mastery: executes a controlled accent-tap-tap Moeller triplet slowly, loose wrist/arm, no extra unwanted bounces."
+  },
+  {
+   "name": "14. Speed development (open-closed-open / accelerando)",
+   "detail": "Once individual rudiments (6, 8, 11) are each clean at moderate tempo, speed is built deliberately via the 'open-closed-open' method \u2014 start slow, accelerate evenly to a personal max, decelerate symmetrically back down \u2014 a classical rudimental-audition technique also used in pad practice (Wikipedia 'Open, closed, open'). Sequenced last among technical stages because forcing tempo onto an uncontrolled stroke bakes in tension; speed training is a multiplier applied to already-correct technique, not a substitute for it. Mastery: runs a chosen rudiment through a full open-closed-open arc, 60bpm up to personal max and back, symmetrically, without breakdown."
+  },
+  {
+   "name": "15. Musical application / syncopated etudes (pad-only ceiling)",
+   "detail": "Terminal pad-only stage: combines the accumulated vocabulary (rudiments, accents, dynamics, subdivisions) into syncopated reading etudes and playing along to songs/click tracks \u2014 musical phrasing instead of isolated drills. This is the natural home for 'chain drill' and 'ear round' style sessions. Kit translation (feet, pedals, full-kit coordination) is explicitly excluded here per the v1 brief \u2014 a later horizon, not part of this roadmap. Mastery: performs a 2+ minute syncopated etude, or plays along to a song section, in time and musically dynamic, without stopping or losing the click."
+  }
+ ],
+ "summary": "The honest dependency order for a total-beginner pad-only drummer runs: physical foundation first (posture, matched grip, fulcrum), then raw rebound feel, then the four named stroke types (full/down/tap/up) that every later technique is literally built from, then metronome anchoring on one hand before any two-hand pattern, then the single stroke roll as the first true rudiment, with rhythm reading layered onto that motor skill only once it exists. From there the double stroke roll (a strictly harder, separate skill) precedes accents, which precede 16th-note reading, which precedes the paradiddle family (needs singles+doubles already solid) and measured/five-stroke rolls. Moeller technique comes deliberately late because it IS the four stroke types chained into one whip motion \u2014 teaching it before stroke-type control is internalized just produces arm-flailing. Deliberate speed development (open-closed-open/accelerando) is a multiplier applied only after individual rudiments are clean, never a substitute for control. The roadmap closes with musical/syncopated application as the ceiling of pad-only work \u2014 kit translation (feet, pedals) is explicitly out of scope per the v1 brief. This sequencing (technique before vocabulary, vocabulary before combination, combination before speed) matches how PAS, Vic Firth, Stick Control pedagogy, and Drumeo actually stage beginners, and each of the 15 stages carries an observable mastery gate so progress can be verified rather than assumed from time-on-pad.",
+ "sources": [
+  {
+   "title": "PAS - Percussion Teaching Strategies for Younger Beginners",
+   "url": "https://pas.org/pas-blog/percussion-teaching-strategies-for-younger-beginners/"
+  },
+  {
+   "title": "PAS - Building A Strong Foundation Of The Snare Drum Fulcrum (PDF)",
+   "url": "https://pas.org/wp-content/uploads/2024/04/ECV0803-035.pdf"
+  },
+  {
+   "title": "PAS - International Drum Rudiments",
+   "url": "https://pas.org/rudiments/"
+  },
+  {
+   "title": "PAS - An Analytical Approach To Rudiments",
+   "url": "https://pas.org/publication-articles/an-analytical-approach-to-rudiments/"
+  },
+  {
+   "title": "Vic Firth Artists & Education - 40 Essential Rudiments",
+   "url": "https://ae.vicfirth.com/education/40-essential-rudiments/"
+  },
+  {
+   "title": "Black Swamp - The 4 Essential Snare Drum Strokes",
+   "url": "https://www.blackswamp.com/post/the-4-types-of-snare-drum-strokes-are-you-using-them-all"
+  },
+  {
+   "title": "Drumeo Beat - How To Play Rudiments",
+   "url": "https://www.drumeo.com/beat/how-to-play-rudiments/"
+  },
+  {
+   "title": "Drumeo Beat - 5 Easy Drum Rudiments For Beginners",
+   "url": "https://www.drumeo.com/beat/5-easy-drum-rudiments-for-beginners/"
+  },
+  {
+   "title": "Brad Allen Drums - How To Practice Stick Control By George Lawrence Stone",
+   "url": "https://bradallendrums.com/how-to-practice-stick-control-by-george-lawrence-stone/"
+  },
+  {
+   "title": "Musiprof - Moeller Technique: 3 Fundamental Exercises (Jim Chapin PDF)",
+   "url": "https://musiprof.com/blog/moeller-technique-3-fundamental-exercises/"
+  },
+  {
+   "title": "Wikipedia - Moeller method",
+   "url": "https://en.wikipedia.org/wiki/Moeller_method"
+  },
+  {
+   "title": "Wikipedia - Open, closed, open",
+   "url": "https://en.wikipedia.org/wiki/Open,_closed,_open"
+  },
+  {
+   "title": "Percussion Pros - The Best Practice Routine for New Drummers (30 Minutes a Day)",
+   "url": "https://percussionpros.com/articles/the-best-practice-routine-for-new-drummers-30-minutes-a-day"
+  },
+  {
+   "title": "Drum Lessons In Home - Playing with a Metronome for Beginners",
+   "url": "https://drumlessonsinhome.com/blog/playing-with-a-metronome-drum-practice-beginners"
+  },
+  {
+   "title": "The New Drummer - Learn to Read Drum Music Part 3: The Sixteenth Note",
+   "url": "https://www.thenewdrummer.com/read-drum-music-pt3-sixteenth-note/"
+  }
+ ]
+}

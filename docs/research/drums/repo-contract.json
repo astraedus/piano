@@ -1,0 +1,214 @@
+{
+ "contract_checklist": [
+  {
+   "item": "InstrumentModule.id",
+   "detail": "src/lib/instrumentRegistry.ts:69 \u2014 must equal the new Instrument literal (\"drums\")."
+  },
+  {
+   "item": "InstrumentModule.displayName / accentVar",
+   "detail": "instrumentRegistry.ts:70-71 \u2014 accentVar (\"drums\") must have a matching :root[data-instrument=\"drums\"] block in globals.css."
+  },
+  {
+   "item": "InstrumentModule.chainDrills / warmups / warmupRotation / unlockLibrary / skillNodes",
+   "detail": "instrumentRegistry.ts:72-76 \u2014 mirror lib/guitar/{chainDrills,warmups,unlocks,skillNodes}.ts; every ChainDrill/Warmup literal must carry instrument:\"drums\" (types.ts:157,186 require it)."
+  },
+  {
+   "item": "InstrumentModule.ghostRotation: Record<Phase, KeyId[]>",
+   "detail": "instrumentRegistry.ts:77 \u2014 MUST resolve to real KeyId strings (closed union) even though drums has no tonal meaning; guitar's precedent is to borrow real KeyIds as inert slot-ids (see key_centricity_leaks #1)."
+  },
+  {
+   "item": "InstrumentModule.focusKind / focusLabel",
+   "detail": "instrumentRegistry.ts:87-89 \u2014 focusKind is currently a hardcoded 2-value union consumed by 2-way ternaries in PracticeStand.tsx Header() and WarmupSlot.warmupReferenceLabel(); needs widening + both ternaries updated to a switch, or drums silently gets the \"key\" branch's wording."
+  },
+  {
+   "item": "InstrumentModule.progressMapKind",
+   "detail": "instrumentRegistry.ts:91 \u2014 hardcoded 2-way ternary in src/app/tree/page.tsx ProgressMap()/mapLabel; a 3rd instrument needs a new value + a new map component (e.g. mirroring GuitarMap.tsx, which has zero KeyId dependency) + the ternary widened."
+  },
+  {
+   "item": "InstrumentModule.scaleFingeringCue? / earRounds? / earLevelGates?",
+   "detail": "instrumentRegistry.ts:97-113 \u2014 all optional; but leaving earRounds undefined makes drums silently inherit the shared PIANO-FLAVORED ear generator (lib/earRounds.ts generateEarRoundForModule fallback) \u2014 see risks."
+  },
+  {
+   "item": "InstrumentModule.InstrumentVisual / NotationVisual",
+   "detail": "instrumentRegistry.ts:116-117 \u2014 the only two instrument-coupled components; drums needs net-new practice-pad / rhythm-notation components (neither Keyboard nor Fretboard/Tab is percussion-appropriate)."
+  },
+  {
+   "item": "Registration import",
+   "detail": "src/hooks/useAppState.tsx:13-16 \u2014 add `import \"@/lib/drums/module\";` so the module self-registers into the sync cache at app init."
+  },
+  {
+   "item": "Instrument choice UI (3 places, hardcoded arrays)",
+   "detail": "src/components/Onboarding.tsx (instrument buttons ~156-159 + isGuitar/instrumentNoun/haveNoun ternaries), src/components/AppShell.tsx:70-73 INSTRUMENTS[], src/app/settings/page.tsx:17-20 INSTRUMENTS[] \u2014 all three must add a drums entry."
+  },
+  {
+   "item": "Skill-graph instrument filter",
+   "detail": "src/components/SkillGraph.tsx:51-54 FILTER_OPTIONS[] \u2014 add {id:\"drums\", label:\"Drums\"}."
+  },
+  {
+   "item": "Lessons registry (compiler-enforced)",
+   "detail": "src/lib/lessons.ts:13-16 BY_INSTRUMENT: Record<Instrument, Record<string,NodeLesson>> \u2014 TS forces adding drums: DRUMS_LESSONS once Instrument is widened."
+  },
+  {
+   "item": "LessonMedia default visual",
+   "detail": "src/components/LessonMedia.tsx:155-159 InstrumentDefault() \u2014 currently `if (piano) Keyboard else Fretboard`; MUST become a real 3-way switch or every drums node without a concrete node.viz silently renders a guitar fretboard."
+  },
+  {
+   "item": "Content-integrity tests (mirrors of the guitar contract)",
+   "detail": "src/lib/guitar/contentAudit.test.ts (banned-vocabulary guard) and src/lib/guitar/module.test.ts (registration, ghostRotation non-empty per phase, warmupRotation ids resolve, earLevelGates ids resolve, DAG acyclic/no dangling prereqs/unique ids/reachable-from-root/tier-0-available, chainDrillId links, unlockCardId integrity, every drill ghostKey in rotation) \u2014 drums needs its own copies; piano has NO contentAudit.test.ts equivalent today (only guitar does), so drums minimally needs the module.test.ts-style wiring contract."
+  },
+  {
+   "item": "PathView instrument prop",
+   "detail": "src/components/PathView.tsx:119 StepCardProps.instrument is a hand-rolled `\"piano\" | \"guitar\"` union (not imported from types.ts); will type-error once state.instrument (passed at line 755) is 3-valued \u2014 must be widened/replaced with `Instrument`."
+  },
+  {
+   "item": "transitionDrill instrument union + prefix logic",
+   "detail": "src/lib/transitionDrill.ts:26,51-52,55 \u2014 TransitionPair.instrument and transitionNodeId()'s `instrument===\"piano\"?\"p\":\"g\"` ternary; only needed if drums adopts the transition-fluency mechanic, but the ternary is a SILENT bug (compiles fine, mislabels drums as \"g-\") if ever touched without fixing."
+  },
+  {
+   "item": "Glossary instrument tag",
+   "detail": "src/lib/explain/glossary.ts:41 `instrument?: \"guitar\" | \"piano\" | \"both\"` \u2014 decide if drums needs its own glossary entries/visuals and widen this ad-hoc union (not derived from the shared Instrument type)."
+  },
+  {
+   "item": "Print sheet",
+   "detail": "src/app/print/page.tsx:36-43 \u2014 reads getModuleSync(state.instrument), KEY_META[effectiveGhost].name, and the same focusKind===\"chord\" 2-way ternary as PracticeStand's Header; needs the same widening + a valid KeyId-shaped ghost."
+  }
+ ],
+ "key_centricity_leaks": [
+  {
+   "location": "src/lib/types.ts:111-115 (KeyId) + src/lib/music.ts KEY_META",
+   "issue": "KeyId is a closed 24-member pitch-class union with an EXHAUSTIVE Record<KeyId,...> (KEY_META) behind it \u2014 there is no room for a non-pitched \"rudiment\" identity, and no runtime guard: indexing KEY_META with a fabricated KeyId throws (`Cannot read properties of undefined`).",
+   "suggested_handling": "Do NOT widen KeyId. Follow guitar's precedent exactly: guitar never added new KeyId values \u2014 it reused real KeyIds (em/am/E/A/G/C/D/B) as chord-root labels because guitar chords ARE pitch-named, so KEY_META[key] always resolves. Drums has no such natural mapping, so its ghostRotation should borrow a small subset of EXISTING KeyIds purely as inert rotation-slot ids (zero new type surface), while the REAL rudiment identity/label is carried entirely through focusLabel(id) \u2014 never through KEY_META."
+  },
+  {
+   "location": "src/components/slots/WarmupSlot.tsx:51,60-65,117-186 (KEY_META[ghostKey].tonic/.mode/.name, scale(), fiveFingerUpDown, \"This week's scale\" block, Hear-the-Scale button, InstrumentVisual scaleKey=ghostKey)",
+   "issue": "The single most-used shared slot hardcodes tonal-scale generation UNCONDITIONALLY for every instrument \u2014 not gated behind focusKind or any module capability flag. It only 'works' for guitar because guitar's ghost values are real KeyIds; for drums this either crashes (fake KeyId) or renders a nonsensical playable 'C major scale' panel on a percussion profile.",
+   "suggested_handling": "Add a capability signal to InstrumentModule (e.g. widen focusKind to include a non-tonal variant, or add `tonal?: boolean`) and gate the entire scale/fingering/Hear-it block behind it. Give drums an alternate reference block (rudiment name + sticking pattern text + the existing instrument-agnostic Metronome component, which uses raw Web Audio, not Tone.js/KeyId)."
+  },
+  {
+   "location": "src/components/slots/ChainDrillSlot.tsx:79-82,234,240,247 (KEY_META[drill.ghostKey], progressionChords, pentatonic, playProgression/playSequence, module.InstrumentVisual notes={prog.flat()})",
+   "issue": "Every chain-drill render unconditionally builds a I-IV-V-I progression and a pentatonic scale from drill.ghostKey and shows 'Hear it' previews + a visual \u2014 same unabstracted leak as WarmupSlot, computed before any instrument branching.",
+   "suggested_handling": "Same fix as WarmupSlot: gate behind the tonal-capability flag; drums chain drills skip the progression/pentatonic preview block entirely (or substitute a groove/sticking preview once/if that's built)."
+  },
+  {
+   "location": "src/components/Horizons.tsx:76,95 (\"Key \u00b7 \" + KEY_META[ghostKey].name / KEY_META[next.key].name)",
+   "issue": "The 'this week / next week' look-ahead cards hardcode the label 'Key \u00b7 <name>' by reading KEY_META directly, bypassing module.focusLabel/focusKind entirely \u2014 a pre-existing minor inconsistency for guitar (shows 'Key \u00b7 G major' instead of its chord-native label) that becomes outright wrong for drums ('Key \u00b7 C major' on a percussion profile).",
+   "suggested_handling": "Replace with module.focusLabel(key) + a focusKind-aware eyebrow ('Key of the Week' / 'Chord of the Week' / drums' new label), fixing guitar's latent bug at the same time."
+  },
+  {
+   "location": "src/components/GhostPicker.tsx:27,58-71 and src/app/settings/page.tsx:224-242 (\"Key of the Week\" override grid)",
+   "issue": "Both surfaces always offer the FULL 24-KeyId circle-of-fifths ([...CIRCLE_MAJORS, ...CIRCLE_MINORS]) as manual ghost-override choices regardless of active instrument. Already slightly odd for guitar (offers keys guitar never teaches, e.g. F#/C# major); for drums, letting a user override their weekly focus to 'F# major' is meaningless.",
+   "suggested_handling": "Scope the 'All Keys'/override grid to the active module's own ghostRotation values (or a dedicated non-tonal override list) instead of the raw CIRCLE_MAJORS/CIRCLE_MINORS constants for non-tonal instruments."
+  },
+  {
+   "location": "src/lib/instrumentRegistry.ts:87 focusKind + consumers PracticeStand.tsx:392 and WarmupSlot.tsx:20-24 warmupReferenceLabel()",
+   "issue": "focusKind is a hardcoded 2-way union consumed by 2-way ternaries (`focusKind===\"chord\" ? X : Y`) in exactly two places; a 3rd value silently falls into the 'key' branch's wording rather than erroring.",
+   "suggested_handling": "Widen focusKind to a 3rd literal (e.g. \"rudiment\") and convert both ternaries to explicit switches so a missing case is visible, not silently mislabeled."
+  },
+  {
+   "location": "src/lib/earRounds.ts:38-58 generateEarRoundForModule() fallback + src/components/PracticeStand.tsx:77-83 earRounds useMemo",
+   "issue": "Any InstrumentModule that leaves earRounds undefined (the documented 'piano leaves this undefined' contract) silently falls back to the SHARED, entirely pitch/interval/chord/cadence/scale-degree-based generateEarRound(). PracticeStand always generates 3 rounds via this path whenever mode isn't first-back/just-play \u2014 there is no 'no ear content for this instrument' escape hatch.",
+   "suggested_handling": "Drums MUST supply its own earRounds generator (even a minimal rhythm-dictation one) or the module needs a new opt-out (e.g. earRounds: [] as an explicit 'no ear slot' signal, or a new capability flag PracticeStand checks) \u2014 otherwise drummers get quizzed on major/minor triads and Roman-numeral progressions, exactly the dishonest-content bug the earLevelGates system exists to prevent."
+  },
+  {
+   "location": "src/components/LessonMedia.tsx:155-159 InstrumentDefault()",
+   "issue": "`if (node.instrument === \"piano\") return Keyboard; return Fretboard;` \u2014 collapses everything non-piano (including \"shared\" nodes and any future instrument) onto the guitar Fretboard by default.",
+   "suggested_handling": "Replace with an explicit switch over Instrument (piano/guitar/drums) with a drums-specific default visual component that must be built (no existing InstrumentVisual variant is percussion-appropriate)."
+  }
+ ],
+ "integration_points": [
+  {
+   "file": "src/lib/types.ts",
+   "change": "Widen `export type Instrument = \"piano\" | \"guitar\";` to include `\"drums\"`."
+  },
+  {
+   "file": "src/lib/drums/ (new dir)",
+   "change": "Mirror src/lib/guitar/ layout: module.tsx, skillNodes.ts, chainDrills.ts, warmups.ts, unlocks.ts, curriculum.ts (ghostRotation using borrowed KeyIds), focus.ts (drumsFocusLabel), lessons.ts, songs.ts (likely empty/minimal \u2014 practice-pad has no repertoire), components/ (new practice-pad InstrumentVisual + rhythm-notation NotationVisual), contentAudit.test.ts, module.test.ts."
+  },
+  {
+   "file": "src/hooks/useAppState.tsx",
+   "change": "Add `import \"@/lib/drums/module\";` alongside the existing piano/guitar self-registration imports (lines 13,16)."
+  },
+  {
+   "file": "src/components/Onboarding.tsx",
+   "change": "Add a third instrument-choice button (~line 156-159), widen isGuitar-style ternaries (instrumentNoun/haveNoun) to a real switch, extend PATH_OPTIONS sub() copy if drums needs distinct wording."
+  },
+  {
+   "file": "src/components/AppShell.tsx",
+   "change": "Add {id:\"drums\", label:\"Drums\"} to INSTRUMENTS (line 70-73, header switcher)."
+  },
+  {
+   "file": "src/app/settings/page.tsx",
+   "change": "Add {id:\"drums\", label:\"Drums\"} to INSTRUMENTS (line 17-20); update the Instrument section copy."
+  },
+  {
+   "file": "src/components/SkillGraph.tsx",
+   "change": "Add {id:\"drums\", label:\"Drums\"} to FILTER_OPTIONS (line 51-54)."
+  },
+  {
+   "file": "src/lib/instrumentRegistry.ts",
+   "change": "Widen focusKind (\"key\"|\"chord\"|new value) and progressMapKind (\"keymap\"|\"fretboard\"|new value)."
+  },
+  {
+   "file": "src/components/PracticeStand.tsx",
+   "change": "Widen the focusEyebrow 2-way ternary (~line 392) to a switch; widen the StartHereCard isGuitar `.toLowerCase().includes(\"guitar\")` check (~line 563) to a real instrument switch."
+  },
+  {
+   "file": "src/components/slots/WarmupSlot.tsx",
+   "change": "Widen warmupReferenceLabel() (line 20-24) to a switch; gate the KEY_META/scale block behind a new tonal-capability check; add a drums-specific reference block."
+  },
+  {
+   "file": "src/components/slots/ChainDrillSlot.tsx",
+   "change": "Gate the KEY_META/progressionChords/pentatonic block (line 79-82, 234-247) behind the same tonal-capability check."
+  },
+  {
+   "file": "src/components/Horizons.tsx",
+   "change": "Replace hardcoded 'Key \u00b7 ' + KEY_META[...].name (lines 76, 95) with module.focusLabel()/focusKind-aware text."
+  },
+  {
+   "file": "src/components/GhostPicker.tsx",
+   "change": "Scope the 'All Keys' disclosure to the active module's ghostRotation for non-tonal instruments instead of the raw CIRCLE_MAJORS/CIRCLE_MINORS constants."
+  },
+  {
+   "file": "src/app/tree/page.tsx",
+   "change": "Widen ProgressMap()'s kind ternary (line 23-26) and mapLabel ternary (line 57-58) to a 3-way switch; import and render the new drums progress-map component (mirror GuitarMap.tsx's category-checklist pattern, which has zero KeyId dependency)."
+  },
+  {
+   "file": "src/app/globals.css",
+   "change": "Add :root[data-instrument=\"drums\"] { --instrument-accent: ...; --instrument-accent-soft/deep/bg/glow: ...; } (mirror lines 169-174) plus an optional --color-drums-* token ramp (mirror lines 42-55)."
+  },
+  {
+   "file": "src/components/LessonMedia.tsx",
+   "change": "Replace the piano/else-guitar InstrumentDefault() branch (line 155-159) with a real 3-way switch; build the drums default visual."
+  },
+  {
+   "file": "src/app/print/page.tsx",
+   "change": "Widen the focusEyebrow ternary (line 42) and confirm KEY_META[effectiveGhost] resolves for a drums borrowed-KeyId ghost."
+  },
+  {
+   "file": "src/lib/lessons.ts",
+   "change": "Add `drums: DRUMS_LESSONS` to BY_INSTRUMENT (TS-compiler-enforced once Instrument is widened)."
+  },
+  {
+   "file": "src/components/PathView.tsx",
+   "change": "Widen or replace the local `instrument: \"piano\" | \"guitar\"` prop union (line 119) with the shared Instrument type."
+  },
+  {
+   "file": "src/lib/earRounds.ts / src/components/PracticeStand.tsx",
+   "change": "Decide + implement drums' ear-slot behavior: either author a drums-native earRounds generator on the module, or add an explicit opt-out so drums never silently inherits the shared pitched generateEarRound()."
+  },
+  {
+   "file": "src/lib/audio.ts (optional)",
+   "change": "If drums content wants audio demos, add percussion synthesis helpers (Tone.MembraneSynth/NoiseSynth/MetalSynth-based playDrumHit-style functions); otherwise scope v1 to visuals + the existing instrument-agnostic Metronome.tsx click."
+  }
+ ],
+ "risks": [
+  "No AppState/storage schema migration is actually required \u2014 AppState.instrument: Instrument (types.ts:349) is already a fully generic field, defaultState()/storage.ts's migration ladder only ever special-cases 'piano' as a safe DEFAULT (`?? \"piano\"`), and per-instrument state (currentPieceByInstrument, skillProgress, skillReps) is already keyed generically. Widening the Instrument union does not require a version bump.",
+  "Hardcoded piano/guitar 2-way branches are NOT all compiler-enforced. TS will force fixes at Record<Instrument,...> exhaustive sites (lib/lessons.ts) but will NOT catch ternaries (focusKind===\"chord\"?X:Y), .toLowerCase().includes(\"guitar\") string checks (PracticeStand.tsx StartHereCard), or plain arrays presented as 'the canonical two' (AppShell/Settings/SkillGraph INSTRUMENTS lists). Every one of these silently mishandles drums (typically by falling into the guitar/default branch) rather than failing the build \u2014 this is the dominant risk class for this feature and requires a manual grep-and-audit pass, not just `tsc --noEmit` passing.",
+  "src/lib/audio.ts is 100% pitched: one lazily-loaded Tone.PolySynth(triangle oscillator) driven entirely by Scientific-Pitch-Notation note names (playSequence/playChord/playInterval/playProgression/playCadence/playBend/playVibrato/playMutedChug). There is currently ZERO percussion-capable synthesis (no MembraneSynth/NoiseSynth/MetalSynth, no samples). Any 'Hear it' audio demo for drums content is net-new work. The separately-existing Metronome.tsx (raw Web Audio oscillator click, no Tone.js/KeyId dependency) already covers tempo/click feedback and needs no changes \u2014 recommend scoping drums v1 audio to that only.",
+  "generateEarRoundForModule's silent fallback to the shared pitched generateEarRound() (lib/earRounds.ts) means an instrument that forgets to supply its own earRounds gets served nonsensical piano ear-training content (scale degrees, cadences, chord quality, progressions) by default \u2014 with no opt-out mechanism today. This is the most consequential 'honest content' bug risk for drums specifically, since the whole earLevelGates system exists to prevent exactly this class of mistake for tonal instruments.",
+  "The transitionDrill.ts prefix ternary (`instrument===\"piano\"?\"p\":\"g\"`) is a silent semantic bug, not a compile error: if drums ever adopts the one-minute-changes/transition-fluency mechanic without updating this function, its nodes get mislabeled with a 'g-' prefix and can collide with guitar's node-id namespace.",
+  "Test-suite growth: mirroring guitar's module.test.ts + a new contentAudit.test.ts for drums adds roughly 30-45 new tests; not a functional risk but should be sized into the implementation estimate given the project's `npx tsc --noEmit && npm run test:run && npm run build` gate runs on every commit.",
+  "This recon sampled the highest-traffic KEY_META/CIRCLE_MAJORS/CIRCLE_MINORS/ghostKey consumers (WarmupSlot, ChainDrillSlot, Horizons, GhostPicker, print/page, KeyMap, Settings) but did not exhaustively grep every remaining call site (e.g. SongShelf.tsx, ProgressionSongsPanel.tsx, songs.ts consumers). Before implementation, run a final `grep -rn \"KEY_META\\[\\|CIRCLE_MAJORS\\|CIRCLE_MINORS\" src` sweep to catch anything this pass missed."
+ ],
+ "type_definitions": "// src/lib/types.ts:25\nexport type Instrument = \"piano\" | \"guitar\";\n\n// src/lib/types.ts:111-115\nexport type KeyId =\n  | \"C\" | \"G\" | \"D\" | \"A\" | \"E\" | \"B\" | \"Fs\" | \"Cs\"\n  | \"F\" | \"Bb\" | \"Eb\" | \"Ab\" | \"Db\" | \"Gb\"\n  | \"am\" | \"em\" | \"bm\" | \"fsm\" | \"csm\" | \"gsm\" | \"dsm\" | \"asm\"\n  | \"dm\" | \"gm\" | \"cm\" | \"fm\" | \"bbm\" | \"ebm\";\n// 24-member CLOSED union (12 majors + 12 relative minors). Backed 1:1 by\n// src/lib/music.ts KEY_META: Record<KeyId, {name, tonic, mode, sharpsFlats, relative}>\n// -- an exhaustive object literal, so every KeyId member MUST have a real\n// tonic/mode entry. There is no runtime validation beyond this; indexing\n// KEY_META with a fabricated/un-registered string cast as KeyId returns\n// undefined and the very next `.tonic`/`.mode` access throws at render time.\n\n// src/lib/instrumentRegistry.ts:86-91 (fields inside InstrumentModule)\n/** What a weekly \"focus\" is for this instrument. piano = \"key\", guitar = \"chord\". */\nfocusKind: \"key\" | \"chord\";\n/** Map a focus id (a KeyId for piano, a chord/riff id for guitar) -> display label. */\nfocusLabel: (focusId: string) => string;\n/** Which progress-map visual the /tree page should render for this instrument. */\nprogressMapKind: \"keymap\" | \"fretboard\";"
+}

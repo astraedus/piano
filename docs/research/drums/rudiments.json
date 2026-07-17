@@ -1,0 +1,139 @@
+{
+ "items": [
+  {
+   "name": "Overview: family-by-family judgment + learning order",
+   "detail": "Selected 11 rudiments (within the 8-12 target) from the PAS 40, ordered for a pad-only pop/rock learner. Family verdicts: SINGLES \u2014 mandatory, learn first (Single Stroke Roll only; Single Stroke Four/Seven are not drilled as separate named rudiments \u2014 fold them in as accent-grouping variations once the roll is clean, since they're really just the same motion phrased in odd counts). DOUBLES \u2014 mandatory, learn second (Double Stroke Roll only; Triple Stroke Roll is skipped \u2014 it's a stepping-stone toward closed/buzz technique that overlaps with the Multiple Bounce Roll and has near-zero standalone use in rock). PARADIDDLE FAMILY \u2014 Single Paradiddle and Double Paradiddle are mandatory (the latter per Drumeo's own top-5 beginner list, specifically for its rock-groove value); Paradiddle-diddle is valuable-but-secondary (triplet fills, jazz ride connection); Triple Paradiddle is skipped (drumline curiosity, 7-note grouping almost never appears in pop/rock). FLAMS \u2014 Flam, Flam Accent, and Flam Tap are the working set (accent weight, triplet fill vocabulary, groove ornamentation); every flam *combination* rudiment \u2014 Flam Paradiddle, Flam Paradiddle-diddle, Single Flammed Mill, Pataflafla, Swiss Army Triplet, Inverted Flam Tap, Flam Drag \u2014 is skipped/deferred as decorative advanced vocabulary built from pieces the learner will already own. DRAGS \u2014 Drag (Ruff) is mandatory (it's embedded inside 10+ other rudiments per Vic Firth/PAS structure); Single/Double Drag Tap are good 'what's next' bonus material, not core; the three Ratamacues and both Drag Paradiddles are skipped \u2014 rudimental/military-snare vocabulary with weak pop/rock transfer. ROLLS \u2014 Five Stroke Roll and Multiple Bounce Roll (buzz/press roll) are mandatory (fill shapes and dynamic/crescendo control); every other numbered roll (6, 7, 9, 10, 11, 13, 15, 17-stroke) is skipped \u2014 once doubles + accenting are owned, 'how many strokes before the accent' generalizes automatically and does not need separate named drilling for a kit player, only for concert/rudimental snare literature. This mirrors Vic Firth's own Dr. Wooton 'Four Tier' teaching sequence, whose Tier One (Single Stroke Roll, Multiple Bounce Roll, Double Stroke Roll, Single Paradiddle, Flam, Drag) and Tier Two are the direct basis for this ordering, cross-checked against Drumeo's 'only 3/5 rudiments you need' guidance and PAS's own 40-rudiment taxonomy."
+  },
+  {
+   "name": "1. Single Stroke Roll \u2014 RLRL",
+   "detail": "Sticking: R L R L continuous alternation. Why it earns the top slot: it's the literal atom of drumming \u2014 every hi-hat/ride 8th-16th pattern, every fill, and every other rudiment on this list decomposes into single strokes; Drumeo names it one of only 3 non-negotiable rudiments. Classic pitfall: hands drift uneven in volume/spacing as tempo rises, and players tense the forearm instead of isolating wrist/finger motion \u2014 alternate between German grip (palms down, wrist-driven) and French grip (palms facing, finger-driven) so both mechanisms get trained. Realistic starting tempo: 60-70 BPM with one stroke per click (subdivide as 8ths first). 'You own it' tempo: clean, even 16th notes at 120 BPM sustained for a full minute without volume drift between hands \u2014 sources note individual strokes only start audibly blending together around 160-180 BPM, so 120 is a solid intermediate-mastery checkpoint, not a ceiling. Pad practice: play to a metronome with a strict accent-tap ladder (loud-soft-soft-soft, then move the accent through each 16th-note position) to build the same control needed later for ghost-noted rock grooves; drill it starting on both R and L equally since real fills start on either hand."
+  },
+  {
+   "name": "2. Double Stroke Roll \u2014 RRLL",
+   "detail": "Sticking: R R L L continuous alternation (each hand plays two consecutive strokes before switching). Why it matters: alongside singles, this is the second of Drumeo's 'only 3 essential' rudiments \u2014 it's the foundation for buzz/press rolls, fast fills, snare ghost-note technique, and floor-tom rumbles used constantly in rock. Classic pitfall: relying purely on wrist for both strokes (kills speed/endurance) instead of letting the stick rebound naturally off the pad and 'catching' the second stroke with the fingers; the two strokes per hand also commonly come out uneven in volume ('bum-BUM bum-BUM' instead of clean 'buh-buh buh-buh'). Realistic starting tempo: 60-70 BPM, one 'double' (RR or LL) per click. 'You own it' tempo: clean, even doubles at 100-110 BPM as 16th notes (i.e., each hand's two strokes indistinguishable in volume) \u2014 push further only once this is unshakeable. Pad practice: use the classic three-stage approach \u2014 (1) full-stroke doubles (all wrist, no bounce) to build strength, (2) bounce/rebound doubles (let the pad do the second stroke, fingers control it) to build speed, (3) blend the two. The 'no-bounce pillow drill' (playing doubles on a soft pillow to force pure wrist control) is a standard cross-training exercise worth doing even with a pad."
+  },
+  {
+   "name": "3. Single Paradiddle \u2014 RLRR LRLL",
+   "detail": "Sticking: R L R R L R L L (mirror image starting on L for the second half). Why it earns its slot: this is where singles and doubles fuse into the single most-used sticking pattern in rock/pop drumming \u2014 Drumeo calls it essential because it 'teaches you to play a repeating pattern that balances your hands,' and it's the pattern that unlocks moving fills around toms/cymbals in ways pure singles or pure doubles can't (the doubled note lets you 'reset' a hand for a surface change). Classic pitfall: the two accented downbeats (the R that starts RLRR and the L that starts LRLL) don't match in height/volume hand-to-hand, and the internal doubles get rushed or uneven. Realistic starting tempo: 70-80 BPM as 16th notes. 'You own it' tempo: clean 16ths at 100-120 BPM (cited as the standard initial mastery goal), extending toward 140-150 BPM once automatic \u2014 for reference, AMEB grading sets 40-140 BPM at Level 2 and 40-160 BPM at Level 3 for this exact rudiment. Pad practice: play it accented-and-unaccented (loud downbeat, soft rest) to internalize the accent pattern before removing the accent; always drill starting on the left hand too, since real fills frequently need a left-hand lead."
+  },
+  {
+   "name": "4. Flam",
+   "detail": "Sticking: grace note (soft, played from ~1 inch above the pad) immediately preceding a full accented stroke (~12 inches above) from the opposite hand, alternating lead hand \u2014 e.g., (l)R (r)L (l)R (r)L. Why it matters for pop/rock: flams are the go-to move for adding weight to a backbeat \u2014 placing a flam on the snare on beat 2 or 4 of an otherwise plain groove is a textbook way to make the backbeat hit harder, and flams work on any surface including bass drum via double pedal. Classic pitfall: two failure modes \u2014 'too wide' (grace and main note separate into two audible hits instead of one thick sound) or 'flat flam'/'double stop' (both hands land at exactly the same instant, killing the accent-grace contrast); both stem from starting the two sticks at the same height instead of staggering them. Realistic starting tempo: 60 BPM, one flam per quarter-note click, alternating lead hand every repetition. 'You own it' tempo: flams staying tight and consistently voiced (loud/soft contrast intact) at 100-110 BPM as 8th notes \u2014 usable directly at typical rock tempos (90-140 BPM) for backbeat placement. Pad practice: isolate the grace-note height first (practice just the soft notes alone), then reintroduce the accent; always alternate which hand leads so both R-lead and L-lead flams are equally clean."
+  },
+  {
+   "name": "5. Drag (Ruff)",
+   "detail": "Sticking: two soft grace notes played as a quick same-hand bounce/diddle, immediately followed by a full accented stroke from the opposite hand \u2014 e.g., (RR)L (LL)R, alternating which hand does the diddle. Why it matters: PAS/Vic Firth structure the drag as foundational because it's embedded inside 10+ other rudiments (drag taps, ratamacues, drag paradiddles, flam drag) \u2014 get it clean now and every 'drag-family' pattern later is mostly free; musically it's the classic pickup ornament/ghost-note lead-in to a fill or accented backbeat. Classic pitfall: the two grace notes come out too loud (accented rather than a soft, buzzy 'brrp') or too slow/separated so they sound like two distinct notes instead of one ornament \u2014 control of the quiet double is the whole game. Realistic starting tempo: 60 BPM, one drag per quarter-note click, alternating lead hand each repetition, moving up 5 BPM at a time only once genuinely clean (not 'good enough'). 'You own it' tempo: drags landing clean and usably as 8th-note pickups at ~100 BPM into a following accent. Pad practice: practice the grace-note diddle in isolation first (same wrist-control skill as the double stroke roll, just faster and quieter), then attach the accented stroke; swap lead hand every few reps so both directions are equally reliable."
+  },
+  {
+   "name": "6. Double Paradiddle \u2014 RLRLRR LRLRLL",
+   "detail": "Sticking: R L R L R R (six notes), then mirrored L R L R L L. Why it earns a slot ahead of some flashier rudiments: Drumeo explicitly ranks it in their top-5 beginner rudiments specifically for rock/pop groove application \u2014 because the pattern's notes line up so that you can consistently land a backbeat with a chosen hand every repetition, which is directly useful for shuffle feels, 6/8 or 12/8 grooves, and triplet-based fills that keep resolving onto the snare. Classic pitfall: losing track of the extra pair of singles before the diddle (players default back into a single-paradiddle feel and drop two notes), and the six-note grouping drifting out of alignment with the underlying triplet or 16th-note-triplet pulse. Realistic starting tempo: 60 BPM with each six-note group falling across two beats of 8th-note triplets. 'You own it' tempo: even execution at 90-100 BPM as 8th-note triplets (or ~100 BPM 16th-note triplets for the faster interpretation), landing the accent on the same hand every cycle without drifting. Pad practice: count the six-note grouping out loud against the click until the 'extra pair' stops feeling foreign; drill leading with both hands since the whole value proposition is a *reliable* backbeat landing hand."
+  },
+  {
+   "name": "7. Flam Accent",
+   "detail": "Sticking: a single-stroke roll played in triplets with the first note of each triplet flammed \u2014 (l)R L R, (r)L R L, repeating with the grace-note hand alternating each triplet group. Why it matters: it's the standard vehicle for adding flam-weight inside a triplet/shuffle feel, and it's a staple building block for fills and solos in any style, not just jazz \u2014 in rock it gives a second, triplet-based option (beyond the plain Flam) for thickening a backbeat or building a fill that has forward motion. Classic pitfall: same as the base Flam (grace note too wide or too flat) compounded by triplet timing drift \u2014 players rush the two plain notes after the flam because they're softer, distorting the triplet feel. Realistic starting tempo: 50-60 BPM with one triplet group per click. 'You own it' tempo: clean, evenly-spaced triplets at 90-100 BPM with the flam staying tight through the tempo increase (not just at slow speed). Pad practice: isolate the underlying plain triplet (RLR LRL with no flams) until it's metronomic, then reintroduce the grace notes one triplet-group at a time; always rotate which hand starts the flam."
+  },
+  {
+   "name": "8. Paradiddle-diddle (Single)",
+   "detail": "Sticking: R L R R L L, mirrored L R L L R R. Why it's included (as secondary to Double Paradiddle rather than co-equal): its right-hand portion is literally the jazz ride cymbal 'spang-a-lang' pattern, so it double-duties as a transferable timing/coordination exercise, and its extra diddle at the end makes it excellent for linear fills and for substituting notes with the kick drum later on a kit. Classic pitfall: the two-hand diddle at the end tends to speed up or blur relative to the two singles at the front, and right-handed players routinely neglect the left-hand-lead version even though it's just as necessary once you're moving the pattern around a kit. Realistic starting tempo: 60 BPM, one six-note group per click, felt as a triplet subdivision. 'You own it' tempo: clean at 90-110 BPM as 8th-note triplets with both lead-hand versions equally solid. Pad practice: drill the accent on the first note only (loud-soft-soft-soft-soft-soft) to keep the group audible as one unit rather than six equal hits, and deliberately spend extra reps on the less-natural left-hand-lead version, per Vic Firth's own note that it's 'less common in music but just as important.'"
+  },
+  {
+   "name": "9. Flam Tap",
+   "detail": "Sticking: essentially an 8th-note double stroke roll with the first note of every 'double' flammed \u2014 (l)R R (r)L L, alternating. Why it matters: it's a groove ornamentation tool \u2014 played between hi-hat and ride (grace note on hi-hat, primary notes on the ride/bow), it adds a signature 'flavor' accent to an otherwise plain time-keeping pattern, and it's a common ingredient in fills that combine flams with the single-stroke-roll feel. Classic pitfall: same flam-tightness issue as the base Flam, plus the two plain taps after the flammed note tend to lose the double-stroke-roll evenness (one comes out louder/harder than the other) since attention is on the flam. Realistic starting tempo: 60 BPM, one 'flam + 2 taps' unit per click (felt as 8th notes). 'You own it' tempo: even execution at 90-100 BPM as 8th notes, flam tight and both plain taps matched in volume. Pad practice: practice the double-stroke-roll half in isolation first (already trained via rudiment #2), then layer the flam on only the first stroke of each pair; alternate lead hand throughout."
+  },
+  {
+   "name": "10. Five Stroke Roll \u2014 RRLLR / LLRRL",
+   "detail": "Sticking: two doubles followed by a single accented stroke, alternating which hand starts \u2014 R R L L R, then L L R R L. Why it matters: this is the classic 'roll resolving into an accent' shape that shows up constantly as a fill-ending or crash-cymbal setup \u2014 accents can be voiced on toms (right on floor tom, left on rack tom) or on a cymbal/kick combo while the hi-hat holds time, making it one of the most directly kit-transferable rolls even though it's practiced entirely on a pad here. Classic pitfall: the final accented single note comes out weaker than the two preceding doubles instead of standing out as the loudest note in the phrase \u2014 the whole musical function of the rudiment (roll building into a punctuation hit) is lost if the accent doesn't clearly top the roll. Realistic starting tempo: 60 BPM, treating the five-stroke group as fitting across one beat plus a pickup (start slow enough to hear each of the five notes distinctly). 'You own it' tempo: clean at 100-120 BPM as 16th notes with the final note clearly the loudest of the five. Pad practice: isolate the two doubles as a pure double-stroke-roll drill first, then add the accented single on top; always practice both the right-lead and left-lead versions since the accent needs to be reliable from either hand when it's later mapped onto asymmetric kit surfaces (floor tom vs. rack tom, crash left vs. right)."
+  },
+  {
+   "name": "11. Multiple Bounce Roll (Buzz/Press Roll)",
+   "detail": "Technique, not a fixed sticking: alternating hands (R, L, R, L...) but each stroke is pressed into the pad with light, sustained fulcrum pressure so the stick produces several uncontrolled rebounds per stroke instead of one clean note \u2014 the goal is an unbroken 'buzzing' texture rather than a counted number of bounces. Why it matters: it's the rudiment that builds dynamic/crescendo control and underlies soft, sustained snare textures \u2014 cymbal swells, crescendo buildups into a chorus, and ghost-note-adjacent touch are all downstream of the same fulcrum-pressure skill; it's associated with orchestral/marching snare but is genuinely used in rock/pop for builds and softer textures. Classic pitfall: over-pressing (chokes the sound into a dead thud) or under-pressing (sounds like a clean double stroke roll, not a buzz) \u2014 the target is a consistent, sustained buzz on every stroke regardless of dynamic level, which is a fulcrum-pressure skill, not a speed skill. Realistic starting tempo: 70-90 BPM quarter-note pulse, one buzzed stroke per click, focusing purely on getting a clean, even buzz at a controllable volume. 'You own it' benchmark: a sustained buzz roll that can crescendo smoothly from pp to ff and back over 4-8 counts without gaps, dead spots, or a change in hand alternation \u2014 this is a control/musicality benchmark rather than a BPM ceiling. Pad practice: start each hand's buzz in isolation (hold pressure, listen for evenness) before alternating; practice crescendo/decrescendo drills since that dynamic range, not raw speed, is what this rudiment is actually training."
+  },
+  {
+   "name": "Rudiments explicitly skipped at this level (and why)",
+   "detail": "Deferred/skipped, with reasoning: Single Stroke Four & Single Stroke Seven \u2014 not separate techniques, just the Single Stroke Roll phrased in odd groupings; absorbed into accent-grouping practice on rudiment #1 rather than drilled as named patterns. Triple Stroke Roll \u2014 a stepping-stone toward closed/buzz technique, overlaps with the Multiple Bounce Roll and has near-zero standalone rock use. Six/Seven/Nine/Ten/Eleven/Thirteen/Fifteen/Seventeen-Stroke Rolls \u2014 all variations on 'how many strokes fit before the accent'; once doubles + accenting (rudiments #2 and #10) are owned this generalizes automatically, and these numbered rolls exist mainly for concert/rudimental snare literature and drum-corps cadences, not pop/rock kit vocabulary. Triple Paradiddle \u2014 a 7-note grouping that's essentially a drumline/rudimental curiosity; almost never appears in pop/rock. Single, Double, and Triple Ratamacue \u2014 drag-plus-accent combinations rooted in rudimental/military snare drumming (associated with the older NARD 26 tradition); weak transfer to a rock kit. Flam Paradiddle, Flam Paradiddle-diddle, Single Flammed Mill, Flam Drag, Pataflafla, Swiss Army Triplet, Inverted Flam Tap \u2014 all 'combination' flam/drag rudiments built by stacking flams or drags onto paradiddle/roll shapes the learner will already own; genuinely useful for solo chops and advanced fills later, but decorative rather than foundational, and better tackled after rudiments #1-11 are solid. Drag Paradiddle #1 and #2 \u2014 same combination-rudiment logic as the flam combos, plus the same rudimental-snare bias as the ratamacues. Single/Double Drag Tap \u2014 the one near-miss: genuinely useful (drags as pickup notes into fills, or 'drags-on-snare, taps-on-toms' fill patterns) and worth introducing as the *next* rudiments once #1-11 are owned, but not essential to the initial 8-12 core."
+  },
+  {
+   "name": "Pad practice method that applies across all 11",
+   "detail": "Three method notes that generalize across the whole set, sourced from standard pedagogy: (1) Metronome discipline \u2014 start every rudiment at a genuinely comfortable tempo (60-80 BPM range is the universal starting point across sources), and only move up in small 5 BPM increments once the pattern is 'completely solid, not just pretty good' \u2014 this single rule (from Drumeo's practice guidance) prevents the single most common beginner failure mode of practicing sloppy technique at speed. (2) Leading-hand symmetry \u2014 every asymmetric rudiment (paradiddle, paradiddle-diddle, flam, drag, five-stroke roll) must be drilled starting on BOTH hands; Vic Firth's own material flags left-hand-lead paradiddle-diddles as commonly neglected by right-handed players even though they're 'just as important,' and this matters even more for a pad-only kit-bound learner because real fills constantly demand starting on whichever hand is free. (3) Moeller-adjacent stroke awareness \u2014 even without teaching the full Moeller whip-stroke system, the pad learner benefits from knowing the four underlying stroke types (full, down, tap, up-stroke) since double-stroke and roll control depend on distinguishing a stroke that returns to full height from one that stays low for the next note; practicing double strokes without any bounce (e.g., on a pillow or a muted pad) isolates pure wrist/finger control before reintroducing the pad's natural rebound, which is the standard cross-training drill cited across double-stroke-roll pedagogy."
+  }
+ ],
+ "summary": "Selected 11 rudiments from the PAS 40 (within the requested 8-12 range) for a pad-only, pop/rock-leaning beginner-to-intermediate drummer, cross-validated against Vic Firth's official Dr. Wooton Four-Tier teaching sequence, Drumeo's \"only 3/5 essential rudiments\" guidance, and PAS's own 40-rudiment taxonomy. Order: Single Stroke Roll -> Double Stroke Roll -> Single Paradiddle -> Flam -> Drag (Ruff) -> Double Paradiddle -> Flam Accent -> Paradiddle-diddle -> Flam Tap -> Five Stroke Roll -> Multiple Bounce Roll (buzz/press roll). This mirrors Vic Firth's Tier 1 core (singles, doubles, paradiddle, flam, drag) exactly, then layers Tier 2 material chosen specifically for pop/rock transfer (Double Paradiddle is prioritized over Paradiddle-diddle per Drumeo's explicit backbeat-landing rationale). Every rudiment entry includes: standard sticking, the classic technical pitfall (sourced from Drumeo/Vic Firth/pedagogy forums), a realistic starting tempo, a \"you own it\" tempo with subdivision (several benchmarked against AMEB grading standards and common pedagogy consensus), and pad-specific practice method (accent-tap drilling, leading-hand swaps, isolation drills). A companion item explicitly judges and skips/defers the numbered rolls beyond nine strokes, triple stroke roll, triple paradiddle, the three ratamacues, drag paradiddles, and every flam-combination rudiment (flam paradiddle, pataflafla, Swiss Army triplet, flammed mill, inverted flam tap, flam drag) as rudimental/drumline vocabulary with weak pop/rock kit transfer \u2014 these generalize automatically once the core 11 are owned, or are better tackled as \"what's next\" material. A final item covers the practice method that applies across the whole set: metronome-increment discipline, mandatory both-hands-lead drilling, and Moeller-adjacent stroke awareness (full/down/tap/up-stroke) for double-stroke and roll control.",
+ "sources": [
+  {
+   "title": "International Drum Rudiments \u2014 Percussive Arts Society (official PAS 40 list)",
+   "url": "https://pas.org/rudiments/"
+  },
+  {
+   "title": "40 Essential Rudiments \u2014 Vic Firth Artists & Education (Dr. John Wooton's Four Tier Learning Sequence)",
+   "url": "https://ae.vicfirth.com/education/40-essential-rudiments/"
+  },
+  {
+   "title": "The Only 3 Rudiments You Need To Know \u2014 Drumeo Beat",
+   "url": "https://www.drumeo.com/beat/most-important-rudiments/"
+  },
+  {
+   "title": "5 Easy Drum Rudiments For Beginners \u2014 Drumeo Beat",
+   "url": "https://www.drumeo.com/beat/5-easy-drum-rudiments-for-beginners/"
+  },
+  {
+   "title": "How To Play A Single Stroke Roll \u2014 Drumeo Beat",
+   "url": "https://www.drumeo.com/beat/single-stroke-roll/"
+  },
+  {
+   "title": "How To Play A Drag (Ruff) \u2014 Drumeo Beat",
+   "url": "https://www.drumeo.com/beat/drag-ruff/"
+  },
+  {
+   "title": "How To Play A Flam \u2014 Drumeo Beat",
+   "url": "https://www.drumeo.com/beat/flam/"
+  },
+  {
+   "title": "How To Play A Flam Accent \u2014 Drumeo Beat",
+   "url": "https://www.drumeo.com/beat/flam-accent/"
+  },
+  {
+   "title": "How To Play A Flam Tap \u2014 Drumeo Beat",
+   "url": "https://www.drumeo.com/beat/flam-tap/"
+  },
+  {
+   "title": "How To Play A Multiple Bounce Roll \u2014 Drumeo Beat",
+   "url": "https://www.drumeo.com/beat/multiple-bounce-roll/"
+  },
+  {
+   "title": "Single Paradiddles | Applying Rudiments to Drumming \u2014 Loudlands Music",
+   "url": "https://www.loudlandsmusic.com/blog/applying-rudiments-to-drums"
+  },
+  {
+   "title": "How To Use Paradiddles On Drums \u2014 Von Baron Music",
+   "url": "https://vonbaronmusic.com/paradiddles-on-drums/"
+  },
+  {
+   "title": "Learn How To Play The Five Stroke Roll! \u2014 40drumrudiments.com",
+   "url": "https://40drumrudiments.com/five-stroke-roll/"
+  },
+  {
+   "title": "Single Paradiddle-diddle \u2014 40drumrudiments.com",
+   "url": "http://40drumrudiments.com/single-paradiddle-diddle/"
+  },
+  {
+   "title": "How long for the single and double paradiddle \u2014 Drummerworld Forum (incl. AMEB grading reference)",
+   "url": "https://www.drummerworld.com/forums/index.php?threads/how-long-for-the-single-and-double-paradiddle.134952/"
+  },
+  {
+   "title": "How to Play the Paradiddle: The Essential Drum Rudiment Every Beginner Needs \u2014 Drum Beats Online",
+   "url": "https://drumbeatsonline.com/blog/how-to-play-the-paradiddle-the-essential-drum-rudiment-every-beginner-needs"
+  },
+  {
+   "title": "Moeller method \u2014 Wikipedia",
+   "url": "https://en.wikipedia.org/wiki/Moeller_method"
+  },
+  {
+   "title": "How to Play a Double Stroke Roll \u2014 Drumnuts",
+   "url": "https://drumnuts.com/how-to-play-a-double-stroke-roll/"
+  },
+  {
+   "title": "NARD 26 vs PAS 40 \u2014 Ryan Alexander Bloom",
+   "url": "https://bloomdrums.com/nard-26-vs-pas-40/"
+  }
+ ]
+}

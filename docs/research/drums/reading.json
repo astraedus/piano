@@ -1,0 +1,159 @@
+{
+ "items": [
+  {
+   "name": "Counting system: numeric 1-e-&-a, built progressively, not Takadimi",
+   "detail": "Every drum-specific source (Vic Firth's WebRhythms, Drumeo, method books) teaches counting the SAME way, added one layer at a time: quarters = '1 2 3 4'; eighths = '1 & 2 & 3 & 4 &' (add 'and' between numbers); sixteenths = '1 e & a 2 e & a 3 e & a 4 e & a' (add 'e' before the '&' and 'a' after it). Vic Firth's WebRhythms Lesson 2 states it explicitly: 'If eighth notes divide each quarter note in half... we'll need to have some way to count the divisions... We will be using the syllable and to do this,' and has the learner physically walk the pulse on one foot while saying 'and' on the alternating foot -- i.e. counting is taught as a body/timing skill before a reading skill. General music-ed classrooms sometimes start kids on the beat-oriented Takadimi system (ta / ta-di / ta-ka-di-mi) before transitioning to numeric counting around 3rd-4th grade, but that's a children's-classroom compromise; every drum-specific pedagogy source uses numeric 1-e-&-a directly, which is the right call for an adult self-learner who is already numerate. RECOMMENDATION: teach counting as its own explicit mini-skill (say it out loud while tapping), not just implied by notation -- build it in the order quarter -> eighth -> sixteenth, each with its own lesson, before combining subdivisions in one bar."
+  },
+  {
+   "name": "Rests are taught in lockstep with each note value, not as an afterthought",
+   "detail": "Alfred's Drum Method Book 1 (Feldstein/Black), one of the most widely used beginning snare methods, sequences lessons as: quarter notes AND quarter rests -> eighth notes -> eighth rests -> sixteenth notes -> sixteenth rests, i.e. every new note-value lesson is paired immediately with its matching rest, never taught separately later. Drumeo's beginner notation guide frames rests simply as 'a rest tells you when not to play,' with dotted rests adding 50% value -- same visual-duration logic as notes. RECOMMENDATION: v1 curriculum should pair each subdivision lesson with its rest in the same lesson (quarter+quarter-rest, eighth+eighth-rest, sixteenth+sixteenth-rest) rather than a separate 'rests' unit -- this matches the field-standard sequencing and halves the number of new-concept lessons needed."
+  },
+  {
+   "name": "Triplets come after sixteenths, and eighth-note triplets come first -- treat as a v2/later-horizon topic, not v1",
+   "detail": "Consistent teaching order across sources: quarter notes -> eighth notes -> sixteenth notes -> eighth-note triplets -> quarter-note triplets -> sixteenth-note triplets. Eighth-note triplets are the most common and are taught first because they're the most frequently used in real playing (shuffle/blues/12-8 feels); quarter-note triplets are literally 'one half of eighth-note triplets' (every other eighth-triplet omitted), and sixteenth-note triplets are explicitly flagged as 'extremely tricky for beginners' and come last. Given the brief's own v1 scope (pad-first: hands, sticks, timing; kit translation is later), triplets should sit on the far side of the same horizon line as kit translation -- a 'week 6+' or 'focus of the week' unlock after straight 8ths/16ths are solid, not a v1 core lesson. Counting syllable for eighth-triplets: commonly 'one-and-ah' / 'one-la-le' / 'tri-po-let'; sixteenth-triplets extend to 'one-e-ah-and-e-ah' per full-bar syllables."
+  },
+  {
+   "name": "Sticking notation: R/L letters is the universal, non-negotiable standard -- adopt it verbatim",
+   "detail": "R (right) / L (left) placed above or below the rhythm notation is the standard across every major source: PAS's 40 International Drum Rudiments notate sticking with R/L directly under the staff for consistent execution across all drummers and educators; George Lawrence Stone's Stick Control (the canonical hand-technique text, itself built for practice-pad/snare use) uses R/L throughout its exercises; Drumeo's beginner guide confirms 'R and L above or below the staff... signify which notes should be played by your right and left hands,' noting this shows up 'most commonly in educational exercises and rudiments' (exactly our use case) rather than full song charts. There is no competing convention worth considering -- R/L is it. RECOMMENDATION: any pad-pattern representation in-app should use bare R/L letters, matching what a learner will see in every method book, YouTube lesson, and rudiment sheet they encounter later."
+  },
+  {
+   "name": "Accent notation: the '>' wedge above the letter/note, plus Stone's practice-vs-performance insight",
+   "detail": "The accent mark is a '>' (wedge) placed above the note/letter, meaning play measurably louder than the surrounding notes -- universal across styles and notated the same in rudiment sheets as in full scores. One pedagogically useful nuance from Stone's Stick Control lineage: 'accent heavily in practice, lighter in actual playing' -- i.e. beginners should be taught to exaggerate accents hard during drilling (to build real muscular/volume contrast) even though real musical accents are more subtle, which is a good coaching note to embed in a lesson's 'watchOut' field. Notably, Stick Control itself contains NO accents in its base exercises -- accents were added later via the follow-up book 'Accents and Rebounds' -- confirming the pedagogical sequence of unaccented sticking control first, accent layered in second."
+  },
+  {
+   "name": "Staff notation is NOT necessary for v1 -- a letter+accent grid is explicitly validated as the honest beginner path",
+   "detail": "Multiple independent sources converge on the same verdict: full percussion-staff notation is valuable long-term but grid/tab notation is the correct entry point. Drumeo Beat frames tab/grid as 'a stepping stone to reading drum notes' for new pad-focused drummers, explicitly recommending: 'read the key first, count the pulse slowly, then play one limb at a time.' School of Rock and other beginner guides make the same point -- tabs are 'easier to read... for beginners or casual drummers who want to learn by following patterns rather than reading detailed music notation,' while acknowledging tabs are less standardized than staff notation (which argues for the app defining its own small, consistent glyph set once, rather than importing the ambiguity of the wild-west tab ecosystem). Groove Scribe (the most-cited free grid tool used by real teachers) proves the model works at a professional level: a grid where each column is a beat-subdivision and you fill cells -- 'you don't need to understand how to read music to write drum parts.' RECOMMENDATION: v1 uses a letter+accent grid (columns = 16th-note subdivisions of the beat, rows = R/L or a single 'hits' row for one-handed patterns, accent shown as bold/caps or a small '>' glyph over the cell, rest shown as a blank/dash cell) -- this is honest, sufficient, and matches what real teachers already hand beginners. Defer full staff notation to the same later horizon as kit translation, once the learner already has the rhythmic vocabulary a staff would just be re-encoding."
+  },
+  {
+   "name": "Visual clarity ranking for pad patterns: grid > proprietary game UI, and color/weight coding compounds pattern-recognition speed",
+   "detail": "Grid notation's core advantage per Drumeo: 'no need to decode rhythmic theory -- you simply read column by column, seeing exactly which drum or cymbal lands on each subdivision.' They further recommend color-coding by voice (e.g. blue=bass, green=snare) so 'your brain builds stronger associations between the color and the sound, dramatically improving your ability to sight-read quickly.' Contrast case: Melodics, a well-funded commercial drum-lesson app, uses a proprietary 'falling block' visual interface -- and user reviews specifically criticize this because it does NOT transfer to standard notation or tabs, i.e. skill learned in the app doesn't generalize to reading a real chart or rudiment sheet outside it. This is a direct cautionary precedent: don't invent a proprietary visual language for pad patterns -- use the R/L-letter-plus-accent grid that's already the field standard, so what the learner builds inside the app is literacy they can use anywhere (a YouTube lesson, a real rudiment sheet), not app-locked pattern memorization. Since v1 is single-pad (no kit voices to color-differentiate), the equivalent clarity lever is: bold/caps or accent-glyph weight for accented hits, plain lowercase or dash for unaccented/rest, consistent column-per-subdivision spacing so the eye can chunk the beat visually before reading it."
+  },
+  {
+   "name": "Rhythm ear training: 'hear it, then pick the matching written pattern' is the proven low-friction format",
+   "detail": "Across dedicated rhythm ear-training tools (teoria.com's Rhythmic Dictation exercises, Perfect Ear: Music & Rhythm, Rhythm Sight Reading Trainer, Ear Training - Rhythm Test, Rhythm Training App), the common mechanic is: play a short rhythmic pattern, then have the learner reconstruct or identify it, with difficulty scaling by subdivision complexity (teoria explicitly notes 'many rhythms are pattern-based and repetitive, and you need to be able to identify those patterns' -- framing rhythm ear-training as pattern-recognition, not absolute transcription from a blank page). Full free-transcription (write the rhythm from nothing) is the harder, higher-friction mode used by more advanced apps (Rhythm Sight Reading Trainer supports up to quintuplets/12 beats-per-bar for advanced users) -- not appropriate for a v1 beginner. RECOMMENDATION for the nightly 'ear round': play a single short pad pattern (4-8 hits within one bar, using only subdivisions already taught that week) and present 2-3 grid-notated candidate patterns (using the same R/L+accent grid taught elsewhere in the app) for the learner to pick the match -- this is literally the multiple-choice-dictation format every cited app converges on, it reuses the same visual grammar the learner already reads for lessons (no second notation system to learn), and it scales cleanly: early rounds distinguish subdivision (quarter vs eighth vs sixteenth feel), later rounds distinguish accent placement within the same subdivision."
+  },
+  {
+   "name": "Practice-pad-first hand technique (Moeller) is correctly out of v1 scope, but is the natural 'kit-horizon' bridge -- flag it in the roadmap, don't teach it yet",
+   "detail": "Multiple technique sources (electronicdrumadvisor, kickstartyourdrumming, Wikipedia's Moeller method page) confirm the practice pad is the standard, recommended surface for developing stroke-type control (full/down/tap/upstroke, the Moeller 'whip' motion) precisely because it's quiet and rebound-focused without needing a kit -- so a pad-only learner is already on the right physical tool for this. But Moeller is a technique/motion topic, not a rhythm-literacy topic, and is naturally sequenced AFTER basic single-stroke sticking control (unaccented Stick-Control-style patterns) is solid -- consistent with the brief's own framing that kit translation and deeper technique are a later horizon. RECOMMENDATION: don't build Moeller lessons in v1, but do note it explicitly as the flagged 'next horizon' skill-tree node once R/L single-stroke + accent control is mastered on the pad, so the roadmap communicates a real path forward rather than the pad feeling like a permanent ceiling."
+  }
+ ],
+ "summary": "Drum-specific pedagogy is remarkably convergent and gives a clean, low-risk spec for a pad-first v1: counting is taught as numeric 1-e-&-a syllables built progressively (quarters -> add 'and' for eighths -> add 'e'/'a' for sixteenths), each note-value lesson paired immediately with its matching rest (Alfred's Drum Method sequencing), with triplets deliberately deferred to a later horizon alongside kit translation since even eighth-note triplets (the first and most common type) are non-trivial and sixteenth-note triplets are explicitly flagged as hard for beginners. Sticking notation has no real debate: R/L letters above/below the notation is the universal standard (PAS rudiments, Stick Control, Drumeo), and accents are the standard '>' wedge, with a nice coaching nugget from the Stick Control lineage -- accent heavily in practice, lightly in real playing. On the notation-format question, the field explicitly validates skipping full staff notation for v1: Drumeo, School of Rock, and the widely-used teacher tool Groove Scribe all treat grid/tab notation as the correct, honest beginner entry point ('no need to decode rhythmic theory... read column by column'), while a cautionary case study (Melodics' proprietary falling-block UI, criticized by users for not transferring to real notation) argues strongly for building on the standard R/L-plus-accent grid rather than inventing an app-locked visual language. For ear training, every dedicated rhythm app (teoria.com, Perfect Ear, Rhythm Sight Reading Trainer) converges on the same low-friction mechanic: hear a pattern, then identify it from a small set of written candidates, rather than free transcription -- directly mappable to a nightly 'ear round' where the learner picks which of 2-3 grid-notated patterns matches what they heard, reusing the same visual grammar taught in lessons.",
+ "sources": [
+  {
+   "title": "WEBRHYTHMS: LESSON 02 - Vic Firth Artists & Education",
+   "url": "https://ae.vicfirth.com/education/webrhythms/webrhythms-lesson-02/"
+  },
+  {
+   "title": "How To Read Drum Music (For Beginners) - Drumeo Beat",
+   "url": "https://www.drumeo.com/beat/how-to-read-drum-music/"
+  },
+  {
+   "title": "1 E And A: Rhythm Counting Breakdown - Dynamic Music Room",
+   "url": "https://dynamicmusicroom.com/1-e-and-a/"
+  },
+  {
+   "title": "Introduction to Counting Rhythm (for Drummers) - Melodics",
+   "url": "https://melodics.com/blog/introduction-to-counting-rhythm-for-drummers-and-anyone-else-learning-music"
+  },
+  {
+   "title": "Alfred's Drum Method Book 1 - Curriculum/Table of Contents (Stanton's)",
+   "url": "https://www.stantons.com/media/307473/alfred-20877.pdf"
+  },
+  {
+   "title": "Takadimi - Wikipedia",
+   "url": "https://en.wikipedia.org/wiki/Takadimi"
+  },
+  {
+   "title": "Rhythm Syllable Systems - What to use and why - Make Moments Matter",
+   "url": "https://makemomentsmatter.org/classroom-ideas/rhythm-syllable-systems-what-to-use-and-why/"
+  },
+  {
+   "title": "Triplets - How, Why, And When Are They Used in Drumming?",
+   "url": "https://beat-note.app/blog/beginners/technique/2024/07/17/triplets-drumming-how-why-when/"
+  },
+  {
+   "title": "Learn How To Count Sixteenth Note Triplets - Free Drum Lessons",
+   "url": "https://freedrumlessons.com/drum-lessons/sixteenth-note-triplets.php"
+  },
+  {
+   "title": "PAS International Drum Rudiments - Percussive Arts Society",
+   "url": "https://pas.org/rudiments/"
+  },
+  {
+   "title": "PERCUSSIVE ARTS SOCIETY INTERNATIONAL DRUM RUDIMENTS (PDF)",
+   "url": "https://pas.org/wp-content/uploads/2024/04/pas-rudiments.pdf"
+  },
+  {
+   "title": "Stick Control by George Lawrence Stone - The Drum Coach (review)",
+   "url": "https://thedrumcoach.com/product-review/stick-control-by-george-lawrence-stone-in-depth-review/"
+  },
+  {
+   "title": "Stick Control Chapter Summary - George Lawrence Stone (Bookey)",
+   "url": "https://www.bookey.app/book/stick-control"
+  },
+  {
+   "title": "What Are the Small \">\" Signs Above or Below the Notes? - Success Music Studio",
+   "url": "https://successmusicstudio.com/what-are-the-small-accent-signs-above-or-below-the-notes/"
+  },
+  {
+   "title": "How to Read and Play Notes with an Accent Symbol - Music Symbols",
+   "url": "https://musicsymbols.me/accent/"
+  },
+  {
+   "title": "Reading Drum Notation for Beginners - School of Rock",
+   "url": "https://www.schoolofrock.com/resources/drums/drum-notation-for-beginners"
+  },
+  {
+   "title": "How to Read Drum Sheet Music: Beginner's Guide + Visual Method - Apartment Drummer",
+   "url": "https://apartmentdrummer.ca/blogs/drumming-tips-gear-practice-strategies/how-to-read-drum-sheet-music-beginner-guide"
+  },
+  {
+   "title": "Groove Scribe (Free) - Create, Hear, Share & Print Drum Grooves - Travis Brant",
+   "url": "https://travisbrant.com/groove-scribe/"
+  },
+  {
+   "title": "Gear Review: Groove Scribe - Tom Tom Magazine",
+   "url": "https://tomtommag.com/2017/02/groove-scribe-free-online-digital-drum-transcription-tool-will-change-life/"
+  },
+  {
+   "title": "Melodics: Drum Lessons App - App Store",
+   "url": "https://apps.apple.com/us/app/melodics-drum-lessons-app/id6504540940"
+  },
+  {
+   "title": "Melodics Review (2025) - Gamified Practice for Pads, Keys & Drums - Pro Sound Picks",
+   "url": "https://prosoundpicks.com/melodics-review/"
+  },
+  {
+   "title": "Rhythmic Dictation - teoria.com",
+   "url": "https://www.teoria.com/en/exercises/rd4.php"
+  },
+  {
+   "title": "Perfect Ear: Music & Rhythm App - App Store",
+   "url": "https://apps.apple.com/us/app/perfect-ear-music-rhythm/id1440768353"
+  },
+  {
+   "title": "Rhythm Sight Reading Trainer - App Store",
+   "url": "https://apps.apple.com/us/app/rhythm-sight-reading-trainer/id396302174"
+  },
+  {
+   "title": "Ear Training - Rhythm Test - Google Play",
+   "url": "https://play.google.com/store/apps/details?id=air.com.musycom.rhythmtest"
+  },
+  {
+   "title": "Ear Training - How Rhythmic Dictation Works - Integrated Aural Skills (U Idaho Pressbooks)",
+   "url": "https://uidaho.pressbooks.pub/auralskills/chapter/ear-training-how-rhythmic-dictation-works/"
+  },
+  {
+   "title": "Moeller Technique: 3 Fundamental Exercises - Musiprof",
+   "url": "https://musiprof.com/blog/moeller-technique-3-fundamental-exercises/"
+  },
+  {
+   "title": "How to Play The Moeller Technique - Drumming Power and Endurance - Electronic Drum Advisor",
+   "url": "https://www.electronicdrumadvisor.com/moeller-technique/"
+  },
+  {
+   "title": "Moeller method - Wikipedia",
+   "url": "https://en.wikipedia.org/wiki/Moeller_method"
+  }
+ ]
+}
