@@ -471,9 +471,12 @@ export const GLOSSARY: GlossaryEntry[] = [
   {
     id: "hammer-on",
     title: "Hammer-On",
-    aliases: ["hammer on", "hammer-on", "legato", "h"],
+    // "legato" moved to its own instrument-neutral entry (batch-3b): a piano
+    // articulation lesson saying "legato" must chip to the general term, not this
+    // guitar-only technique. The no-shadow test forbids the alias in two places.
+    aliases: ["hammer on", "hammer-on", "h"],
     what: "Sounding a higher note by hammering a finger down onto the string, without picking again.",
-    why: "It makes melodies flow and is the key to smooth, legato blues and rock lines.",
+    why: "It makes melodies flow and is the key to smooth, connected blues and rock lines.",
     hear: () => hear(() => playBend("G4", "A4")),
     seeKind: "fretboard",
     seeNotes: ["A4", "B4"],
@@ -872,6 +875,59 @@ export const GLOSSARY: GlossaryEntry[] = [
     seeNotes: ["C3", "C4"],
     instrument: "piano",
   },
+
+  // ---- Batch 3b — hands-together + articulation (piano) ----
+  {
+    id: "hands-together",
+    title: "Hands Together",
+    aliases: ["hands together", "hands-together", "both hands", "both hands at once"],
+    what: "Playing with your left and right hands at the same time, whether they do the same thing (like a scale in both hands) or two different jobs (a chord under a melody).",
+    why: "It is the moment piano becomes piano. Nearly every real piece needs both hands moving together, so this is the coordination the whole instrument stands on.",
+    hear: () => hear(async () => {
+      await playChord(["C3", "E3", "G3", "C4", "E4", "G4"], { durationSec: 1.4 });
+      await playSequence(["C4", "D4", "E4", "F4", "G4"], { noteDurationSec: 0.3 });
+    }),
+    seeKind: "keyboard",
+    seeNotes: ["C3", "E3", "G3", "C4", "E4", "G4"],
+    instrument: "piano",
+  },
+  {
+    id: "articulation",
+    title: "Articulation",
+    aliases: ["articulation", "connected vs detached", "note shaping"],
+    what: "How you shape each note: whether you hold it smooth and connected into the next, or clip it short so there is a little silence before the next.",
+    why: "Same notes, same rhythm, but articulation changes the whole feeling: smooth sounds tender and flowing, detached sounds crisp and playful. It is one of your main expression levers.",
+    hear: () => hear(async () => {
+      await playSequence(["C4", "D4", "E4", "F4", "G4"], { noteDurationSec: 0.5, gapSec: 0 });
+      await playSequence(["C4", "D4", "E4", "F4", "G4"], { noteDurationSec: 0.18 });
+    }),
+    seeKind: "text",
+    seeText: "The same five notes played twice: first slurred smoothly together, then clipped short and detached.",
+    instrument: "piano",
+  },
+  {
+    id: "legato",
+    title: "Legato",
+    aliases: ["legato", "smooth and connected", "connected notes", "hold each note"],
+    what: "Playing notes smoothly connected, holding each one right up until the next begins so there is no gap of silence between them.",
+    why: "It is the sound of a singing, flowing line, the way most melodies and ballads are meant to feel.",
+    hear: () => hear(() => playSequence(["C4", "D4", "E4", "F4", "G4"], { noteDurationSec: 0.5, gapSec: 0 })),
+    seeKind: "keyboard",
+    seeNotes: ["C4", "D4", "E4", "F4", "G4"],
+    instrument: "piano",
+  },
+  {
+    id: "staccato",
+    title: "Staccato",
+    aliases: ["staccato", "detached", "short and detached", "clipped notes"],
+    what: "Playing notes short and detached, releasing each key almost the instant you press it so a little silence sits before the next note.",
+    why: "It gives a crisp, light, bouncy feel, the opposite of smooth legato, and it is how you make a line sound playful or punchy.",
+    hear: () => hear(() => playSequence(["C4", "D4", "E4", "F4", "G4"], { noteDurationSec: 0.16 })),
+    seeKind: "keyboard",
+    seeNotes: ["C4", "D4", "E4", "F4", "G4"],
+    instrument: "piano",
+  },
+
   {
     id: "gain",
     title: "Gain",
