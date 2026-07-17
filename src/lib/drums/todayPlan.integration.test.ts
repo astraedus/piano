@@ -16,10 +16,13 @@ function drumsState(): AppState {
 describe("drums nightly loop assembles (integration)", () => {
   it("computeTodayPlan returns a rudiment token, a pad warmup, and a Tier-0 drill", () => {
     const plan = computeTodayPlan(drumsState(), new Date());
-    // Ghost token is a drums rotation token ("C"), labeled as a rudiment.
-    expect(plan.ghostKey).toBe("C");
     const module = getModuleSync("drums");
-    expect(module?.focusLabel(plan.ghostKey)).toBe("Single Stroke Roll");
+    // Ghost token is a phase-1 drums rotation token (Stage B: singles/doubles/
+    // accents — C/G/D), labeled as a rudiment, never a raw tonal key.
+    expect(module!.ghostRotation[1]).toContain(plan.ghostKey);
+    const label = module!.focusLabel(plan.ghostKey);
+    expect(["Single Stroke Roll", "Double Stroke Roll", "Accents & Taps"]).toContain(label);
+    expect(label).not.toMatch(/major|minor/i);
     // A warmup + a chain drill are present (the loop is playable).
     expect(plan.warmup).toBeDefined();
     expect(plan.warmup?.instrument).toBe("drums");
