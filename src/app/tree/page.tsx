@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { AppStateProvider } from "@/hooks/useAppState";
 import { KeyMap } from "@/components/KeyMap";
 import { GuitarMap } from "@/components/GuitarMap";
+import { RudimentLadder } from "@/components/RudimentLadder";
 import { SongShelf } from "@/components/SongShelf";
 import { YourArc } from "@/components/YourArc";
 import { SkillGraphView } from "@/components/SkillGraphView";
@@ -17,13 +18,15 @@ import { fmtTotalTime } from "@/lib/format";
 
 type Tab = "path" | "know" | "map" | "graph" | "shelf" | "arc";
 
-// Instrument-aware progress map: render the keymap for "keymap" instruments
-// (piano) and the fretboard territory map for "fretboard" instruments (guitar).
-// Falls back to the keymap if the module isn't registered yet (SSR / first paint).
+// Instrument-aware progress map: the keymap (piano), the fretboard territory map
+// (guitar), or the rudiment ladder (drums). Falls back to the keymap if the module
+// isn't registered yet (SSR / first paint).
 function ProgressMap() {
   const { state } = useAppState();
   const kind = getModuleSync(state.instrument)?.progressMapKind ?? "keymap";
-  return kind === "fretboard" ? <GuitarMap /> : <KeyMap />;
+  if (kind === "fretboard") return <GuitarMap />;
+  if (kind === "rudiments") return <RudimentLadder />;
+  return <KeyMap />;
 }
 
 export default function TreePage() {
@@ -54,8 +57,9 @@ function TreeShell() {
   const pieces = (state.pieces ?? []).length;
   const nodes = getModuleSync(state.instrument)?.skillNodes ?? [];
   const skills = skillLearnedCount(nodes, state.skillProgress ?? {});
+  const mapKind = getModuleSync(state.instrument)?.progressMapKind;
   const mapLabel =
-    getModuleSync(state.instrument)?.progressMapKind === "fretboard" ? "Neck Map" : "Key Map";
+    mapKind === "fretboard" ? "Neck Map" : mapKind === "rudiments" ? "Ladder" : "Key Map";
   return (
     <div className="space-y-8">
       <header className="space-y-1">

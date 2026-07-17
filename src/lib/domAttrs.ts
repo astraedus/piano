@@ -43,5 +43,5 @@ export function setRootAttrs(attrs: RootAttrs): void {
 export function readInstrument(): Instrument | undefined {
   if (typeof document === "undefined") return undefined;
   const v = document.documentElement.getAttribute("data-instrument");
-  return v === "piano" || v === "guitar" ? v : undefined;
+  return v === "piano" || v === "guitar" || v === "drums" ? v : undefined;
 }

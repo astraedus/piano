@@ -9,6 +9,8 @@ import { CIRCLE_MAJORS, CIRCLE_MINORS, KEY_META } from "@/lib/music";
 import { exportStateJson, importStateJson, clearState } from "@/lib/storage";
 import { weekIdOf } from "@/lib/ghostKey";
 import { setRootAttrs } from "@/lib/domAttrs";
+import { getModuleSync } from "@/lib/instrumentRegistry";
+import { focusNoun, isNonTonal } from "@/lib/focusNoun";
 import type { Instrument } from "@/lib/types";
 import { learningPathPatch, PATH_OPTIONS } from "@/components/Onboarding";
 import { CloudSync } from "@/components/CloudSync";
@@ -17,6 +19,7 @@ import { instrumentSwitchPatch } from "@/lib/pieces";
 const INSTRUMENTS: { id: Instrument; label: string }[] = [
   { id: "piano", label: "Piano" },
   { id: "guitar", label: "Electric Guitar" },
+  { id: "drums", label: "Drums" },
 ];
 
 export default function SettingsPage() {
@@ -56,6 +59,15 @@ function Settings() {
 
   const saveNorthStar = () => patch({ northStar: northStar.trim() || undefined });
   const saveName = () => patch({ name: name.trim() || undefined });
+
+  // Weekly-focus override, scoped to the active instrument: tonal instruments
+  // override across the full 24-key wheel; non-tonal drums scope to their own
+  // rotation tokens (labeled as rudiments) so no tonal key wheel is ever shown.
+  const activeModule = getModuleSync(state.instrument);
+  const overrideNonTonal = isNonTonal(activeModule?.focusKind);
+  const overrideTokens: KeyId[] = overrideNonTonal
+    ? (activeModule?.ghostRotation[state.phase] ?? [])
+    : [...CIRCLE_MAJORS, ...CIRCLE_MINORS];
 
   const moveToGrade = (g: Grade) => {
     const target = GRADES.find((x) => x.id === g);
@@ -221,10 +233,14 @@ function Settings() {
         </div>
       </Section>
 
-      <Section title="Key of the Week">
-        <p className="text-xs text-[color:var(--ink-3)] mb-3">The app picks a key each week. Override it for this week if you want.</p>
+      <Section title={`${focusNoun(activeModule?.focusKind)} of the Week`}>
+        <p className="text-xs text-[color:var(--ink-3)] mb-3">
+          The app picks {overrideNonTonal ? "a rudiment" : "a key"} each week. Override it for this week if you want.
+        </p>
+        {/* Tonal instruments override across the whole 24-key wheel; non-tonal drums
+            scope to their own rotation tokens (labeled as rudiments) — no key wheel. */}
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-1.5">
-          {[...CIRCLE_MAJORS, ...CIRCLE_MINORS].map((k) => (
+          {overrideTokens.map((k) => (
             <button
               key={k}
               type="button"
@@ -236,7 +252,9 @@ function Settings() {
                   : "border-[color:var(--rule)] text-[color:var(--ink-2)] hover:border-[color:var(--accent-soft)]")
               }
             >
-              {KEY_META[k].name.replace(" major", "").replace(" minor", "m")}
+              {overrideNonTonal && activeModule
+                ? activeModule.focusLabel(k)
+                : KEY_META[k].name.replace(" major", "").replace(" minor", "m")}
             </button>
           ))}
         </div>

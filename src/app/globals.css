@@ -54,6 +54,15 @@
   --color-guitar-100:   #FBEAE4;
   --color-guitar-deep:  #8F2E1F;
 
+  /* === DRUMS ACCENT === (warm bronze/brass — drum hardware, distinct from
+     piano amber and guitar crimson) */
+  --color-drums-500:    #A87722;
+  --color-drums-400:    #C28F3C;
+  --color-drums-300:    #D4AC63;
+  --color-drums-200:    #ECD3A0;
+  --color-drums-100:    #F3E7C9;
+  --color-drums-deep:   #7A5310;
+
   /* === SKILL TIERS (sunrise ramp, shared across instruments) === */
   --color-tier-0:       #C8BAA0;
   --color-tier-1:       #D4900A;
@@ -172,6 +181,17 @@
   --instrument-accent-deep:  #8F2E1F;
   --instrument-accent-bg:    #FBEAE4;
   --instrument-accent-glow:  rgba(192, 67, 46, 0.18);
+}
+
+/* Drums accent is warm bronze/brass (drum hardware). Like guitar, one block
+   serves light + dark: bg/ink shift with data-theme; accent-deep (#7A5310, ~6:1
+   on cream) stays legible as chip text, accent-bg is the pale-brass light chip. */
+:root[data-instrument="drums"] {
+  --instrument-accent:       #A87722;
+  --instrument-accent-soft:  #C28F3C;
+  --instrument-accent-deep:  #7A5310;
+  --instrument-accent-bg:    #F3E7C9;
+  --instrument-accent-glow:  rgba(168, 119, 34, 0.20);
 }
 
 /* Phase accent shifts — data-phase="N".

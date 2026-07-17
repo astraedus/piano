@@ -7,21 +7,34 @@ import { scaleRepId } from "@/lib/types";
 import { KEY_META, keyPrefersFlats, scale } from "@/lib/music";
 import { ghostKeyToTermId } from "@/lib/pathFilter";
 import type { InstrumentModule } from "@/lib/instrumentRegistry";
+import { isNonTonal } from "@/lib/focusNoun";
+import { fillWarmupLine } from "@/lib/warmupLines";
 import { Metronome } from "../Metronome";
-import { ensureAudio, playSequence } from "@/lib/audio";
+import { ensureAudio, playSequence, playSticking } from "@/lib/audio";
+import type { StickingCell } from "@/lib/types";
 import { useAppState } from "@/hooks/useAppState";
 
 /**
  * The "this week's reference" label above the warmup visual. Instrument-aware so it
  * agrees with the header: piano's weekly focus is a key → its SCALE; guitar's is a
- * chord/box → the pentatonic SHAPE you play over it. (Honest: the guitar visual is
- * a pentatonic box, so it reads "shape", never a literal "chord".) Pure — tested.
+ * chord/box → the pentatonic SHAPE you play over it; drums' is a RUDIMENT.
+ * (Honest: the guitar visual is a pentatonic box, so it reads "shape", never a
+ * literal "chord".) Pure — tested.
  */
-export function warmupReferenceLabel(focusKind: "key" | "chord" | undefined, keyName: string): string {
-  return focusKind === "chord"
-    ? `This week's shape · ${keyName}`
-    : `This week's scale · ${keyName} · 2 octaves`;
+export function warmupReferenceLabel(focusKind: "key" | "chord" | "rudiment" | undefined, label: string): string {
+  if (focusKind === "chord") return `This week's shape · ${label}`;
+  if (focusKind === "rudiment") return `This week's rudiment · ${label}`;
+  return `This week's scale · ${label} · 2 octaves`;
 }
+
+// A slow single-stroke bar (R L R L …) — the "hear it" demo for a drums warmup
+// (there is no scale to sound). Right hand leads, one accent on beat 1.
+const WARMUP_STICKING: StickingCell[] = [
+  { hand: "R", accent: true, count: "1" },
+  { hand: "L", count: "2" },
+  { hand: "R", count: "3" },
+  { hand: "L", count: "4" },
+];
 
 export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, isNow, status }: { module?: InstrumentModule; warmup?: Warmup; ghostName: string; ghostKey: KeyId; printAlways?: boolean; isNow?: boolean; status?: "done" | "active" | null }) {
   const { state, bumpRep } = useAppState();
@@ -47,36 +60,39 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
   if (!warmup) return null;
   const InstrumentVisual = module?.InstrumentVisual;
   const NotationVisual = module?.NotationVisual;
+  // Non-tonal instruments (drums) have no scale, key wheel, or fingering — every
+  // tonal reference below is gated on this one derived predicate (design D2/D3).
+  const nonTonal = isNonTonal(module?.focusKind);
+  // The instrument's own name for this week's focus: a key name for piano, a
+  // chord/riff label for guitar, a rudiment name for drums.
+  const focusDisplay = nonTonal ? (module?.focusLabel(ghostKey) ?? ghostName) : ghostName;
   // The 2-octave scale of the ghost key, spelled correctly (flats for flat keys).
-  const scaleNotes = scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 2, 4, keyPrefersFlats(ghostKey));
+  // Skipped entirely for non-tonal instruments (no scale to show/sound).
+  const scaleNotes = nonTonal ? [] : scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 2, 4, keyPrefersFlats(ghostKey));
   // #4 — the "bring your thumb up here" cue for the current key + hand (piano).
-  // Undefined for instruments with no such cue (guitar) → the hand toggle/cue hide.
-  const fingeringCue = module?.scaleFingeringCue?.(ghostKey, hand) ?? null;
-  const showFingerGuidance = !!module?.scaleFingeringCue;
-
-  // #3 — derive key-relative warmup content. The five-finger pattern (1-2-3-4-5-
-  // 4-3-2-1, note names) for THIS week's key, substituted into any `{fiveFinger}`
-  // placeholder so the warmup never hardcodes C in an A-major (etc.) week.
-  const fiveFingerUpDown = (() => {
-    const deg = scaleNotes.slice(0, 5).map((n) => n.replace(/-?\d+$/, "")); // 1..5, no octave
-    return [...deg, ...deg.slice(0, 4).reverse()].join(" ");
-  })();
-  const fillWarmupLine = (line: string) =>
-    line.replace(/\{fiveFinger\}/g, fiveFingerUpDown);
+  // Undefined for instruments with no such cue (guitar/drums) → the toggle/cue hide.
+  const fingeringCue = nonTonal ? null : (module?.scaleFingeringCue?.(ghostKey, hand) ?? null);
+  const showFingerGuidance = !nonTonal && !!module?.scaleFingeringCue;
 
   // V4 soul-first: lead with the feeling-first summary when present, with the
-  // theory key name as an always-tappable TermChip; else wrap the ghost key name
-  // inline so the theory term is still explainable (degrades to plain text).
+  // focus name as a tappable TermChip on TONAL instruments (the chip opens the
+  // key/chord explainer); non-tonal drums show the rudiment name as plain text
+  // (its glossary token is not a tonal key, so no tonal chip is offered).
+  const focusPart = nonTonal ? (
+    <span className="text-[color:var(--ink-2)]">{focusDisplay}</span>
+  ) : (
+    <TermChip term={ghostKeyToTermId(ghostKey)} label={ghostName} variant={warmup.soulSummary ? "subtitle" : undefined} />
+  );
   const summary = warmup.soulSummary ? (
     <span className="flex flex-wrap items-baseline gap-x-1.5">
       <span>{warmup.soulSummary}</span>
       <span className="text-[color:var(--ink-3)]">·</span>
-      <TermChip term={ghostKeyToTermId(ghostKey)} label={ghostName} variant="subtitle" />
+      {focusPart}
     </span>
   ) : (
     <span className="flex flex-wrap items-baseline gap-x-1.5">
       <span>{warmup.label} ·</span>
-      <TermChip term={ghostKeyToTermId(ghostKey)} label={ghostName} />
+      {focusPart}
     </span>
   );
 
@@ -110,19 +126,19 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
           {warmup.lines.map((l, i) => (
             <li key={i} className="flex gap-3">
               <span className="text-[color:var(--ink-3)] text-sm mt-0.5">→</span>
-              <span>{linkTerms(fillWarmupLine(l), `wl${i}`)}</span>
+              <span>{linkTerms(fillWarmupLine(l, ghostKey), `wl${i}`)}</span>
             </li>
           ))}
         </ul>
-        {/* #4 — "This week's scale + fingering" — ALWAYS shown (independent of the
-            week's warmup type), so a learner always sees, for the current key, a
-            keyboard with finger numbers + the thumb-tuck note ringed. This is the
-            headline of the owner's ask ("people should know what fingers to use
-            and when to bring the thumb up"). */}
+        {/* #4 — "This week's reference" card. TONAL instruments (piano/guitar) show
+            the week's scale on a keyboard/fretboard with finger numbers + the
+            thumb-tuck note ringed + standard notation; NON-TONAL drums show the
+            practice pad (no scale, no fingering, no key wheel — none of it exists
+            for a pad). Gated on `nonTonal` (design D3). */}
         <div className="pt-2 rounded-lg border border-[color:var(--rule)] bg-[color:var(--bg-surface-2)] px-3 py-3">
           <div className="flex items-center justify-between gap-2 mb-2">
             <div data-testid="warmup-week-label" className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
-              {warmupReferenceLabel(module?.focusKind, KEY_META[ghostKey].name)}
+              {warmupReferenceLabel(module?.focusKind, nonTonal ? focusDisplay : KEY_META[ghostKey].name)}
             </div>
             {showFingerGuidance && (
               <div className="flex gap-1 no-print" role="group" aria-label="Hand for fingering">
@@ -141,7 +157,9 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
             )}
           </div>
           {InstrumentVisual && (
-            <InstrumentVisual notes={scaleNotes} rangeStart="C4" octaves={2} scaleKey={ghostKey} scaleHand={hand} />
+            nonTonal
+              ? <div className="flex justify-center"><InstrumentVisual /></div>
+              : <InstrumentVisual notes={scaleNotes} rangeStart="C4" octaves={2} scaleKey={ghostKey} scaleHand={hand} />
           )}
           {/* The owner's "when do I bring my thumb up?" cue (piano). */}
           {fingeringCue && (
@@ -150,9 +168,8 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
               {fingeringCue}. <span className="text-[color:var(--ink-3)]">The ringed key is where the thumb passes under.</span>
             </p>
           )}
-          {/* #4 — surface the scale in standard notation (piano Staff / guitar
-              Tab), built but previously only used on the KeyMap reference page. */}
-          {NotationVisual && (
+          {/* Standard notation (piano Staff / guitar Tab) for the scale — tonal only. */}
+          {!nonTonal && NotationVisual && (
             <div className="mt-2 overflow-x-auto">
               <NotationVisual notes={scaleNotes} ariaLabel={`${KEY_META[ghostKey].name} scale in notation`} />
             </div>
@@ -162,11 +179,15 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
               type="button"
               onClick={async () => {
                 await ensureAudio();
-                await playSequence(scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 1, 4, keyPrefersFlats(ghostKey)), { noteDurationSec: 0.34 });
+                if (nonTonal) {
+                  await playSticking(WARMUP_STICKING, bpm);
+                } else {
+                  await playSequence(scale(KEY_META[ghostKey].tonic, KEY_META[ghostKey].mode, 1, 4, keyPrefersFlats(ghostKey)), { noteDurationSec: 0.34 });
+                }
               }}
               className="chip text-xs px-3 py-1"
             >
-              Hear the Scale
+              {nonTonal ? "Hear It" : "Hear the Scale"}
             </button>
             <button
               type="button"
@@ -179,7 +200,7 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
           </div>
           {reps && (
             <p className="text-xs text-[color:var(--ink-3)] italic mt-2">
-              {reps.count} rep{reps.count === 1 ? "" : "s"} of this scale
+              {reps.count} rep{reps.count === 1 ? "" : "s"} of this {nonTonal ? "warmup" : "scale"}
               {reps.maxBpm ? ` · best ${reps.maxBpm} BPM` : ""}.
             </p>
           )}

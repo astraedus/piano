@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useAppState } from "@/hooks/useAppState";
 import { KEY_META } from "@/lib/music";
 import { getModuleSync } from "@/lib/instrumentRegistry";
+import { focusNoun, isNonTonal } from "@/lib/focusNoun";
 import { nextToLearn } from "@/lib/skillTree";
 import { abilityAxis, generationAxis, patternAxis } from "@/lib/threeAxis";
 import { effectiveEarLevel } from "@/lib/earProgression";
@@ -73,7 +74,7 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
       <Row label="This week">
         <div className="space-y-1">
           <p>
-            <span className="text-[color:var(--ink)]">Key · {KEY_META[ghostKey].name}</span>
+            <span className="text-[color:var(--ink)]">{focusNoun(module?.focusKind)} · {module ? module.focusLabel(ghostKey) : KEY_META[ghostKey].name}</span>
             <span className="text-[color:var(--ink-3)]">   ·   </span>
             <span className="text-[color:var(--ink-2)]">Warmup · {warmup?.label ?? "—"}</span>
           </p>
@@ -92,7 +93,7 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
       <Row label="Next week">
         <div className="space-y-1">
           <p>
-            <span className="text-[color:var(--ink)]">Key · {KEY_META[next.key].name}</span>
+            <span className="text-[color:var(--ink)]">{focusNoun(module?.focusKind)} · {module ? module.focusLabel(next.key) : KEY_META[next.key].name}</span>
             <span className="text-[color:var(--ink-3)]">   ·   </span>
             <span className="text-[color:var(--ink-2)]">Warmup · {next.warmup?.label ?? "—"}</span>
           </p>
@@ -155,7 +156,11 @@ export function Horizons({ ghostKey, warmup }: { ghostKey: KeyId; warmup?: Warmu
           <Stat k="Time" v={timeStr} />
           <Stat k="Sessions" v={String(state.sessions?.length ?? 0)} />
           <Stat k="Pieces" v={pieces === 0 ? "—" : `${pieces}${piecesYours ? ` · ${piecesYours} yours` : ""}`} />
-          <Stat k={keysTouched === 1 ? "Key" : "Keys"} v={`${keysTouched} / 24`} />
+          {/* The 24-key territory count is tonal — hidden on non-tonal instruments
+              (a pad never charts keys). */}
+          {!isNonTonal(module?.focusKind) && (
+            <Stat k={keysTouched === 1 ? "Key" : "Keys"} v={`${keysTouched} / 24`} />
+          )}
           <Stat k="Unlocks" v={String(state.unlocks?.length ?? 0)} />
         </div>
         <p className="text-xs text-[color:var(--ink-3)] italic mt-2">

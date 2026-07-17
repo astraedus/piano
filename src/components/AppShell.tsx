@@ -70,6 +70,7 @@ export function AppShell({ children, hideNav = false }: { children: ReactNode; h
 const INSTRUMENTS: { id: Instrument; label: string }[] = [
   { id: "piano", label: "Piano" },
   { id: "guitar", label: "Electric Guitar" },
+  { id: "drums", label: "Drums" },
 ];
 
 /**
