@@ -1,5 +1,5 @@
 // RudimentLadder view model — pure, testable. The drums progress map ("Ladder"
-// tab on /tree) has to read as an honest map at 18 nodes: what you've learned and
+// tab on /tree) has to read as an honest map across every drums node: what you've learned and
 // at what tempo, grouped by tier, with the ONE next thing to learn clearly marked.
 // The component (RudimentLadder.tsx) is a thin render over this — the ordering,
 // grouping, best-BPM, and next-to-learn logic all live here so they can be unit-

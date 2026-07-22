@@ -35,7 +35,7 @@ import { AM_PENT_BOX1, AM_BLUES_BOX1 } from "../guitar/scaleShapes";
 // glossary "hear" plays the exact rudiment the curriculum teaches (no re-authored,
 // drifting stickings).
 import { drumsFocusFor } from "../drums/focus";
-import { SIXTEENTHS_BAR, MOELLER_BAR } from "../drums/patterns";
+import { SIXTEENTHS_BAR, MOELLER_BAR, TRIPLET_BAR, BACKBEAT_BAR } from "../drums/patterns";
 
 export type SeeKind = "fretboard" | "keyboard" | "chord-diagram" | "text";
 
@@ -81,6 +81,10 @@ const DEMO_LOUD_SOFT: StickingCell[] = [
 const DEMO_ROLL: StickingCell[] = [
   { hand: "R", accent: true }, { hand: "L" }, { hand: "R" }, { hand: "L" },
   { hand: "R" }, { hand: "L" }, { hand: "R" }, { hand: "L" },
+];
+// A steady four-beat click — one hand, even, accent on beat 1 — the metronome pulse.
+const DEMO_CLICK: StickingCell[] = [
+  { hand: "R", accent: true }, { hand: "R" }, { hand: "R" }, { hand: "R" },
 ];
 
 // ── The GLOSSARY ──────────────────────────────────────────────────────────
@@ -1422,6 +1426,56 @@ export const GLOSSARY: GlossaryEntry[] = [
     hear: () => hear(() => playSticking(MOELLER_BAR, 80)),
     seeKind: "text",
     seeText: "One accent, then two taps, in a single whipping motion — down, tap, up.",
+  },
+  {
+    id: "triplet",
+    title: "Triplet",
+    aliases: ["triplet", "triplets"],
+    what: "One beat split into THREE even notes instead of two, counted '1 trip let' — a rounder, rolling feel next to the marching step of straight notes.",
+    why: "Triplets are the doorway to shuffles, swung grooves, and everything in 6/8 — once three even notes per beat feel natural, all of those are a small step away.",
+    hear: () => hear(() => playSticking(TRIPLET_BAR, 240)),
+    seeKind: "text",
+    seeText: "Three even notes packed into one beat — 1 trip let, 2 trip let — the middle note right in between.",
+  },
+  {
+    id: "backbeat",
+    title: "Backbeat",
+    aliases: ["backbeat", "backbeats"],
+    what: "The strong, steady accent on beats 2 and 4 — the loud snare hit you clap along to in almost every rock and pop song.",
+    why: "It is the heartbeat of a groove: land it in the same place every bar and a plain pattern instantly feels like a real beat you can move to.",
+    hear: () => hear(() => playSticking(BACKBEAT_BAR, 160)),
+    seeKind: "text",
+    seeText: "Accents landing on 2 and 4 — the off-count beats — over a steady pulse.",
+  },
+  {
+    id: "ghost-note",
+    title: "Ghost Note",
+    aliases: ["ghost note", "ghost notes"],
+    what: "A very quiet note played between the main hits — so soft it is felt more than heard — that fills a pattern in and gives it flow.",
+    why: "Ghost notes are what separate a stiff, mechanical pattern from one that breathes: the quiet notes around the loud ones are where groove actually lives.",
+    hear: () => hear(() => playSticking(drumsFocusFor("D").pattern, 160)),
+    seeKind: "text",
+    seeText: "Loud accents with barely-there soft taps tucked between them — the quiet notes are the ghosts.",
+  },
+  {
+    id: "grace-note",
+    title: "Grace Note",
+    aliases: ["grace note", "grace notes"],
+    what: "A soft, quick note played a hair before a main note, so close that the two almost blur into one — the little note that makes a flam or a drag.",
+    why: "Grace notes add weight and texture without adding a full beat: they are the building block of the flam, the drag, and a lot of what makes drumming sound thick.",
+    hear: () => hear(() => playSticking(drumsFocusFor("F").pattern, 90)),
+    seeKind: "text",
+    seeText: "A tiny soft note tucked just before a louder main note — one whisper into a hit.",
+  },
+  {
+    id: "click",
+    title: "Click",
+    aliases: ["click", "the click"],
+    what: "The steady tick of a metronome that you play along to — it marks each beat so your timing always has something solid to lock onto.",
+    why: "Practicing to the click is how you build honest, rock-steady time: it never speeds up or drags, so it shows you the truth about your own timing.",
+    hear: () => hear(() => playSticking(DEMO_CLICK, 80)),
+    seeKind: "text",
+    seeText: "An even tick on every beat — 1, 2, 3, 4 — the unchanging pulse you play against.",
   },
 ];
 

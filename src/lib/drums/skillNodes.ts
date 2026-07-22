@@ -142,6 +142,34 @@ export const DRUMS_NODES: SkillNode[] = [
     unlockCardId: "u-d-16ths",
   },
   {
+    id: "d-t2-triplets",
+    instrument: "drums",
+    title: "Triplets",
+    tier: 2,
+    category: "rhythm",
+    prereqs: ["d-t1-counting", "d-t1-singles"],
+    masteryDrill:
+      "Play single-stroke triplets to the click, counting '1 trip let, 2 trip let' out loud, three even notes per beat at 60–90 BPM, and stay relaxed as the lead hand swaps each beat.",
+    unlock:
+      "You can split a beat into three even notes — the rolling triplet feel that shuffles and 6/8 grooves are built on.",
+    chainDrillId: "d-t2-triplets-drill",
+    unlockCardId: "u-d-triplets",
+  },
+  {
+    id: "d-t2-offbeats",
+    instrument: "drums",
+    title: "Offbeats & Syncopation",
+    tier: 2,
+    category: "rhythm",
+    prereqs: ["d-t1-counting", "d-t1-accents"],
+    masteryDrill:
+      "Play an eighth-note line that rests on the beats and hits the '&'s, counting out loud with the click on the beat, then move a single accent onto a chosen offbeat without drifting back onto the beat.",
+    unlock:
+      "You can play against the beat instead of on it — the off-beat hits and accents that make a rhythm groove instead of march.",
+    chainDrillId: "d-t2-offbeats-drill",
+    unlockCardId: "u-d-offbeats",
+  },
+  {
     id: "d-t2-paradiddle",
     instrument: "drums",
     title: "Single Paradiddle",
@@ -219,7 +247,8 @@ export const DRUMS_NODES: SkillNode[] = [
     title: "Paradiddle Family",
     tier: 3,
     category: "technique",
-    prereqs: ["d-t2-paradiddle"],
+    // Six-note groups are two triplets, so a felt triplet is a real prerequisite.
+    prereqs: ["d-t2-paradiddle", "d-t2-triplets"],
     masteryDrill:
       "Play the double paradiddle R L R L R R, L R L R L L evenly at 90–100 BPM, landing the accent on the same hand every cycle without slipping back into a single paradiddle.",
     unlock:
@@ -233,7 +262,8 @@ export const DRUMS_NODES: SkillNode[] = [
     title: "The Whip Stroke (Moeller)",
     tier: 3,
     category: "technique",
-    prereqs: ["d-t1-accents", "d-t2-five-stroke"],
+    // Its drill IS an accent-tap-tap triplet, so a felt triplet is a prerequisite.
+    prereqs: ["d-t1-accents", "d-t2-five-stroke", "d-t2-triplets"],
     masteryDrill:
       "Chain a down stroke, a rebound tap, and an up stroke into one relaxed whipping motion — a slow accent-tap-tap group, loose arm, no extra unwanted bounces.",
     unlock:

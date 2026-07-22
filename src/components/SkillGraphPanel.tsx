@@ -14,6 +14,7 @@ import { TermChip, linkTerms } from "@/components/explain";
 import { nodeToTermId } from "@/lib/pathFilter";
 import { getLesson } from "@/lib/lessons";
 import { LessonMedia } from "@/components/LessonMedia";
+import { LessonResources } from "@/components/LessonResources";
 import { ProgressionSongsPanel } from "@/components/ProgressionSongsPanel";
 import { isProgressionContainerNode } from "@/lib/progressionSongs";
 
@@ -228,6 +229,8 @@ export function SkillGraphPanel({
               {linkTerms(node.unlock, "tu-")}
             </p>
           </Section>
+
+          <LessonResources resources={lesson.resources} />
         </div>
       ) : (
         <>

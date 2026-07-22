@@ -75,15 +75,16 @@ describe("every drums chain drill + warmup is instrument-tagged", () => {
   });
 });
 
-describe("DRUMS_NODES form a coherent DAG (Stage B: Tiers 0-3, 18 nodes)", () => {
-  it("has the full curriculum: 4 Tier-0 + 14 Tier-1..3 nodes", () => {
-    expect(DRUMS_NODES.length).toBe(18);
+describe("DRUMS_NODES form a coherent DAG (Stage B + audit v1.1: Tiers 0-3, 20 nodes)", () => {
+  it("has the full curriculum: 4 Tier-0 + 16 Tier-1..3 nodes", () => {
+    expect(DRUMS_NODES.length).toBe(20);
     const byTier = new Map<number, number>();
     for (const n of DRUMS_NODES) byTier.set(n.tier, (byTier.get(n.tier) ?? 0) + 1);
-    // Design-doc DAG table distribution: 4 / 4 / 5 / 5 across tiers 0..3.
+    // Distribution after the curriculum audit added triplets + offbeats to tier 2:
+    // 4 / 4 / 7 / 5 across tiers 0..3.
     expect(byTier.get(0)).toBe(4);
     expect(byTier.get(1)).toBe(4);
-    expect(byTier.get(2)).toBe(5);
+    expect(byTier.get(2)).toBe(7);
     expect(byTier.get(3)).toBe(5);
     for (const n of DRUMS_NODES) expect(n.tier).toBeLessThanOrEqual(3);
   });

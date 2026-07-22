@@ -99,6 +99,11 @@ export interface NodeLesson {
   goodWhen: string;    // the success check: what "you've got it" looks/sounds like
   watchOut?: string;   // the #1 common mistake and how to fix it
   song?: { name: string; note: string }; // a real song that uses this, for motivation
+  // Optional "Go deeper" links to high-quality OUTSIDE resources (videos, books,
+  // free lesson libraries). Rendered as a quiet external-link footer under the
+  // lesson. Instrument-agnostic (benefits all instruments); only populated where
+  // a genuinely great, verified resource exists — never padded.
+  resources?: { name: string; url: string; note: string }[];
 }
 
 // ---- Per-skill mastery state (replaces the dead `requires` system) ----

@@ -10,13 +10,13 @@ function learned(bpm?: number): SkillProgress {
 describe("buildRudimentLadder (drums progress map view model)", () => {
   it("empty progress: nothing learned, groups span every tier, next = the tier-0 root", () => {
     const view = buildRudimentLadder(DRUMS_NODES, {}, {});
-    expect(view.total).toBe(18);
+    expect(view.total).toBe(20); // 18 + triplets + offbeats (audit v1.1)
     expect(view.learnedCount).toBe(0);
     // Groups are tier-ordered and cover tiers 0..3.
     expect(view.groups.map((g) => g.tier)).toEqual([0, 1, 2, 3]);
     // Every node appears exactly once across the groups.
     const ids = view.groups.flatMap((g) => g.rungs.map((r) => r.node.id));
-    expect(new Set(ids).size).toBe(18);
+    expect(new Set(ids).size).toBe(20);
     // The one next-to-learn node is the sole available root (Hold the Sticks).
     expect(view.nextNodeId).toBe("d-t0-setup");
     const nextRungs = view.groups.flatMap((g) => g.rungs).filter((r) => r.isNext);

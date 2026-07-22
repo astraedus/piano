@@ -64,6 +64,18 @@ export const DRUMS_UNLOCK_LIBRARY: UnlockCard[] = [
     tryLine: "Play a bar of '1 e & a' sixteenths, even, at 80. The busy grooves and quick runs just opened up.",
   },
   {
+    id: "u-d-triplets",
+    phase: 1,
+    title: "You can split a beat into three.",
+    tryLine: "Count '1 trip let, 2 trip let' and play three even notes per beat, letting the lead hand swap each time. Shuffles and 6/8 feels start here.",
+  },
+  {
+    id: "u-d-offbeats",
+    phase: 1,
+    title: "You can play against the beat.",
+    tryLine: "Keep the click on the beat and land your hits on the '&'s instead. Now drop one accent off the beat. That is groove, not marching.",
+  },
+  {
     id: "u-d-paradiddle",
     phase: 1,
     title: "You own the money sticking.",

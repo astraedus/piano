@@ -40,3 +40,28 @@ export const DOUBLE_PARADIDDLE_BAR: StickingCell[] = [
 export const MOELLER_BAR: StickingCell[] = [
   { hand: "R", accent: true, count: "1" }, { hand: "R", count: "&" }, { hand: "R", count: "a" },
 ];
+
+/**
+ * One bar of single-stroke triplets — THREE even cells per beat, counted
+ * "1 trip let 2 trip let …", accent on each main beat. This is honest triplet
+ * spacing: playSticking spaces N cells evenly at the pulse rate, so three cells
+ * per beat sound as three equal notes (never faked on a four-cell sixteenth grid).
+ * With alternating single strokes the lead hand naturally swaps each beat (beat 1
+ * leads R, beat 2 leads L …) — a feature the lesson teaches, not a bug.
+ */
+export const TRIPLET_BAR: StickingCell[] = [
+  "1", "trip", "let", "2", "trip", "let", "3", "trip", "let", "4", "trip", "let",
+].map((count, i) => ({ hand: (i % 2 === 0 ? "R" : "L") as "R" | "L", accent: i % 3 === 0, count }));
+
+/**
+ * One bar of eighth notes where the HITS land on the offbeats (the "&"s) and the
+ * main beats are rests — the syncopation reference. One offbeat carries an accent
+ * (the "and of 2") to show a hit landing where the beat isn't. Rests advance the
+ * clock silently in playSticking, so the ear hears the beats stay empty.
+ */
+export const OFFBEAT_BAR: StickingCell[] = [
+  { rest: true, count: "1" }, { hand: "R", count: "&" },
+  { rest: true, count: "2" }, { hand: "L", accent: true, count: "&" },
+  { rest: true, count: "3" }, { hand: "R", count: "&" },
+  { rest: true, count: "4" }, { hand: "L", count: "&" },
+];

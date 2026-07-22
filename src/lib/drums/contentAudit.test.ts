@@ -59,6 +59,12 @@ function gather(): { where: string; text: string }[] {
       out.push({ where: `lesson ${id} song.name`, text: lesson.song.name });
       out.push({ where: `lesson ${id} song.note`, text: lesson.song.note });
     }
+    // "Go deeper" resource labels + notes face the learner too — hold them to the
+    // same zero-jargon bar (URLs are not prose, so they are not audited).
+    for (const r of lesson.resources ?? []) {
+      out.push({ where: `lesson ${id} resource.name`, text: r.name });
+      out.push({ where: `lesson ${id} resource.note`, text: r.note });
+    }
   }
   return out;
 }

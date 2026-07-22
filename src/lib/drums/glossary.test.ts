@@ -28,6 +28,13 @@ const REQUIRED_TERMS = [
   "five stroke roll",
   "buzz roll",
   "moeller",
+  // Curriculum audit v1.1 — words that already appeared untappable in drums prose
+  // (backbeat, grace note, ghost note, click) plus the new triplets vocabulary.
+  "triplet",
+  "backbeat",
+  "ghost note",
+  "grace note",
+  "click",
 ] as const;
 
 describe("drums jargon → glossary contract", () => {

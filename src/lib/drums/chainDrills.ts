@@ -9,6 +9,8 @@ import {
   BACKBEAT_BAR,
   DOUBLE_PARADIDDLE_BAR,
   MOELLER_BAR,
+  TRIPLET_BAR,
+  OFFBEAT_BAR,
 } from "./patterns";
 
 // Drums chain drills — one per Tier-0 node, each the node's nightly BPM-ladder
@@ -196,6 +198,43 @@ export const DRUMS_CHAIN_DRILLS: ChainDrill[] = [
       { type: "tone", durationSec: 60, instruction: "Climb from 70 toward 90 BPM only once each beat stays clean and even." },
     ],
     closingNote: "Four to a beat, even as steps. This subdivision is where real grooves live.",
+  },
+  {
+    id: "d-t2-triplets-drill",
+    instrument: "drums",
+    phase: 1,
+    name: "Triplet Reading",
+    soulName: "Three to a Beat",
+    minutes: 4,
+    ghostKey: "C",
+    pillar: "technique",
+    // roadmap: triplets are drilled slow (60) up toward a comfortable 90.
+    bpmLadder: { startBpm: 60, targetBpm: 90, step: 5, advanceAfterSuccesses: 3 },
+    pattern: TRIPLET_BAR,
+    steps: [
+      { type: "tone", durationSec: 45, instruction: "Count '1 trip let, 2 trip let' out loud slowly — three even syllables per beat before you play a note." },
+      { type: "tone", durationSec: 60, instruction: "Play single strokes, one hit per syllable. Notice the lead hand swap each beat — that is the pattern, let it happen." },
+      { type: "tone", durationSec: 60, instruction: "Keep all three notes of each beat the same size, and climb from 60 toward 90 only once each beat stays even." },
+    ],
+    closingNote: "Three to a beat, rolling and even. This is the doorway to shuffles and 6/8.",
+  },
+  {
+    id: "d-t2-offbeats-drill",
+    instrument: "drums",
+    phase: 1,
+    name: "Offbeat Reading",
+    soulName: "Play Against the Beat",
+    minutes: 4,
+    ghostKey: "D",
+    pillar: "technique",
+    bpmLadder: { startBpm: 60, targetBpm: 90, step: 5, advanceAfterSuccesses: 3 },
+    pattern: OFFBEAT_BAR,
+    steps: [
+      { type: "tone", durationSec: 45, instruction: "Count '1 & 2 & 3 & 4 &' out loud with the click on the numbers, but hit only the '&'s — rest on every main beat." },
+      { type: "tone", durationSec: 60, instruction: "Keep the click steady and land your hits cleanly in the gaps between its ticks — you play against it, not with it." },
+      { type: "tone", durationSec: 60, instruction: "Now drop one accent onto a chosen '&' so the loud note lands off the beat, and hold it there without drifting onto the beat." },
+    ],
+    closingNote: "Hits where the beat isn't. That off-beat push is what makes a rhythm groove.",
   },
   {
     id: "d-t2-paradiddle-drill",

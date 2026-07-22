@@ -23,6 +23,7 @@ import { tierLearnedCounts, completionFraction, type TierCount } from "@/lib/ski
 import { getLesson } from "@/lib/lessons";
 import { linkTerms } from "@/components/explain";
 import { LessonMedia } from "@/components/LessonMedia";
+import { LessonResources } from "@/components/LessonResources";
 import { ProgressionSongsPanel } from "@/components/ProgressionSongsPanel";
 import { isProgressionContainerNode } from "@/lib/progressionSongs";
 import { UnlockCardModal } from "@/components/UnlockCardModal";
@@ -464,6 +465,8 @@ function LessonContent({ node, lesson }: { node: SkillNode; lesson: NodeLesson }
           <p className="text-xs text-[color:var(--ink-3)] mt-0.5">{lesson.song.note}</p>
         </div>
       )}
+
+      <LessonResources resources={lesson.resources} />
     </>
   );
 }

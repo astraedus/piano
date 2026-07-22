@@ -58,6 +58,9 @@ export const DRUMS_LESSONS: Record<string, NodeLesson> = {
       "You can loop full, down, tap, up at a slow tempo with clearly different heights, and the quiet note right after a loud accent is actually quiet — proof the down stroke caught the stick low.",
     watchOut:
       "Playing every note the same size. The tell: your accents 'bleed' — the note right after a loud hit is still loud. That means the down stroke rebounded instead of stopping low, so catch it with the back fingers. While drilling, exaggerate loud versus soft hard; you can make it subtle later.",
+    resources: [
+      { name: "Vic Firth: 40 Essential Rudiments", url: "https://ae.vicfirth.com/education/40-essential-rudiments/", note: "free video demos of every rudiment — watch the stroke heights you just learned in action" },
+    ],
   },
 
   "d-t0-click": {
@@ -95,6 +98,9 @@ export const DRUMS_LESSONS: Record<string, NodeLesson> = {
     watchOut:
       "As the tempo climbs the hands drift uneven and the forearms tense up. Speed comes from letting the fingers help and staying loose, not from muscling harder — if one hand is louder, slow down until they match again.",
     song: { name: "Wipe Out — The Surfaris", note: "that runaway drum break is a flat-out single stroke roll — right, left, right, left, as fast as it stays even." },
+    resources: [
+      { name: "PAS International Drum Rudiments", url: "https://pas.org/rudiments/", note: "the official list of all 40 rudiments — the single stroke roll is #1" },
+    ],
   },
 
   "d-t1-counting": {
@@ -130,11 +136,14 @@ export const DRUMS_LESSONS: Record<string, NodeLesson> = {
       "R R L L sounds like two identical strokes per hand — an even 'buh-buh buh-buh', never 'bum-BUM' — clean at 80 to 100 BPM.",
     watchOut:
       "The second stroke of each hand coming out weaker (your fingers are choking the bounce), or muscling both notes purely from the wrist so you tire fast. Let the rebound do half the work.",
+    resources: [
+      { name: "How to Practice Stick Control", url: "https://bradallendrums.com/how-to-practice-stick-control-by-george-lawrence-stone/", note: "a walkthrough of the classic book Stick Control — the double-stroke bible drummers have used since 1935" },
+    ],
   },
 
   "d-t1-accents": {
     what:
-      "An accent is one note played measurably louder than the notes around it, marked with a '>' wedge above it. Here you play a stream of quiet taps with a single accent, using the four strokes: a down stroke for the accent (loud, then stops low), taps for the quiet notes.",
+      "An accent is one note played measurably louder than the notes around it, marked with a '>' wedge above it. Here you play a stream of quiet taps with a single accent, using the four strokes: a down stroke for the accent (loud, then stops low), taps for the quiet notes. Those quiet taps around an accent are what drummers call ghost notes — so soft they are felt more than heard.",
     why:
       "An accent placed exactly where you want it is the whole basis of groove and feel. Without accent control every pattern comes out flat and mechanical — with it, dry taps turn into something that actually sounds like music.",
     steps: [
@@ -169,6 +178,42 @@ export const DRUMS_LESSONS: Record<string, NodeLesson> = {
     song: { name: "Fifty Ways to Leave Your Lover — Paul Simon", note: "the verse groove rides a steady stream of sixteenth notes — the exact subdivision you are drilling here." },
   },
 
+  "d-t2-triplets": {
+    what:
+      "A triplet splits one beat into THREE even notes instead of two, counted '1 trip let, 2 trip let'. Where straight eighths feel like even marching steps, triplets feel rounder and rolling — the same beat, carved into thirds. Played as single strokes, the notes alternate hands, and because three is an odd number the lead hand quietly swaps every beat: beat 1 leads with your right, beat 2 leads with your left, and so on.",
+    why:
+      "The triplet is the doorway to a whole family of feels you cannot reach with straight notes: the shuffle, the swung groove, and everything in 6/8. Get three even notes per beat under your hands now and those all become a small step away instead of a mystery.",
+    steps: [
+      { do: "Say '1 trip let, 2 trip let' out loud slowly, three even syllables per beat, before you play a note.", feel: "three equal parts filling one beat, none rushed" },
+      { do: "Play single strokes, one hit per syllable, alternating hands.", feel: "the same hand-to-hand roll, just three notes per beat instead of two or four" },
+      { do: "Let the lead hand swap each beat and go with it — do not force your right hand to always start.", feel: "beat one starts right, beat two starts left; the swap is the pattern, not a mistake" },
+      { do: "Keep all three notes of each beat the same size, and climb from 60 toward 90 BPM only once each beat stays even.", feel: "even and rolling first, faster second" },
+    ],
+    goodWhen:
+      "You can play three even notes per beat to the click, counting out loud, from 60 up toward 90 BPM, comfortable with the lead hand swapping from beat to beat.",
+    watchOut:
+      "The three notes coming out lumpy — usually rushing the 'let' so it crowds the next beat — or fighting the natural lead-hand swap and stumbling. Slow right down and make all three parts of the beat equal before you add any speed.",
+    song: { name: "Hold the Line — Toto", note: "the whole groove rides wall-to-wall triplets — count '1 trip let' along with it and it locks right in." },
+  },
+
+  "d-t2-offbeats": {
+    what:
+      "The main beats are the numbers you count, '1 2 3 4'. The '&'s that fall exactly between them are the offbeats. Syncopation is putting your hits and accents on those offbeats — where the beat ISN'T — and leaving the main beats silent. The click keeps the steady beat for you while you play against it, landing in the gaps instead of on the ticks.",
+    why:
+      "Playing against the beat instead of on top of it is what makes a rhythm groove instead of march. A part that only ever lands on the beat feels stiff and mechanical; the moment a hit or an accent lands off the beat, the whole thing starts to breathe and pull.",
+    steps: [
+      { do: "Count '1 & 2 & 3 & 4 &' out loud with the click landing on the numbers.", feel: "the click marks the beats; the '&'s are the empty spaces between" },
+      { do: "Play only on the '&'s — rest on every main beat — so your hits land in the gaps between the ticks.", feel: "silence on the number, a hit on the '&', over and over" },
+      { do: "Keep the click steady and trust it to hold the beat while you play against it.", feel: "you are not following the click, you are leaning off it" },
+      { do: "Once that locks, drop a single accent onto a chosen '&' so the loud note lands off the beat.", feel: "the emphasis falls where the beat isn't — that pull is syncopation" },
+    ],
+    goodWhen:
+      "You can land clean hits on the offbeats while the click stays on the beat, and place a single accent on an offbeat without your timing drifting back onto the beat.",
+    watchOut:
+      "Drifting — your offbeat hits slowly creep back onto the main beats because your ear wants to follow the click. Keep counting '1 & 2 &' out loud so you always know which slot is the beat and which is the '&' you are actually playing.",
+    song: { name: "Come Together — The Beatles", note: "Ringo's laid-back groove leans on offbeat hits — the beat is steady but the drums keep landing just off it." },
+  },
+
   "d-t2-paradiddle": {
     what:
       "The single paradiddle is R L R R, L R L L: a single, a single, then a double, with the lead hand switching each time through. It fuses the single stroke roll and the double stroke roll into one repeating pattern.",
@@ -185,6 +230,9 @@ export const DRUMS_LESSONS: Record<string, NodeLesson> = {
     watchOut:
       "The two accented downbeats not matching hand to hand, and the double speeding up relative to the singles. Slow down until both leads sound identical.",
     song: { name: "Rosanna — Toto", note: "Jeff Porcaro's legendary half-time shuffle is built on paradiddle stickings — this is the pattern underneath it." },
+    resources: [
+      { name: "Drumeo: How to Play Rudiments", url: "https://www.drumeo.com/beat/how-to-play-rudiments/", note: "free lessons on getting rudiments clean and up to speed" },
+    ],
   },
 
   "d-t2-flam": {
@@ -237,6 +285,9 @@ export const DRUMS_LESSONS: Record<string, NodeLesson> = {
     watchOut:
       "Chasing a song that is too fast or too busy. Start with a slow, simple groove — the win is staying locked in, not playing something impressive.",
     song: { name: "Back in Black — AC/DC", note: "Phil Rudd's groove is famously simple and rock-steady — the perfect first thing to lock onto on the pad." },
+    resources: [
+      { name: "Drumeo Beat", url: "https://www.drumeo.com/beat/", note: "a deep free library of drum lessons and song breakdowns for when you want more than the pad" },
+    ],
   },
 
   // ── Tier 3 ────────────────────────────────────────────────────────────────
@@ -289,6 +340,9 @@ export const DRUMS_LESSONS: Record<string, NodeLesson> = {
       "You can execute a controlled accent-tap-tap whip at a slow tempo, loose in the wrist and arm, with no extra unwanted bounces.",
     watchOut:
       "Leaning on the whip's efficiency before your basic strokes are automatic, which bakes in bad habits fast. Keep it slow and controlled until the motion is genuinely relaxed.",
+    resources: [
+      { name: "Jim Chapin's Moeller Exercises", url: "https://musiprof.com/blog/moeller-technique-3-fundamental-exercises/", note: "three foundational whip-stroke exercises from the man who popularized the technique" },
+    ],
   },
 
   "d-t3-speed": {
