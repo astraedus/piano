@@ -90,7 +90,10 @@ export function MarketingHero({
   ctaHref?: string;
 }) {
   return (
-    <section className="max-w-3xl">
+    // `mx-auto`: the shell container is up to 1152px on desktop but prose caps at
+    // 768px for readability, so without centring the whole page sits against the
+    // left edge with a dead gutter beside it.
+    <section className="max-w-3xl mx-auto">
       <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--accent-deep)]">{eyebrow}</p>
       <h1 className="mt-3 font-serif text-[length:var(--text-4xl)] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink)]">
         {title}
@@ -119,7 +122,7 @@ export function MarketingSection({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="mt-14 max-w-3xl scroll-mt-8">
+    <section id={id} className="mt-14 max-w-3xl mx-auto scroll-mt-8">
       <h2 className="font-serif text-[length:var(--text-2xl)] tracking-[-0.02em] text-[color:var(--ink)]">
         {title}
       </h2>

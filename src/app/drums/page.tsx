@@ -30,7 +30,7 @@ export default function DrumsPage() {
           The curriculum is a real prerequisite tree, not a leveled list. {SKILL_NODE_COUNTS.drums} drum skills
           sit across four tiers, and a skill only becomes available once the ones under it are actually learned.
           Grip and stroke control come first because everything else, every rudiment and every fill, depends on
-          them.
+          them, and no stage skips ahead of the technique it is quietly built on.
         </p>
         <FactList
           items={[
@@ -56,24 +56,31 @@ export default function DrumsPage() {
             },
           ]}
         />
+        <p>
+          Every term in that list, paradiddle, flam, Moeller, buzz roll, is tappable for a plain-language
+          explanation the moment you meet it. Drum vocabulary can sound like a foreign language the first time you
+          read it, and nothing here assumes you already speak it.
+        </p>
       </MarketingSection>
 
       <MarketingSection id="how-practice-works" title="How practice actually works">
         <p>
           Each night the app builds a short session from wherever you left off: a technique drill, sometimes a new
           rudiment, and a rhythm ear round if one is due. Technique drills use BPM laddering, so you start well
-          under tempo and only step up after a clean run, which means speed gets built on top of control instead
-          of replacing it.
+          under tempo and only step up after a clean run, evenly spaced, evenly loud, both hands sounding the
+          same, which means speed gets built on top of control instead of replacing it.
         </p>
         <p>
           Learned skills do not just sit there once you have passed them. They come back on a spaced review
           schedule at {reviewLadderPhrase()}, so a rudiment you nailed weeks ago gets a chance to prove it is
-          still there before it quietly slips.
+          still there before it quietly slips. A rudiment that only ever gets played once, the day you first
+          learn it, is not really learned. It just briefly worked.
         </p>
         <p>
           Ear training here is rhythm dictation: you hear a short pattern and have to identify or play back its
-          subdivision. It only ever draws on subdivisions the tree has actually taught you, so a round never tests
-          something you have not been shown yet.
+          subdivision. It only ever draws on subdivisions the tree has actually taught you, so a sixteenth-note
+          round never shows up before Sixteenths itself has been learned, and a round never tests something you
+          have not been shown yet.
         </p>
       </MarketingSection>
 
@@ -84,8 +91,10 @@ export default function DrumsPage() {
           single pad surface, which is also why notation renders as a count grid instead of a drum staff.
         </p>
         <p>
-          That is a real, current limit, not a caveat buried in fine print. If you already own a kit, treat this
-          as the technique and rudiment layer underneath what you play on it.
+          That is a real, current limit, not a caveat buried in fine print. Every rudiment in the tree is still
+          exactly what a kit player needs underneath a groove or a fill; it is just taught and drilled on the pad
+          rather than across toms and cymbals. If you already own a kit, treat this as the technique and rudiment
+          layer underneath what you play on it.
         </p>
       </MarketingSection>
 
@@ -99,8 +108,9 @@ export default function DrumsPage() {
 
       <MarketingSection id="cost" title="What it costs">
         <p>
-          Nothing. Music Practice is free, with no account required and no paywall anywhere in it. The code is
-          open source under the MIT licence and lives at{" "}
+          Nothing. Music Practice is free, with no account required and no paywall anywhere in it. Progress saves
+          to your own browser the moment you finish a drill, so there is nothing to sign up for before you start.
+          The code is open source under the MIT licence and lives at{" "}
           <a href={REPO_URL} className="text-[color:var(--accent-deep)] hover:underline">
             {REPO_URL.replace("https://", "")}
           </a>
@@ -111,8 +121,9 @@ export default function DrumsPage() {
 
       <MarketingSection id="try-it" title="Try it tonight">
         <p>
-          Open the app and work through the first tier tonight, no account needed. If something is confusing, or
-          a rudiment&apos;s drill does not feel right on a pad, say so. The repo takes issues at{" "}
+          Open the app and work through the first tier tonight, no account needed. Ten minutes of grip and rebound
+          work is a real start, not a wasted session. If something is confusing, or a rudiment&apos;s drill does
+          not feel right on a pad, say so. The repo takes issues at{" "}
           <a href={ISSUES_URL} className="text-[color:var(--accent-deep)] hover:underline">
             {ISSUES_URL.replace("https://", "")}
           </a>

@@ -1,8 +1,10 @@
 import { ImageResponse } from "next/og";
-import { SITE_TAGLINE, SKILL_NODE_COUNTS } from "@/lib/seo";
+import { OG_IMAGE_ALT, OG_IMAGE_SIZE, SITE_TAGLINE, SKILL_NODE_COUNTS } from "@/lib/seo";
 
-export const alt = "Music Practice: a free practice app for piano, electric guitar and drums.";
-export const size = { width: 1200, height: 630 };
+// Alt and size come from `lib/seo` because `buildMetadata` also emits them on
+// every page's og:image tag; declaring them twice would let the two drift.
+export const alt = OG_IMAGE_ALT;
+export const size = OG_IMAGE_SIZE;
 export const contentType = "image/png";
 
 // Warm Studio palette, light variant. Hard-coded rather than read from
@@ -90,7 +92,17 @@ export default function OpengraphImage() {
           <Chip color={PIANO} label={`Piano · ${SKILL_NODE_COUNTS.piano} skills`} />
           <Chip color={GUITAR} label={`Guitar · ${SKILL_NODE_COUNTS.guitar} skills`} />
           <Chip color={DRUMS} label={`Drums · ${SKILL_NODE_COUNTS.drums} skills`} />
-          <div style={{ display: "flex", marginLeft: "auto", fontSize: 26, color: INK_3 }}>
+          <div
+            style={{
+              display: "flex",
+              marginLeft: "auto",
+              paddingLeft: 24,
+              fontSize: 26,
+              color: INK_3,
+              // Without this the label wraps to two lines and crowds the chips.
+              whiteSpace: "nowrap",
+            }}
+          >
             Free and open source
           </div>
         </div>

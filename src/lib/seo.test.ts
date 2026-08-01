@@ -67,6 +67,18 @@ describe("buildMetadata", () => {
     expect(m.openGraph?.url).toBe(`${SITE_URL}/drums`);
   });
 
+  // Regression: the root `opengraph-image.tsx` file convention does not reach
+  // child segments once they declare their own `openGraph`, so /piano, /guitar,
+  // /drums and /about all shipped with no social card until the image was
+  // attached here. Every page, home or not, must carry one.
+  it.each([...MARKETING_ROUTES, ...APP_ROUTES])("%s carries a social card image", (path) => {
+    const m = buildMetadata({ path, title: "t", description: "d" });
+    expect(m.openGraph?.images).toEqual([
+      { url: "/opengraph-image", width: 1200, height: 630, alt: expect.any(String) },
+    ]);
+    expect(m.twitter).toMatchObject({ images: [expect.objectContaining({ url: "/opengraph-image" })] });
+  });
+
   it("omits keywords entirely rather than emitting an empty tag", () => {
     expect(buildMetadata({ path: "/x", title: "t", description: "d" }).keywords).toBeUndefined();
   });

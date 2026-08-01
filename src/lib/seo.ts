@@ -42,6 +42,11 @@ export const SITE_TAGLINE = "Free piano, guitar, and drums practice. No account.
 export const SITE_DESCRIPTION =
   "A free, open source practice app for piano, electric guitar, and drums that always tells you what to practice next, and why. No account, no install, no paywall.";
 
+/** Alt text for the generated social card. Shared with `app/opengraph-image.tsx`. */
+export const OG_IMAGE_ALT =
+  "Music Practice: a free practice app for piano, electric guitar and drums.";
+export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
+
 /** Canonical public routes, in nav order. Drives the sitemap and the footer. */
 export const MARKETING_ROUTES = ["/", "/piano", "/guitar", "/drums", "/about"] as const;
 
@@ -62,12 +67,16 @@ type BuildMetadataInput = {
  * URL, Open Graph, and a Twitter summary card. Every public page goes through
  * here so no route can ship with a half-filled head.
  *
- * The OG/Twitter image is inherited from the root `opengraph-image.tsx` unless a
- * segment ships its own file, so callers never pass image URLs by hand.
+ * The social image is attached here rather than left to the `opengraph-image.tsx`
+ * file convention. That convention only decorates the segment it sits in, and a
+ * child segment declaring its own `openGraph` replaces the parent's wholesale, so
+ * relying on inheritance shipped /piano, /guitar, /drums and /about with no card
+ * at all. Pointing every page at the one generated image keeps that impossible.
  */
 export function buildMetadata({ path, title, description, keywords }: BuildMetadataInput): Metadata {
   const url = path === "/" ? SITE_URL : `${SITE_URL}${path}`;
   const isHome = path === "/";
+  const image = { url: "/opengraph-image", ...OG_IMAGE_SIZE, alt: OG_IMAGE_ALT };
   return {
     // The root layout's title template appends " | Music Practice". The home page
     // already carries the brand name, so it opts out via `absolute` rather than
@@ -83,11 +92,13 @@ export function buildMetadata({ path, title, description, keywords }: BuildMetad
       title: isHome ? title : `${title} | ${SITE_NAME}`,
       description,
       locale: "en_US",
+      images: [image],
     },
     twitter: {
       card: "summary_large_image",
       title: isHome ? title : `${title} | ${SITE_NAME}`,
       description,
+      images: [image],
     },
   };
 }
