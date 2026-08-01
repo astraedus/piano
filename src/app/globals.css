@@ -284,6 +284,63 @@
   --instrument-accent-deep: #D4AC63;
 }
 
+/* Instrument accent, scoped to a SUBTREE — `data-accent="guitar"` on any element.
+   The marketing pages (/piano, /guitar, /drums) describe one instrument each and
+   must carry its accent, but they are server-rendered and must not touch
+   `data-instrument` on :root — that attribute belongs to the running app and is
+   restored from localStorage before paint, so writing it here would repaint the
+   user's actual instrument. Custom properties inherit from the nearest ancestor
+   that declares them, so a wrapper div beats :root inside its own subtree without
+   any specificity games. Values mirror the :root blocks above verbatim; the dark
+   pairs follow the same contract (deep tinted surface + 300-level accent text). */
+[data-accent="piano"] {
+  --instrument-accent:       #D4900A;
+  --instrument-accent-soft:  #E8A820;
+  --instrument-accent-deep:  #9C6800;
+  --instrument-accent-bg:    #FEF4D8;
+  --instrument-accent-glow:  rgba(212, 144, 10, 0.20);
+}
+[data-accent="guitar"] {
+  --instrument-accent:       #C0432E;
+  --instrument-accent-soft:  #D45A40;
+  --instrument-accent-deep:  #8F2E1F;
+  --instrument-accent-bg:    #FBEAE4;
+  --instrument-accent-glow:  rgba(192, 67, 46, 0.18);
+}
+[data-accent="drums"] {
+  --instrument-accent:       #A87722;
+  --instrument-accent-soft:  #C28F3C;
+  --instrument-accent-deep:  #7A5310;
+  --instrument-accent-bg:    #F3E7C9;
+  --instrument-accent-glow:  rgba(168, 119, 34, 0.20);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) [data-accent="piano"] {
+    --instrument-accent-bg:   #211906;
+    --instrument-accent-deep: #F0C060;
+  }
+  :root:not([data-theme="light"]) [data-accent="guitar"] {
+    --instrument-accent-bg:   #221210;
+    --instrument-accent-deep: #E2826C;
+  }
+  :root:not([data-theme="light"]) [data-accent="drums"] {
+    --instrument-accent-bg:   #1D1707;
+    --instrument-accent-deep: #D4AC63;
+  }
+}
+:root[data-theme="dark"] [data-accent="piano"] {
+  --instrument-accent-bg:   #211906;
+  --instrument-accent-deep: #F0C060;
+}
+:root[data-theme="dark"] [data-accent="guitar"] {
+  --instrument-accent-bg:   #221210;
+  --instrument-accent-deep: #E2826C;
+}
+:root[data-theme="dark"] [data-accent="drums"] {
+  --instrument-accent-bg:   #1D1707;
+  --instrument-accent-deep: #D4AC63;
+}
+
 /* Explicit light toggle — pin light even if OS prefers dark. */
 :root[data-theme="light"] { color-scheme: light; }
 

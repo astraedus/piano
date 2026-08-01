@@ -13,6 +13,7 @@ import { StreakFlame } from "./StreakFlame";
 import { emptyStreak } from "@/lib/progression";
 import { ProfileChip } from "./ProfileChip";
 import { CloudSyncManager } from "./CloudSyncManager";
+import { SiteFooter } from "./SiteFooter";
 
 export function AppShell({ children, hideNav = false }: { children: ReactNode; hideNav?: boolean }) {
   const path = usePathname();
@@ -63,6 +64,10 @@ export function AppShell({ children, hideNav = false }: { children: ReactNode; h
       {/* Invisible: keeps the signed-in account's save in sync with local state. */}
       <CloudSyncManager />
       <main className="flex-1 shell-container w-full px-5 py-6">{children}</main>
+      {/* The app routes are client-hydrated shells, so this footer is the only
+          server-rendered prose on them: it is what links the marketing pages into
+          the crawl, and the always-visible way to send feedback. */}
+      <SiteFooter />
     </div>
   );
 }
