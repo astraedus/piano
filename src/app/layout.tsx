@@ -46,6 +46,11 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   },
+  // Google Search Console ownership (URL-prefix property, HTML-tag method). Added 2026-08-02
+  // to start Google indexing the newly-crawlable site; renders <meta name="google-site-verification">.
+  verification: {
+    google: "BXUkGcaiNBTuy7DmGuylPsN-pODcpYASJYWgefGpgAA",
+  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
