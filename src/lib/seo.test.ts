@@ -135,7 +135,16 @@ describe("public copy honours the voice rules", () => {
   ]
     .map((rel) => join(APP_DIR, rel))
     .filter((p) => existsSync(p))
-    .concat([join(process.cwd(), "src", "components", "SiteFooter.tsx")]);
+    .concat(
+      [
+        ["SiteFooter.tsx"],
+        // The home page's own copy moved here when `/` stopped redirecting
+        // strangers into onboarding. It is the first thing an external visitor
+        // reads, so it is the last file that should escape these rules.
+        ["marketing", "HomeLanding.tsx"],
+        ["marketing", "MarketingShell.tsx"],
+      ].map((rel) => join(process.cwd(), "src", "components", ...rel)),
+    );
 
   /** Strip comments so the rules apply to rendered copy, not to code notes. */
   function proseOf(path: string): string {
@@ -144,8 +153,8 @@ describe("public copy honours the voice rules", () => {
       .replace(/^\s*\/\/.*$/gm, "");
   }
 
-  it("covers all five public pages", () => {
-    expect(publicSources.length).toBe(6);
+  it("covers every file that renders public copy", () => {
+    expect(publicSources.length).toBe(8);
   });
 
   it.each(publicSources)("%s never labels anything as AI", (path) => {

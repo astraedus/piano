@@ -80,13 +80,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const body = (
     <html lang="en" data-phase="1" data-instrument="piano" className={`${fraunces.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="min-h-screen antialiased">
-        {/* Inline script: read localStorage before paint to set phase/instrument/theme.
-            Self-contained (runs before any module) — mirrors lib/domAttrs.setRootAttrs.
-            Reads the v2 key first, falls back to the legacy v1 key pre-migration. */}
+        {/* Inline script: read localStorage before paint to set phase/instrument/theme,
+            plus data-returning for somebody who has already onboarded.
+            Self-contained (runs before any module) — mirrors lib/domAttrs.setRootAttrs
+            and lib/domAttrs.setReturningVisitor.
+            Reads the v2 key first, falls back to the legacy v1 key pre-migration.
+
+            data-returning is what keeps `/` honest in both directions: the page
+            server-renders the marketing pitch so a crawler and a first-time
+            visitor see it in the HTML, and this flag hides that subtree before
+            paint for a returning user, who gets their practice stand instead.
+            No script runs for a crawler, so the pitch stays visible there. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{var r=localStorage.getItem('practice.state')||localStorage.getItem('piano.state');var s=JSON.parse(r||'null');var d=document.documentElement;var p=s&&s.phase?String(s.phase):'1';var i=(s&&s.instrument)||'piano';var t=s&&s.theme;d.setAttribute('data-phase',p);d.setAttribute('data-instrument',i);if(t==='light'||t==='dark')d.setAttribute('data-theme',t);else d.removeAttribute('data-theme');}catch(e){}",
+              "try{var r=localStorage.getItem('practice.state')||localStorage.getItem('piano.state');var s=JSON.parse(r||'null');var d=document.documentElement;var p=s&&s.phase?String(s.phase):'1';var i=(s&&s.instrument)||'piano';var t=s&&s.theme;d.setAttribute('data-phase',p);d.setAttribute('data-instrument',i);if(t==='light'||t==='dark')d.setAttribute('data-theme',t);else d.removeAttribute('data-theme');if(s&&s.firstOpenedAt)d.setAttribute('data-returning','1');else d.removeAttribute('data-returning');}catch(e){}",
           }}
         />
         <ExplainProvider>{children}</ExplainProvider>

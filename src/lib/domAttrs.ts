@@ -34,6 +34,28 @@ export function setRootAttrs(attrs: RootAttrs): void {
 }
 
 /**
+ * Flag the document root as belonging to somebody who has already onboarded.
+ *
+ * `/` server-renders the marketing pitch, because that is what a crawler and a
+ * first-time visitor have to see. A returning user must not paint it on the way
+ * to their practice stand, and the only code that runs before paint is the boot
+ * script in layout.tsx, which sets this same attribute from stored state;
+ * globals.css hides the landing subtree under it. This is the React-side write:
+ * HomeGate calls it once real state has hydrated, so the flag can never be left
+ * disagreeing with the profile it describes.
+ */
+export function setReturningVisitor(returning: boolean): void {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  try {
+    if (returning) root.setAttribute("data-returning", "1");
+    else root.removeAttribute("data-returning");
+  } catch {
+    // SSR / detached document — ignore.
+  }
+}
+
+/**
  * Read the active instrument off the document root (the canonical global signal
  * that setRootAttrs / the boot script keep in sync). For CLIENT-ONLY surfaces
  * that lack app-state context — e.g. the singleton Explain card mounted above
