@@ -3,6 +3,8 @@ import { Fraunces, Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { ExplainProvider } from "@/components/explain";
+import { Analytics } from "@/components/Analytics";
+import { BUILDER, SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/seo";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -17,9 +19,46 @@ const inter = Inter({
   display: "swap",
 });
 
+/**
+ * Site-wide metadata defaults. Every route inherits these and overrides only what
+ * it needs, so no page can ship with an empty head.
+ *
+ * `metadataBase` is what makes the relative `alternates.canonical` paths in
+ * `buildMetadata` resolve to absolute URLs, and what lets the generated
+ * `opengraph-image` be referenced without hard-coding the origin at each call site.
+ */
 export const metadata: Metadata = {
-  title: "Music Practice",
-  description: "A practice app whose endpoint is musical expression and the ability to play by ear.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME}: ${SITE_TAGLINE}`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: BUILDER }],
+  creator: BUILDER,
+  publisher: "Raedus Labs",
+  category: "education",
+  // Explicit rather than implied. This site previously shipped with no robots
+  // directives at all, and "no signal" is a worse position than "index this".
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    url: SITE_URL,
+    title: `${SITE_NAME}: ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME}: ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = {
@@ -46,6 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         <ExplainProvider>{children}</ExplainProvider>
+        <Analytics />
       </body>
     </html>
   );
