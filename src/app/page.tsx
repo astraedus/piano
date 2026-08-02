@@ -1,17 +1,11 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { HomeGate } from "@/components/HomeGate";
+import { PracticeStand } from "@/components/PracticeStand";
+import { HomeLanding } from "@/components/marketing/HomeLanding";
 import { AppStateProvider } from "@/hooks/useAppState";
-import {
-  REPO_URL,
-  SKILL_NODE_COUNTS,
-  buildMetadata,
-  jsonLdScriptProps,
-  reviewLadderPhrase,
-  webApplicationJsonLd,
-} from "@/lib/seo";
+import { buildMetadata, jsonLdScriptProps, webApplicationJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
   path: "/",
@@ -27,80 +21,36 @@ export const metadata: Metadata = buildMetadata({
   ],
 });
 
+/**
+ * `/` is two pages behind one URL, and `HomeGate` picks which one.
+ *
+ * A stranger, and every crawler, gets `HomeLanding`: a server-rendered pitch that
+ * says what the app is, what it costs, and how it differs from the apps they have
+ * already tried, with one link into onboarding. Until now this route redirected
+ * anyone without a profile straight to `/onboarding`, so a visitor from search or
+ * Hacker News met a questionnaire and the crawlable HTML here was a nav and a
+ * loading line.
+ *
+ * Somebody who has already onboarded gets what they have always got: the practice
+ * stand. Both branches are built here, in a server component, so the pitch is real
+ * HTML rather than something hydration has to assemble.
+ */
 export default function Page() {
   return (
     <AppStateProvider>
-      <AppShell>
-        <Suspense fallback={null}>
-          <HomeGate />
-        </Suspense>
-        <HomeIntro />
-      </AppShell>
+      {/* The stand reads searchParams (the free-play toggle), so it needs a
+          boundary above it. The landing has no hooks and never suspends. */}
+      <Suspense fallback={null}>
+        <HomeGate
+          landing={<HomeLanding />}
+          app={
+            <AppShell>
+              <PracticeStand />
+            </AppShell>
+          }
+        />
+      </Suspense>
       <script {...jsonLdScriptProps(webApplicationJsonLd())} />
     </AppStateProvider>
-  );
-}
-
-/**
- * A short, server-rendered description of the app, sitting under the practice
- * stand.
- *
- * It exists because everything above it is client-hydrated: `HomeGate` renders a
- * placeholder on the server and only becomes the practice stand after hydration,
- * so without this block the home page's crawlable HTML was the nav, a loading
- * line, and nothing else. It is also the homepage's route into the three
- * instrument pages, which are where the real content lives.
- *
- * Kept deliberately small. Somebody who practises here nightly should read it as
- * a quiet closing note, not as a marketing banner parked on their session.
- */
-function HomeIntro() {
-  return (
-    <section className="mt-14 border-t border-[color:var(--bg-rule)] pt-8 max-w-3xl">
-      <h2 className="font-serif text-[length:var(--text-xl)] tracking-[-0.02em] text-[color:var(--ink)]">
-        A free practice app for piano, guitar and drums
-      </h2>
-      <p className="mt-3 text-[color:var(--ink-2)] leading-relaxed">
-        Music Practice is a free, open source web app for learning{" "}
-        <IntroLink href="/piano">piano</IntroLink>,{" "}
-        <IntroLink href="/guitar">electric guitar</IntroLink> and{" "}
-        <IntroLink href="/drums">drums</IntroLink>. It runs entirely in your browser. There is no
-        account to make, nothing to install and nothing to pay.
-      </p>
-      <p className="mt-3 text-[color:var(--ink-2)] leading-relaxed">
-        Instead of scoring how close you played to a reference, it sequences a real prerequisite
-        curriculum: {SKILL_NODE_COUNTS.piano} piano skills, {SKILL_NODE_COUNTS.guitar} guitar and{" "}
-        {SKILL_NODE_COUNTS.drums} drums, where each one opens only once the skills it depends on are
-        actually learned. Technique drills step the tempo up after a clean run rather than leaving
-        you to guess. Anything you have learned comes back for review at {reviewLadderPhrase()}, so
-        it does not quietly rot once you have passed it.{" "}
-        <IntroLink href="/about">More about how it works</IntroLink>, or{" "}
-        <IntroLink href={REPO_URL} external>
-          read the source
-        </IntroLink>
-        .
-      </p>
-    </section>
-  );
-}
-
-function IntroLink({
-  href,
-  external = false,
-  children,
-}: {
-  href: string;
-  external?: boolean;
-  children: React.ReactNode;
-}) {
-  const className = "text-[color:var(--accent-deep)] hover:underline";
-  return external ? (
-    <a href={href} className={className} target="_blank" rel="noopener noreferrer">
-      {children}
-    </a>
-  ) : (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
   );
 }

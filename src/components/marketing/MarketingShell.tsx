@@ -21,21 +21,28 @@ import type { MarketingInstrument } from "@/lib/seo";
  */
 export function MarketingShell({
   accent,
+  headerCta,
   children,
 }: {
   accent?: MarketingInstrument;
+  /**
+   * Overrides the header's right-hand pill. The home page passes
+   * `{ href: "/onboarding", label: "Start practising" }` because there the
+   * default "Open the app" would link the page at itself.
+   */
+  headerCta?: { href: string; label: string };
   children: ReactNode;
 }) {
   return (
     <div className="min-h-screen flex flex-col" data-accent={accent}>
-      <MarketingHeader />
+      <MarketingHeader cta={headerCta} />
       <main className="flex-1 shell-container w-full px-5 py-10 sm:py-14">{children}</main>
       <SiteFooter />
     </div>
   );
 }
 
-function MarketingHeader() {
+function MarketingHeader({ cta }: { cta?: { href: string; label: string } }) {
   return (
     <header className="no-print border-b border-[color:var(--bg-rule)]">
       <nav className="shell-container px-5 py-3 flex flex-wrap items-center gap-x-5 gap-y-2">
@@ -51,15 +58,37 @@ function MarketingHeader() {
           <HeaderLink href="/drums">Drums</HeaderLink>
           <HeaderLink href="/about">About</HeaderLink>
         </div>
-        <Link
-          href="/"
-          className="cta-pill ml-auto shrink-0 text-sm px-4 py-1.5"
-          data-testid="marketing-open-app"
+        <CtaLink
+          href={cta?.href ?? "/"}
+          className="ml-auto shrink-0 text-sm px-4 py-1.5"
+          testId="marketing-open-app"
         >
-          Open the app
-        </Link>
+          {cta?.label ?? "Open the app"}
+        </CtaLink>
       </nav>
     </header>
+  );
+}
+
+/**
+ * The one primary-action link on the public pages. Every call site shares the
+ * same pill treatment, so a CTA can never drift into looking like body text.
+ */
+export function CtaLink({
+  href,
+  className = "px-5 py-2.5",
+  testId,
+  children,
+}: {
+  href: string;
+  className?: string;
+  testId?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link href={href} className={`cta-pill ${className}`} data-testid={testId}>
+      {children}
+    </Link>
   );
 }
 
@@ -81,7 +110,11 @@ export function MarketingHero({
   title,
   lede,
   ctaLabel = "Start practising",
-  ctaHref = "/",
+  // Straight into onboarding rather than "/": a reader on one of these pages has
+  // just been pitched, so sending them to the home page would only pitch them a
+  // second time. Someone who has already onboarded is bounced from /onboarding
+  // back to their practice stand, so this is the right target for both.
+  ctaHref = "/onboarding",
 }: {
   eyebrow: string;
   title: string;
@@ -100,9 +133,9 @@ export function MarketingHero({
       </h1>
       <p className="mt-5 text-[length:var(--text-xl)] leading-relaxed text-[color:var(--ink-2)]">{lede}</p>
       <div className="mt-7 flex flex-wrap items-center gap-4">
-        <Link href={ctaHref} className="cta-pill px-5 py-2.5">
+        <CtaLink href={ctaHref} testId="marketing-hero-cta">
           {ctaLabel}
-        </Link>
+        </CtaLink>
         <span className="text-sm text-[color:var(--ink-3)]">
           No account, no install, no paywall.
         </span>

@@ -399,6 +399,19 @@ body > * { position: relative; z-index: 1; }
   .shell-container { max-width: 72rem; } /* 1152px on wide desktops */
 }
 
+/* Home route (`/`) — which of the two server-rendered outcomes is visible.
+   The page ships the marketing pitch in its HTML, because that is what a crawler
+   and a first-time visitor must get. `data-returning="1"` is written on :root by
+   the pre-paint boot script in layout.tsx (and re-asserted by HomeGate once real
+   state hydrates) for somebody who has already onboarded: they get a quiet resume
+   placeholder instead, and never paint a pitch on the way to their practice stand.
+   No script runs for a crawler, so the default below is the crawlable one.
+   Unlayered on purpose: these must beat the Tailwind display utilities in
+   @layer utilities regardless of specificity. */
+[data-home-resume] { display: none; }
+:root[data-returning="1"] [data-home-resume] { display: flex; }
+:root[data-returning="1"] [data-home-landing] { display: none; }
+
 /* The main stage container (Practice Stand). */
 .stage-card {
   background: var(--bg-surface);
