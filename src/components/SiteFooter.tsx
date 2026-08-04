@@ -20,7 +20,7 @@ export function SiteFooter() {
   return (
     <footer className="no-print mt-16 border-t border-[color:var(--bg-rule)] bg-[color:var(--bg-surface)]/40">
       <div className="shell-container w-full px-5 py-10">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
           <div className="space-y-2">
             <p className="font-serif text-[length:var(--text-xl)] text-[color:var(--ink)] tracking-[-0.02em]">
               Music Practice
@@ -39,6 +39,17 @@ export function SiteFooter() {
             <FooterLink href="/tree">The skill tree</FooterLink>
             <FooterLink href="/timeline">Timeline</FooterLink>
             <FooterLink href="/settings">Settings</FooterLink>
+          </FooterColumn>
+
+          {/* Reverse links into the comparison cluster. Present on every page (this
+              footer renders in both the marketing shell and the app), so the compare
+              pages are discoverable and get link equity from the whole site. The
+              slugs are asserted against COMPARE_ROUTES in compare.test.ts, so a
+              renamed route breaks the build rather than silently 404-ing here. */}
+          <FooterColumn title="Switching from">
+            <FooterLink href="/compare/simply-piano-alternative">Simply Piano</FooterLink>
+            <FooterLink href="/compare/yousician-alternative">Yousician</FooterLink>
+            <FooterLink href="/compare/melodics-alternative">Melodics</FooterLink>
           </FooterColumn>
 
           <FooterColumn title="Project">

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { APP_ROUTES, MARKETING_ROUTES, SITE_URL } from "@/lib/seo";
+import { APP_ROUTES, COMPARE_ROUTES, MARKETING_ROUTES, SITE_URL } from "@/lib/seo";
 
 /**
  * sitemap.xml, generated from the route lists in `lib/seo.ts` rather than a
@@ -20,6 +20,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: path === "/" ? 1 : path === "/about" ? 0.8 : 0.9,
   }));
 
+  // Comparison pages: real landing intent ("simply piano alternative"), but a notch
+  // below the instrument pages, and their facts change rarely.
+  const compare = COMPARE_ROUTES.map((path) => ({
+    url: `${SITE_URL}${path}`,
+    lastModified,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
   const app = APP_ROUTES.map((path) => ({
     url: `${SITE_URL}${path}`,
     lastModified,
@@ -27,5 +36,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...marketing, ...app];
+  return [...marketing, ...compare, ...app];
 }
