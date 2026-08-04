@@ -7,6 +7,7 @@ import { DRUMS_NODES } from "./drums/skillNodes";
 import { REVIEW_INTERVALS_DAYS } from "./skillReview";
 import {
   APP_ROUTES,
+  COMPARE_ROUTES,
   MARKETING_ROUTES,
   REVIEW_LADDER_DAYS,
   SITE_URL,
@@ -71,7 +72,7 @@ describe("buildMetadata", () => {
   // child segments once they declare their own `openGraph`, so /piano, /guitar,
   // /drums and /about all shipped with no social card until the image was
   // attached here. Every page, home or not, must carry one.
-  it.each([...MARKETING_ROUTES, ...APP_ROUTES])("%s carries a social card image", (path) => {
+  it.each([...MARKETING_ROUTES, ...COMPARE_ROUTES, ...APP_ROUTES])("%s carries a social card image", (path) => {
     const m = buildMetadata({ path, title: "t", description: "d" });
     expect(m.openGraph?.images).toEqual([
       { url: "/opengraph-image", width: 1200, height: 630, alt: expect.any(String) },
@@ -108,7 +109,7 @@ describe("route lists match what is actually on disk", () => {
   // A route listed in the sitemap but missing from the app directory is a 404
   // handed straight to Google. A page on disk but missing from the list is a page
   // that never gets crawled. Both are silent, so both are tested.
-  it.each([...MARKETING_ROUTES, ...APP_ROUTES])("%s has a page component", (route) => {
+  it.each([...MARKETING_ROUTES, ...COMPARE_ROUTES, ...APP_ROUTES])("%s has a page component", (route) => {
     const dir = route === "/" ? APP_DIR : join(APP_DIR, route.slice(1));
     const hasPage = [".tsx", ".ts", ".jsx", ".js"].some((ext) =>
       existsSync(join(dir, `page${ext}`)),
@@ -117,7 +118,7 @@ describe("route lists match what is actually on disk", () => {
   });
 
   it("lists no duplicate routes", () => {
-    const all = [...MARKETING_ROUTES, ...APP_ROUTES];
+    const all = [...MARKETING_ROUTES, ...COMPARE_ROUTES, ...APP_ROUTES];
     expect(new Set(all).size).toBe(all.length);
   });
 });
@@ -143,8 +144,16 @@ describe("public copy honours the voice rules", () => {
         // reads, so it is the last file that should escape these rules.
         ["marketing", "HomeLanding.tsx"],
         ["marketing", "MarketingShell.tsx"],
+        // The comparison cluster's shared renderer. The competitor prose lives in
+        // `data/compareData.ts` (added below), but the section headings and framing
+        // here are public copy too.
+        ["marketing", "ComparePage.tsx"],
       ].map((rel) => join(process.cwd(), "src", "components", ...rel)),
-    );
+    )
+    // Where the "alternative to X" copy actually lives. This is the file most at
+    // risk of drifting into upsell vocabulary, because it quotes competitor pricing,
+    // so it is exactly the one the rules must cover.
+    .concat([join(process.cwd(), "src", "data", "compareData.ts")]);
 
   /** Strip comments so the rules apply to rendered copy, not to code notes. */
   function proseOf(path: string): string {
@@ -154,7 +163,7 @@ describe("public copy honours the voice rules", () => {
   }
 
   it("covers every file that renders public copy", () => {
-    expect(publicSources.length).toBe(8);
+    expect(publicSources.length).toBe(10);
   });
 
   it.each(publicSources)("%s never labels anything as AI", (path) => {

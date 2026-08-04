@@ -50,6 +50,18 @@ export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
 /** Canonical public routes, in nav order. Drives the sitemap and the footer. */
 export const MARKETING_ROUTES = ["/", "/piano", "/guitar", "/drums", "/about"] as const;
 
+/**
+ * The "alternative to X" comparison cluster. Its own list (not folded into
+ * `MARKETING_ROUTES`) because these are long-tail comparison-intent pages, ranked
+ * a notch below the instrument pages in the sitemap. Each entry is a real static
+ * `page.tsx` on disk under `app/compare/<slug>/`, guarded by `compare.test.ts`.
+ */
+export const COMPARE_ROUTES = [
+  "/compare/simply-piano-alternative",
+  "/compare/yousician-alternative",
+  "/compare/melodics-alternative",
+] as const;
+
 /** App routes that are real pages but carry no standalone search intent. */
 export const APP_ROUTES = ["/tree", "/timeline", "/settings", "/onboarding"] as const;
 
@@ -136,6 +148,25 @@ export function webApplicationJsonLd(): Record<string, unknown> {
       "Plain-language glossary on every musical term",
     ],
     codeRepository: REPO_URL,
+  };
+}
+
+/**
+ * JSON-LD `FAQPage` node built from a page's own question/answer pairs, so the FAQ
+ * a reader sees and the structured data a crawler reads are the same source. Emitted
+ * by the comparison pages to make them eligible for the FAQ rich result.
+ */
+export function faqPageJsonLd(
+  faqs: readonly { question: string; answer: string }[],
+): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
   };
 }
 
