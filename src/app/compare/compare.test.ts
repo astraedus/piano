@@ -22,7 +22,15 @@ import {
   resolveComparePlaceholders,
   type CompetitorComparison,
 } from "@/data/compareData";
-import { COMPARE_ROUTES, SITE_URL, SKILL_NODE_COUNTS, faqPageJsonLd, jsonLdScriptProps } from "@/lib/seo";
+import {
+  APP_ROUTES,
+  COMPARE_ROUTES,
+  MARKETING_ROUTES,
+  SITE_URL,
+  SKILL_NODE_COUNTS,
+  faqPageJsonLd,
+  jsonLdScriptProps,
+} from "@/lib/seo";
 
 const ROOT = process.cwd();
 const COMPARE_APP_DIR = join(ROOT, "src", "app", "compare");
@@ -32,8 +40,27 @@ const entries = Object.entries(COMPARE_DATA) as [string, CompetitorComparison][]
 function markupFor(data: CompetitorComparison): string {
   return renderToStaticMarkup(createElement(ComparePage, { data }));
 }
+/**
+ * The visible text of that markup, as a reader sees it. Entities are decoded
+ * because React escapes apostrophes and ampersands on the way out, so a cell
+ * reading "a pianist's hands" arrives as "a pianist&#x27;s hands" and a raw
+ * `toContain` against the source string fails on punctuation rather than on
+ * anything real. Decoding here keeps the assertions about copy, not about markup.
+ */
+const ENTITIES: Record<string, string> = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&#x27;": "'",
+  "&#39;": "'",
+  "&#x2F;": "/",
+};
 function textOf(html: string): string {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&(?:amp|lt|gt|quot|#x27|#39|#x2F);/g, (e) => ENTITIES[e] ?? e)
+    .replace(/\s+/g, " ");
 }
 
 describe("every layer of the cluster lines up", () => {
@@ -59,6 +86,80 @@ describe("every layer of the cluster lines up", () => {
   it("is linked back into from the site-wide footer, so a rename cannot orphan it", () => {
     const footer = readFileSync(join(ROOT, "src", "components", "SiteFooter.tsx"), "utf8");
     for (const route of COMPARE_ROUTES) expect(footer).toContain(route);
+  });
+
+  // The reverse of the check above. A footer link to a slug that no longer exists
+  // is a 404 on every page of the site at once, which is worse than the orphan the
+  // previous test catches, and just as silent.
+  it("links to no compare route the footer has invented", () => {
+    const footer = readFileSync(join(ROOT, "src", "components", "SiteFooter.tsx"), "utf8");
+    const linked = [...footer.matchAll(/href="(\/compare\/[^"]*)"/g)].map((m) => m[1]);
+    expect(linked.sort()).toEqual([...COMPARE_ROUTES].sort());
+  });
+
+  it("names every slug as an alternative, which is the query the page targets", () => {
+    for (const slug of COMPARE_SLUGS) expect(slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*-alternative$/);
+  });
+
+  // Deliberately a hard number. Growing the cluster should be a decision someone
+  // makes and records, not something a stray export does on the way past.
+  it("is the size we think it is", () => {
+    expect(COMPARE_SLUGS).toHaveLength(6);
+  });
+
+  it("covers each instrument with at least one page", () => {
+    const accents = new Set(entries.map(([, d]) => d.accent).filter(Boolean));
+    expect(accents).toEqual(new Set(["piano", "guitar", "drums"]));
+  });
+
+  // A typo in a "Keep reading" href is a dead end handed to a crawler mid-crawl,
+  // and nothing else in the suite would notice. Every internal link must land on a
+  // route we actually publish.
+  it.each(entries)("%s links only to routes that exist", (_slug, data) => {
+    const known = new Set<string>([...MARKETING_ROUTES, ...COMPARE_ROUTES, ...APP_ROUTES]);
+    for (const link of data.related) {
+      expect(known.has(link.href), `${link.href} is not a real route`).toBe(true);
+      expect(link.href).not.toBe(data.path); // no page links to itself
+    }
+  });
+});
+
+describe("no two pages in the cluster are the same page", () => {
+  // Six comparison pages built from one template is the exact shape that gets a
+  // cluster collapsed as duplicate content: a search engine keeps one and drops the
+  // rest. The table and the FAQ legitimately repeat (the same question about the
+  // same app deserves the same answer), but the argument has to be written fresh
+  // per competitor, so the body copy is what this guards.
+  const BODY_FIELDS = ["lede", "intro"] as const;
+
+  it.each(BODY_FIELDS)("shares no %s between two competitors", (field) => {
+    const seen = new Map<string, string>();
+    for (const [slug, data] of entries) {
+      const value = data[field].trim();
+      const clash = seen.get(value);
+      expect(clash, `${slug} reuses the ${field} from ${clash}`).toBeUndefined();
+      seen.set(value, slug);
+    }
+  });
+
+  it.each(["stronger", "prefer"] as const)("shares no %s point between two competitors", (field) => {
+    const seen = new Map<string, string>();
+    for (const [slug, data] of entries) {
+      for (const point of data[field]) {
+        const clash = seen.get(point.trim());
+        expect(clash, `${slug} reuses a ${field} point from ${clash}`).toBeUndefined();
+        seen.set(point.trim(), slug);
+      }
+    }
+  });
+
+  it("gives every page its own title, description and lead keyword", () => {
+    for (const field of ["title", "description"] as const) {
+      const values = entries.map(([, d]) => d[field]);
+      expect(new Set(values).size).toBe(values.length);
+    }
+    const leadKeywords = entries.map(([, d]) => d.keywords[0]);
+    expect(new Set(leadKeywords).size).toBe(leadKeywords.length);
   });
 });
 
@@ -177,6 +278,30 @@ describe("competitor facts are stated durably and honestly", () => {
     // volatile figures so a stale number reads as stale, not as a lie.
     expect(data.cells.price).toMatch(/subscription/i);
     expect(data.cells.price).toContain("2026");
+  });
+
+  // Competitor pricing is researched off their own site, and the gap between
+  // "researched" and "written down" is where a draft marker gets left behind. A
+  // page that ships "[[FENDER_PRICE]]" to a crawler is worse than one that ships
+  // nothing, so every authoring marker is refused at the data layer. `{piano}` and
+  // friends are the one legitimate placeholder syntax, and only in wedge prose,
+  // where `resolveComparePlaceholders` fills them from the live curriculum.
+  it.each(entries)("%s leaves no authoring placeholder behind", (_slug, data) => {
+    const preferProse = new Set(data.prefer.map((p) => p.trim()));
+    const walk = (value: unknown, path: string): void => {
+      if (typeof value === "string") {
+        expect(value, `${path} still holds a draft marker`).not.toMatch(/\[\[|\]\]|\bTODO\b|\bTBD\b/);
+        if (!preferProse.has(value.trim())) {
+          expect(value, `${path} holds an unresolved brace placeholder`).not.toMatch(/\{[a-z]+\}/);
+        }
+        return;
+      }
+      if (Array.isArray(value)) return value.forEach((v, i) => walk(v, `${path}[${i}]`));
+      if (value && typeof value === "object") {
+        for (const [k, v] of Object.entries(value)) walk(v, `${path}.${k}`);
+      }
+    };
+    walk(data, data.slug);
   });
 
   it.each(entries)("%s fills every comparison cell for both apps", (_slug, data) => {

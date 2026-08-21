@@ -1,6 +1,6 @@
 // Verified facts for the "alternative to X" comparison cluster.
 //
-// This is the single home for everything the three comparison pages state about a
+// This is the single home for everything the comparison pages state about a
 // competitor. Two rules, the same two that govern `lib/seo.ts`:
 //
 //  1. No invented Music Practice numbers. The "Music Practice" column and the wedge
@@ -11,6 +11,11 @@
 //     framed "as of 2026" because they move, and paid tiers are described by what they
 //     cover, never by their upsell name. Facts here were verified 2026-08 and reflect
 //     each product's own public pricing and feature set at the time of writing.
+//
+// A third rule the cluster itself imposes: no two pages may share body copy. Six
+// near-identical pages are six pages a search engine folds into one, so `lede`,
+// `intro`, `stronger` and `prefer` are written from scratch per competitor and
+// `compare.test.ts` fails on a copy-paste between them.
 //
 // The voice rules that cover the rest of the public site cover this file too
 // (`seo.test.ts` "public copy honours the voice rules"): no "AI", no em dashes or
@@ -82,7 +87,7 @@ export const COMPARE_FEATURES = [
 ] as const satisfies readonly { key: keyof CompareCells; label: string }[];
 
 /**
- * The "Music Practice" column, shared by all three pages so it can never say one
+ * The "Music Practice" column, shared by every page so it can never say one
  * thing on one page and something else on another. Interpolates the real skill
  * counts, so a curriculum change updates every comparison table at once.
  */
@@ -162,8 +167,81 @@ const SIMPLY_PIANO: CompetitorComparison = {
   ],
   related: [
     { href: "/piano", label: "The free piano curriculum in detail" },
+    { href: "/compare/flowkey-alternative", label: "Music Practice vs flowkey" },
     { href: "/compare/yousician-alternative", label: "Music Practice vs Yousician" },
     { href: "/compare/melodics-alternative", label: "Music Practice vs Melodics" },
+    { href: "/about", label: "Why this app exists" },
+  ],
+};
+
+const FLOWKEY: CompetitorComparison = {
+  slug: "flowkey-alternative",
+  path: "/compare/flowkey-alternative",
+  competitor: "flowkey",
+  accent: "piano",
+  title: "Free flowkey Alternative (Open Source)",
+  description:
+    "Looking for a free flowkey alternative? Music Practice is a free, open source piano app with no account and no paywall. Where flowkey hands you a song catalogue, it sequences the skills underneath the songs. Here is an honest comparison.",
+  keywords: [
+    "flowkey alternative",
+    "free flowkey alternative",
+    "flowkey alternative free",
+    "flowkey alternative reddit",
+    "open source piano practice app",
+    "flowkey vs",
+  ],
+  lede: "Music Practice is a free, open source piano app. The two are built around opposite questions: flowkey starts from a piece of music and waits for you to play its notes, and Music Practice starts from the skill underneath and tells you which one you are ready for. Here is where each one is stronger, stated plainly.",
+  intro:
+    "Music Practice runs in your browser with no account and no paywall. It is built around a real prerequisite curriculum, a skill tree that picks the one thing you are ready to learn next and explains why it matters, then brings it back later so it sticks. That is a different shape of product from a catalogue of pieces with note detection over the top, and it is worth being clear about which one you actually want. It also covers electric guitar and drums, where flowkey is piano only.",
+  cells: {
+    price:
+      "Paid subscription in several tiers, sitting on top of a limited free account. As of 2026 the entry paid tier is roughly US$20 a month, with annual plans nearer US$150 a year, and flowkey's own listing quotes EUR 24.99 a month and EUR 149.99 a year. What you are quoted depends on your region and on where you buy. A 7-day trial comes with the yearly plans, and card details are required.",
+    instruments: "Piano only, on an acoustic piano, a digital piano, or a MIDI keyboard.",
+    tellsYouWhatNext:
+      "You choose a piece from the catalogue, and optional courses group lessons by topic. Nothing gates one skill behind the skills it depends on, or names the single thing to work on tonight.",
+    openSource: "No.",
+    accountRequired: "Yes, including to open the free songs.",
+    adsOrTimeLimits:
+      "No ads, and no daily limit. A free account opens a small set of songs indefinitely; the rest of the catalogue, the courses and the exercises need a paid plan.",
+    songLibrary:
+      "A large catalogue of licensed songs, each filmed as a split-screen video of a pianist's hands from above.",
+  },
+  stronger: [
+    "A large catalogue of licensed songs filmed as split-screen video, so you can watch a real pianist's hands from above while the notes scroll past. Music Practice has no song library and no video of anyone playing.",
+    "Note detection that listens through your microphone or reads a connected MIDI keyboard, waits until you have played the right note, and can loop a bar until it lands. Music Practice never listens to your playing.",
+    "Score-based practice tools on real repertoire: slow the tempo, loop a section, work hands separately through a piece you want to perform. Music Practice drills the technique rather than the repertoire.",
+    "Polished native apps for iPhone, iPad and Android, with years of refinement and a full content team behind the catalogue. Music Practice is browser only and built by one developer.",
+  ],
+  prefer: [
+    "Playing a piece is not the same as knowing what to learn next, and the second question is the one Music Practice exists to answer. A prerequisite tree of {piano} piano skills picks the single skill you are ready for, explains why it matters before you drill it, and gates it behind the skills it genuinely builds on, so nothing arrives before the thing it stands on.",
+    "Getting a piece under your fingers this week says nothing about still having it in June. Everything Music Practice teaches returns on a spaced review schedule at {ladder}, so the technique underneath your repertoire keeps being rehearsed long after you moved on to the next piece.",
+    "It is free and open source, with no account, no card, and no part of the curriculum held back, and the same engine covers electric guitar and drums as well as piano. You can read exactly how the skill tree and the review scheduler decide things instead of taking either on faith.",
+  ],
+  faqs: [
+    {
+      question: "Is Music Practice really free?",
+      answer:
+        "Yes. It is free and open source under the MIT licence. There is no subscription, no card, no ads, and no lesson held back. The full source is public on GitHub if you want to check that for yourself.",
+    },
+    {
+      question: "Is Music Practice as good as flowkey?",
+      answer:
+        "For learning songs, no, and it is honest about that. The flowkey catalogue is large and licensed, with hands-from-above video, note detection through a microphone or MIDI keyboard, and polished native apps that Music Practice has no answer to. What Music Practice does instead is name the one skill you are ready for and why, then bring it back so it sticks. If you mainly want a catalogue to play through, flowkey is the better fit.",
+    },
+    {
+      question: "Do I need a MIDI keyboard?",
+      answer:
+        "No. Music Practice does not listen to your playing at all, so any piano or keyboard works and nothing needs to be plugged in. A MIDI connection is what gives flowkey its most accurate note detection, and that is a real feature Music Practice has no equivalent for.",
+    },
+    {
+      question: "Does it only teach piano?",
+      answer: `No. Music Practice covers piano, electric guitar, and drums, each with its own prerequisite skill tree (${SKILL_NODE_COUNTS.piano} piano skills, ${SKILL_NODE_COUNTS.guitar} guitar, and ${SKILL_NODE_COUNTS.drums} drums), and each keeps its own progress. By contrast flowkey is piano only.`,
+    },
+  ],
+  related: [
+    { href: "/piano", label: "The free piano curriculum in detail" },
+    { href: "/compare/simply-piano-alternative", label: "Music Practice vs Simply Piano" },
+    { href: "/compare/yousician-alternative", label: "Music Practice vs Yousician" },
     { href: "/about", label: "Why this app exists" },
   ],
 };
@@ -233,7 +311,82 @@ const YOUSICIAN: CompetitorComparison = {
     { href: "/piano", label: "The free piano curriculum in detail" },
     { href: "/guitar", label: "The free electric guitar curriculum" },
     { href: "/drums", label: "The free drums curriculum" },
+    { href: "/compare/fender-play-alternative", label: "Music Practice vs Fender Play" },
     { href: "/compare/simply-piano-alternative", label: "Music Practice vs Simply Piano" },
+  ],
+};
+
+const FENDER_PLAY: CompetitorComparison = {
+  slug: "fender-play-alternative",
+  path: "/compare/fender-play-alternative",
+  competitor: "Fender Play",
+  accent: "guitar",
+  title: "Free Fender Play Alternative (Open Source)",
+  description:
+    "Looking for a free Fender Play alternative? Music Practice is a free, open source guitar app with no account and no paywall. Instead of a curated video path, it computes the next skill you are ready for. Here is an honest comparison.",
+  keywords: [
+    "fender play alternative",
+    "free fender play alternative",
+    "fender play alternative free",
+    "fender play alternative reddit",
+    "open source guitar practice app",
+    "fender play vs",
+  ],
+  lede: "Music Practice is a free, open source app for electric guitar, piano, and drums. Fender Play teaches guitar through instructor videos along a path picked for your level and the genre you chose at sign-up. Music Practice has no video at all, and instead computes which single skill you are ready for from the ones you already have. Here is where each one is stronger, stated plainly.",
+  intro:
+    "Music Practice runs in your browser with no account, no card, and no paywall. Its guitar curriculum is a prerequisite graph: each skill is locked behind the skills it genuinely builds on, the app names the one you are ready for tonight and explains why it matters, and it comes back later on a review schedule. Fender Play is the video-lesson model done well, with real instructors and real songs. These are different products for different appetites, and the comparison below tries to make that choice easy rather than to win it.",
+  cells: {
+    price:
+      "Paid subscription, with no permanently free tier at all. As of 2026 it is around US$20 a month in the United States, or nearer US$150 a year if you pay annually; other regions are priced separately. A trial is offered, 7 days on the monthly plan and 14 on the annual one, and card details are required.",
+    instruments: "Acoustic and electric guitar, bass, and ukulele.",
+    tellsYouWhatNext:
+      "You pick an instrument and a genre when you sign up, then follow a curated path of instructor videos through levels. The path is chosen for a level rather than computed from the specific skills you have and have not got.",
+    openSource: "No.",
+    accountRequired: "Yes.",
+    adsOrTimeLimits:
+      "No ads. Access is a trial, after which a subscription is required to continue.",
+    songLibrary:
+      "A large catalogue of licensed songs, taught riff by riff alongside the lesson videos.",
+  },
+  stronger: [
+    "Professional instructors on video, filmed from several angles, showing you exactly what a technique looks and sounds like when it is done right. Music Practice teaches in text and diagrams and has no video of anyone playing.",
+    "A large catalogue of licensed songs broken into riffs and parts, so what you practise is music you already wanted to play. Music Practice has no song library.",
+    "It teaches acoustic guitar, bass and ukulele as well as electric. The Music Practice guitar tree is written for electric guitar only.",
+    "A feedback mode that listens through your microphone and scores your note and rhythm accuracy on its song and riff courses. Music Practice does not listen to your playing at all.",
+    "Fender's production values, a full content team, native apps, and a deep back catalogue of lessons. Music Practice is browser only and built by one developer.",
+  ],
+  prefer: [
+    "A curated path is picked for a beginner in general. Music Practice picks for you in particular. A prerequisite tree of {guitar} electric guitar skills locks each one behind the skills it actually builds on, so the order you meet things in is the order they stack, and the app can name the single skill you are ready for tonight and say why it is worth the twenty minutes.",
+    "Following along with a lesson is not the same as keeping it. Everything Music Practice teaches returns on a spaced review schedule at {ladder}, so the chord change you drilled last month is put back in front of you before it slips. Nothing is lost by missing a night, because there is no streak in the app at all.",
+    "It is free and open source, with no account, no card, and no subscription to remember to cancel, and the same curriculum engine also covers piano and drums, each keeping its own progress. The skill tree and the scheduler are both readable source rather than a black box.",
+  ],
+  faqs: [
+    {
+      question: "Is Music Practice really free?",
+      answer:
+        "Yes. It is free and open source under the MIT licence, with no subscription, no card, no ads, and nothing held back. The full source is public on GitHub, so the claim is checkable rather than something you have to believe.",
+    },
+    {
+      question: "Is Music Practice as good as Fender Play?",
+      answer:
+        "As a lesson library, no, and it is honest about that. Fender Play has professional instructors on video, a large licensed song catalogue, microphone feedback on its song courses, and mature native apps that Music Practice does not. What Music Practice adds is a computed prerequisite path that names your next skill and why, plus spaced review so it stays. It is newer, smaller, and text based.",
+    },
+    {
+      question: "Does Music Practice teach acoustic guitar?",
+      answer:
+        "The guitar curriculum is written for electric guitar, and that is how it should be judged. Most of the fundamentals it teaches, fretting hand technique, chord shapes, the fretboard and rhythm, transfer straight to an acoustic, but the app does not treat acoustic as its own instrument the way Fender Play does, and it covers no bass or ukulele.",
+    },
+    {
+      question: "Does Music Practice need an account?",
+      answer:
+        "No. It runs in your browser and stores progress on your own device, so you can start playing within a minute of landing on it. An optional sign-in only adds cloud sync between devices, and everything works without it.",
+    },
+  ],
+  related: [
+    { href: "/guitar", label: "The free electric guitar curriculum in detail" },
+    { href: "/compare/yousician-alternative", label: "Music Practice vs Yousician" },
+    { href: "/compare/flowkey-alternative", label: "Music Practice vs flowkey" },
+    { href: "/about", label: "Why this app exists" },
   ],
 };
 
@@ -302,20 +455,105 @@ const MELODICS: CompetitorComparison = {
   related: [
     { href: "/drums", label: "The free drums curriculum in detail" },
     { href: "/piano", label: "The free piano curriculum" },
+    { href: "/compare/drumeo-alternative", label: "Music Practice vs Drumeo" },
     { href: "/compare/yousician-alternative", label: "Music Practice vs Yousician" },
     { href: "/about", label: "Why this app exists" },
+  ],
+};
+
+const DRUMEO: CompetitorComparison = {
+  slug: "drumeo-alternative",
+  path: "/compare/drumeo-alternative",
+  competitor: "Drumeo",
+  accent: "drums",
+  title: "Free Drumeo Alternative (Open Source)",
+  description:
+    "Looking for a free Drumeo alternative? Music Practice is a free, open source drum app with no account, no paywall, and no kit required. It teaches the rudiments on a practice pad and explains why each one comes next. Here is an honest comparison.",
+  keywords: [
+    "drumeo alternative",
+    "free drumeo alternative",
+    "drumeo alternative free",
+    "drumeo alternative reddit",
+    "free drum practice app no subscription",
+    "drumeo vs",
+  ],
+  lede: "Music Practice is a free, open source app for drums, piano, and electric guitar. Drumeo is a large subscription library of video lessons taught by working drummers, aimed squarely at getting you around a kit. Music Practice teaches the rudiments on a plain practice pad, with no hardware at all, and explains why each one comes next. Here is where each one is stronger, stated plainly.",
+  intro:
+    "Music Practice runs in your browser with no account, no subscription, and nothing to buy. Its drum curriculum is a prerequisite graph on a practice pad: each rudiment is gated behind the ones it builds on, the app names the single next one and why it matters, and it returns later on a review schedule. Drumeo is a far larger product with real teachers, and the honest way to frame the choice is what you have in front of you: a pad and twenty minutes, or a kit and a budget.",
+  cells: {
+    price:
+      "Paid subscription. As of 2026, about US$25 a month or US$229 a year on the standard plan, and about US$30 a month or US$279 a year on a broader one. A 7-day trial is offered and card details are required.",
+    instruments:
+      "Drums, on an acoustic or electronic kit. The same subscription also opens the wider platform's piano, guitar, bass, and voice lessons.",
+    tellsYouWhatNext:
+      "A leveled video method sits alongside a very large course library you browse yourself. The sequence is curated by teachers rather than gated skill by skill, and nothing checks which skills you personally already have.",
+    openSource: "No.",
+    accountRequired: "Yes.",
+    adsOrTimeLimits:
+      "No ads. A free account opens a small number of lessons; the method and the library need a subscription.",
+    songLibrary:
+      "A large catalogue of licensed play-along songs with charts, alongside thousands of video lessons.",
+  },
+  stronger: [
+    "Working professional drummers teaching on video, thousands of lessons deep, with live sessions on top. Music Practice has no video and no instructors, only written lessons and a count grid.",
+    "Real human feedback: you can send in a video of your playing and have a teacher watch it and tell you what to fix. Nothing in Music Practice ever looks at how you actually played.",
+    "It teaches the whole kit, including the bass drum pedal, the hi-hat foot, and coordination between all four limbs. Music Practice teaches drums on a practice pad in this version and covers no footwork whatsoever.",
+    "A large catalogue of licensed play-along songs with charts, so you spend your time drumming to real music. Music Practice has no song library.",
+    "One subscription also covers piano, guitar, bass and voice on the wider platform, taught to the same standard, with a large and active community around it.",
+  ],
+  prefer: [
+    "Drumeo assumes you are heading for a kit, and its method reaches pedals and hi-hat work early. Music Practice teaches {drums} drum skills on a plain practice pad, with no kit, no pedals, no electronics and nothing to plug in, so a pad on the kitchen table and twenty minutes is a real curriculum rather than a holding pattern until you can afford the rest.",
+    "It is a computed prerequisite path, not a library to browse. Each rudiment is locked behind the ones it builds on, the app names the single next one and explains why it matters before you drill it, and it comes back on a spaced review schedule at {ladder} so your hands keep what they built.",
+    "It is free and open source, with no account and nothing to cancel, and the same curriculum engine also covers piano and electric guitar, each keeping its own progress. How the tree sequences a rudiment and when the scheduler brings it back are both things you can go and read.",
+  ],
+  faqs: [
+    {
+      question: "Is Music Practice really free?",
+      answer:
+        "Yes. It is free and open source under the MIT licence, with no subscription, no card, no ads, and no lesson held back. The full source is public on GitHub, so none of that has to be taken on trust.",
+    },
+    {
+      question: "Do I need a drum kit?",
+      answer:
+        "No. Music Practice teaches the drum rudiments on a plain practice pad, and a pad is all this version expects or supports. That is also its limit: it does not teach the bass drum pedal, the hi-hat foot, or four-limb coordination, and Drumeo does. If you already have a kit and want to play songs on it, Drumeo is the better fit.",
+    },
+    {
+      question: "Is Music Practice as good as Drumeo?",
+      answer:
+        "No, and the gap is not close on content. Drumeo has professional drummers teaching on video, thousands of lessons, live sessions, real human review of your playing, and a licensed play-along library that Music Practice has none of. What Music Practice offers is a free prerequisite path that names why each rudiment comes next and reviews it so it sticks, on a practice pad, with nothing to buy.",
+    },
+    {
+      question: "Does Music Practice only teach drums?",
+      answer: `No. Drums are one of three instruments; it also covers piano and electric guitar, each with its own prerequisite skill tree (${SKILL_NODE_COUNTS.drums} drum skills, ${SKILL_NODE_COUNTS.piano} piano, and ${SKILL_NODE_COUNTS.guitar} guitar), and each keeps its own progress.`,
+    },
+  ],
+  related: [
+    { href: "/drums", label: "The free drums curriculum in detail" },
+    { href: "/compare/melodics-alternative", label: "Music Practice vs Melodics" },
+    { href: "/compare/fender-play-alternative", label: "Music Practice vs Fender Play" },
+    { href: "/piano", label: "The free piano curriculum" },
   ],
 };
 
 /** Every comparison, keyed by slug. Drives the static routes and the sitemap. */
 export const COMPARE_DATA: Record<string, CompetitorComparison> = {
   [SIMPLY_PIANO.slug]: SIMPLY_PIANO,
+  [FLOWKEY.slug]: FLOWKEY,
   [YOUSICIAN.slug]: YOUSICIAN,
+  [FENDER_PLAY.slug]: FENDER_PLAY,
   [MELODICS.slug]: MELODICS,
+  [DRUMEO.slug]: DRUMEO,
 };
 
-/** Slugs in stable render order. */
-export const COMPARE_SLUGS = [SIMPLY_PIANO.slug, YOUSICIAN.slug, MELODICS.slug] as const;
+/** Slugs in stable render order, grouped by the instrument each page leads with. */
+export const COMPARE_SLUGS = [
+  SIMPLY_PIANO.slug,
+  FLOWKEY.slug,
+  YOUSICIAN.slug,
+  FENDER_PLAY.slug,
+  MELODICS.slug,
+  DRUMEO.slug,
+] as const;
 
 /**
  * Fill the `{piano}` / `{guitar}` / `{drums}` / `{ladder}` placeholders in wedge

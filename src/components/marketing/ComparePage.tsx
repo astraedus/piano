@@ -65,8 +65,10 @@ export function ComparePage({ data }: { data: CompetitorComparison }) {
       <MarketingSection title={`Music Practice vs ${data.competitor}`} id="comparison">
         <CompareTable competitor={data.competitor} data={data} />
         <p className="text-sm text-[color:var(--ink-3)]">
-          {data.competitor} pricing and features are as of 2026 and set by {data.competitor}. Check
-          their site for current details.
+          {data.competitor} pricing and features are as of 2026 and set by {data.competitor}. Prices
+          are quoted in the currency shown and vary by region, by device store, and with whatever
+          offer is running, so treat them as the shape of the cost rather than a quote. Check their
+          site for current details.
         </p>
       </MarketingSection>
 

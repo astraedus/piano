@@ -48,8 +48,11 @@ export function SiteFooter() {
               renamed route breaks the build rather than silently 404-ing here. */}
           <FooterColumn title="Switching from">
             <FooterLink href="/compare/simply-piano-alternative">Simply Piano</FooterLink>
+            <FooterLink href="/compare/flowkey-alternative">flowkey</FooterLink>
             <FooterLink href="/compare/yousician-alternative">Yousician</FooterLink>
+            <FooterLink href="/compare/fender-play-alternative">Fender Play</FooterLink>
             <FooterLink href="/compare/melodics-alternative">Melodics</FooterLink>
+            <FooterLink href="/compare/drumeo-alternative">Drumeo</FooterLink>
           </FooterColumn>
 
           <FooterColumn title="Project">
