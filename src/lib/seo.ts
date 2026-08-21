@@ -58,8 +58,11 @@ export const MARKETING_ROUTES = ["/", "/piano", "/guitar", "/drums", "/about"] a
  */
 export const COMPARE_ROUTES = [
   "/compare/simply-piano-alternative",
+  "/compare/flowkey-alternative",
   "/compare/yousician-alternative",
+  "/compare/fender-play-alternative",
   "/compare/melodics-alternative",
+  "/compare/drumeo-alternative",
 ] as const;
 
 /** App routes that are real pages but carry no standalone search intent. */
