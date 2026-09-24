@@ -504,6 +504,37 @@ body > * { position: relative; z-index: 1; }
 }
 .chip-accent:hover { background: color-mix(in oklab, var(--accent) 10%, transparent); }
 
+/* Tap-feedback chip — a chip whose whole job is to confirm "I did that rep"
+   ("I Played It"). A plain .chip only reacts to :hover, which touch devices never
+   fire, so on a phone tapping it changed nothing under the finger; PostHog
+   (2026-09) had it as the app's #1 rage-click target and every one of those wasted
+   taps silently inflated the user's own rep count. :active is the press; the pulse
+   classes are the "it landed" flare, fired on EVERY tap so no tap ever looks dead.
+   The number rendered on the chip, not the pulse, is what reports the count.
+   See components/slots/useRepTap.ts. */
+.chip-tap {
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease,
+    transform 90ms ease-out;
+  -webkit-tap-highlight-color: color-mix(in oklab, var(--accent) 22%, transparent);
+}
+.chip-tap:active { transform: scale(0.93); }
+@keyframes chipTapPulse {
+  0%   { transform: scale(0.92); background: color-mix(in oklab, var(--accent) 30%, transparent); box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 45%, transparent); }
+  45%  { transform: scale(1.08); background: color-mix(in oklab, var(--accent) 18%, transparent); box-shadow: 0 0 0 8px color-mix(in oklab, var(--accent) 0%, transparent); }
+  100% { transform: scale(1);    background: color-mix(in oklab, var(--accent) 0%, transparent);  box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 0%, transparent); }
+}
+/* Byte-identical twin of chipTapPulse, kept in lockstep by a test. A running CSS
+   animation only restarts when its animation-name CHANGES, so back-to-back taps
+   alternate between these two classes; the alternative (remounting the button)
+   would drop keyboard focus mid-interaction. */
+@keyframes chipTapPulseAlt {
+  0%   { transform: scale(0.92); background: color-mix(in oklab, var(--accent) 30%, transparent); box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 45%, transparent); }
+  45%  { transform: scale(1.08); background: color-mix(in oklab, var(--accent) 18%, transparent); box-shadow: 0 0 0 8px color-mix(in oklab, var(--accent) 0%, transparent); }
+  100% { transform: scale(1);    background: color-mix(in oklab, var(--accent) 0%, transparent);  box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 0%, transparent); }
+}
+.chip-tap-pulse-a { animation: chipTapPulse 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.chip-tap-pulse-b { animation: chipTapPulseAlt 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
 /* Status pill (done / active). */
 .status-done { background: var(--success-bg); color: var(--success); }
 
@@ -687,10 +718,13 @@ body > * { position: relative; z-index: 1; }
   .next-pulse, .territory-reveal, .home-ring, .arc-entry,
   .warm-card, .slot-card, .cta-pill, .soft-pill, .chip, .stage-card,
   .key-wedge, .key-wedge path, .xp-fill, .streak-ember,
-  .rest-pulse, .rep-confirm, .skill-switch {
+  .rest-pulse, .rep-confirm, .skill-switch,
+  .chip-tap, .chip-tap-pulse-a, .chip-tap-pulse-b {
     animation: none !important;
     transition: opacity 150ms ease !important;
   }
+  /* The rep chip keeps its count label and the platform tap highlight — the
+     feedback that survives here is informational, not motion. */
   .warm-card:hover, .cta-pill:active, .soft-pill:active,
-  .key-wedge:hover path { transform: none !important; }
+  .chip-tap:active, .key-wedge:hover path { transform: none !important; }
 }

@@ -112,3 +112,101 @@ describe("WarmupSlot links glossary terms in warmup lines + drops the 'ghost' co
     expect(body).toContain("this week's scale");
   });
 });
+
+// PostHog (2026-09-10..09-24, music.raeduslabs.com): "I Played It" was the most
+// clicked element on `/` (342 clicks / 40 people) AND the top rage-click target
+// (10 $rageclick events / 8 people, all on mobile browsers). Reproduced at
+// 390x844: the tap left the chip pixel-identical (`.chip` had a :hover state and
+// no :active, and touch never hovers), so the only confirmation was a faint
+// italic line rendered BELOW the chip — behind the thumb that just tapped — and
+// every impatient re-tap silently inflated the user's own rep count.
+describe('"I Played It" — feedback lands ON the chip, and a rage-tap counts once', () => {
+  const chip = () => screen.getByTestId("warmup-played-it");
+
+  /** Drive Date.now by hand so the 400ms re-tap window is exact, not flaky. */
+  function fakeClock(start = 2_000_000) {
+    let t = start;
+    vi.spyOn(Date, "now").mockImplementation(() => t);
+    return { advance: (ms: number) => { t += ms; } };
+  }
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it("renders the live rep count on the chip itself, where the finger is", () => {
+    fakeClock();
+    renderWarmup("free", "A");
+    expect(chip().textContent).toBe("I Played It");
+
+    fireEvent.click(chip());
+
+    expect(chip().textContent).toBe("I Played It · 1");
+    expect(chip().getAttribute("aria-label")).toBe("I Played It. 1 rep so far.");
+  });
+
+  it("pluralises the accessible label past the first rep", () => {
+    const clock = fakeClock();
+    renderWarmup("free", "A");
+    fireEvent.click(chip());
+    clock.advance(1_000);
+    fireEvent.click(chip());
+
+    expect(chip().textContent).toBe("I Played It · 2");
+    expect(chip().getAttribute("aria-label")).toBe("I Played It. 2 reps so far.");
+  });
+
+  it("counts a triple-tap inside 400ms ONCE — but repaints on every tap", () => {
+    const clock = fakeClock();
+    renderWarmup("free", "A");
+
+    const pulses: string[] = [];
+    for (const gap of [0, 150, 150]) {
+      clock.advance(gap);
+      fireEvent.click(chip());
+      pulses.push([...chip().classList].find((c) => c.startsWith("chip-tap-pulse")) ?? "");
+    }
+
+    expect(chip().textContent).toBe("I Played It · 1");
+    expect(document.body.textContent).toContain("1 rep of this scale");
+    // every tap still visibly fires: the pulse class flips, restarting the animation
+    expect(pulses.filter(Boolean)).toHaveLength(3);
+    expect(pulses[1]).not.toBe(pulses[0]);
+    expect(pulses[2]).not.toBe(pulses[1]);
+  });
+
+  it("still counts a deliberate second rep a second later", () => {
+    const clock = fakeClock();
+    renderWarmup("free", "A");
+    fireEvent.click(chip());
+    clock.advance(1_000);
+    fireEvent.click(chip());
+
+    expect(chip().textContent).toBe("I Played It · 2");
+    expect(document.body.textContent).toContain("2 reps of this scale");
+  });
+
+  it("carries the press-feedback class and no pulse until the first tap", () => {
+    fakeClock();
+    renderWarmup("free", "A");
+    expect(chip().className).toContain("chip-tap");
+    expect(chip().className).not.toContain("chip-tap-pulse");
+
+    fireEvent.click(chip());
+    expect(chip().className).toContain("chip-tap-pulse");
+  });
+
+  it("buzzes the device once per tap when a vibrator exists", () => {
+    const clock = fakeClock();
+    const vibrate = vi.fn(() => true);
+    Object.defineProperty(navigator, "vibrate", { value: vibrate, configurable: true, writable: true });
+    try {
+      renderWarmup("free", "A");
+      fireEvent.click(chip());
+      clock.advance(1_000);
+      fireEvent.click(chip());
+      expect(vibrate).toHaveBeenCalledTimes(2);
+      expect(vibrate).toHaveBeenCalledWith(15);
+    } finally {
+      delete (navigator as { vibrate?: unknown }).vibrate;
+    }
+  });
+});

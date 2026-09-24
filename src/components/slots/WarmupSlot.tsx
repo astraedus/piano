@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Slot } from "../Slot";
 import { TermChip, linkTerms } from "../explain";
 import type { Warmup, KeyId } from "@/lib/types";
@@ -13,6 +13,7 @@ import { Metronome } from "../Metronome";
 import { ensureAudio, playSequence, playSticking } from "@/lib/audio";
 import type { StickingCell } from "@/lib/types";
 import { useAppState } from "@/hooks/useAppState";
+import { useRepTap } from "./useRepTap";
 
 /**
  * The "this week's reference" label above the warmup visual. Instrument-aware so it
@@ -45,6 +46,12 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
   const iv = useRef<ReturnType<typeof setInterval> | null>(null);
   const repId = scaleRepId(ghostKey);
   const reps = state.skillReps?.[repId];
+  const repCount = reps?.count ?? 0;
+  // "I Played It" tap feedback + accidental-re-tap guard. See useRepTap.ts for the
+  // rage-click evidence this answers.
+  const { onTap: onPlayedIt, pulseClass } = useRepTap(
+    useCallback(() => bumpRep(repId, { bpm }), [bumpRep, repId, bpm]),
+  );
 
   useEffect(() => {
     if (running) {
@@ -189,12 +196,16 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
             >
               {nonTonal ? "Hear It" : "Hear the Scale"}
             </button>
+            {/* The count lives ON the chip, where the finger is — the italic reps
+                line below it is behind the thumb that just tapped. */}
             <button
               type="button"
-              onClick={() => bumpRep(repId, { bpm })}
-              className="chip chip-accent text-xs px-3 py-1"
+              data-testid="warmup-played-it"
+              onClick={onPlayedIt}
+              aria-label={repCount > 0 ? `I Played It. ${repCount} rep${repCount === 1 ? "" : "s"} so far.` : "I Played It"}
+              className={`chip chip-accent chip-tap text-xs px-3 py-1${pulseClass ? ` ${pulseClass}` : ""}`}
             >
-              I Played It
+              I Played It{repCount > 0 ? ` · ${repCount}` : ""}
             </button>
             <Metronome defaultBpm={80} onBpmChangeAction={setBpm} />
           </div>
