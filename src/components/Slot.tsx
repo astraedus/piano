@@ -143,7 +143,11 @@ export function Slot({ index, title, pillar = "technique", duration, summary, st
           printAlways && "print:!grid-rows-[1fr]"
         )}
       >
-        <div className="min-h-0">
+        {/* min-w-0 alongside min-h-0: a grid item's automatic minimum width is its
+            content's min-content width, so one intrinsically wide child (the 540px
+            notation SVG inside an overflow-x-auto box) stretched the whole column and
+            `overflow-hidden` above silently clipped everything past the card at 390px. */}
+        <div className="min-h-0 min-w-0">
           {(open || printAlways) && !muted && (
             <div className="pl-7 text-[color:var(--ink-2)] leading-relaxed">{children}</div>
           )}
