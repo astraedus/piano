@@ -31,3 +31,24 @@ describe("Slot — honest, labeled toggle affordance", () => {
     expect(btn.getAttribute("aria-expanded")).toBe("false");
   });
 });
+
+// Regression (390px warmup overflow, 2026-10-23). jsdom has no layout engine, so the
+// guard is on the class that carries the fix: the body is a single-column grid under
+// `overflow-hidden`, and a grid item's automatic minimum width is its content's
+// min-content width. Without `min-w-0`, one intrinsically wide child (the 540px
+// notation SVG) stretched the column and everything past the card was silently
+// clipped. Verified in a real browser: documentElement.scrollWidth stays at the
+// viewport width and `.slot-body` scrollWidth == clientWidth at 390px.
+describe("Slot — body cannot be widened by its content", () => {
+  it("the open body's grid item can shrink below its content (min-w-0 + min-h-0)", () => {
+    const { container } = render(
+      <Slot index={1} title="Warmup" summary="warm up" isNow status="active">
+        <div style={{ width: 900 }}>wide child</div>
+      </Slot>,
+    );
+    const item = container.querySelector(".slot-body > div");
+    expect(item).not.toBeNull();
+    expect(item!.classList.contains("min-w-0")).toBe(true);
+    expect(item!.classList.contains("min-h-0")).toBe(true);
+  });
+});

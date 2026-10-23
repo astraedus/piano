@@ -53,7 +53,7 @@ export function Metronome({ defaultBpm = 80, onBpmChangeAction }: { defaultBpm?:
   }, [running, bpm]);
 
   return (
-    <div className="inline-flex items-center gap-2 text-xs no-print">
+    <div className="inline-flex max-w-full items-center gap-2 text-xs no-print">
       <button
         type="button"
         onClick={() => setRunning((r) => !r)}
@@ -71,10 +71,10 @@ export function Metronome({ defaultBpm = 80, onBpmChangeAction }: { defaultBpm?:
         min={40} max={200} step={1}
         value={bpm}
         onChange={(e) => setBpm(parseInt(e.target.value, 10))}
-        className="w-24 accent-[color:var(--accent)]"
+        className="w-24 min-w-0 accent-[color:var(--accent)]"
         aria-label="bpm"
       />
-      <span className="tabular-nums text-[color:var(--ink-2)]">{bpm} <span className="text-[color:var(--ink-3)]">BPM</span></span>
+      <span className="tabular-nums whitespace-nowrap text-[color:var(--ink-2)]">{bpm} <span className="text-[color:var(--ink-3)]">BPM</span></span>
     </div>
   );
 }

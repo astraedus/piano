@@ -216,11 +216,11 @@ export function WarmupSlot({ module, warmup, ghostName, ghostKey, printAlways, i
             </p>
           )}
         </div>
-        <div className="pt-2 flex items-center gap-3 no-print">
+        <div className="pt-2 flex flex-wrap items-center gap-x-3 gap-y-1 no-print">
           <button
             type="button"
             onClick={() => setRunning((r) => !r)}
-            className="chip text-xs px-3 py-1"
+            className="chip text-xs px-3 py-1 whitespace-nowrap"
           >
             {running ? "Pause" : "Start"} the Minute
           </button>
