@@ -183,14 +183,17 @@ describe("metadata is complete and canonical", () => {
       expect(data.title).toMatch(/open source/i);
     }
   });
+});
 
-  // Title test (started 2026-11-07): melodics and drumeo carry the plural, the other four
-  // pages are the control. Pinned so a stray edit cannot contaminate the comparison.
-  // Delete or update this once the result is read out.
+// Title test (started 2026-11-07): melodics and drumeo carry the plural, the other four
+// pages keep the original and are the control. Pinned so a stray edit cannot contaminate
+// the comparison. Once the result is read out, delete this block and the two "Plural on
+// purpose" notes in data/compareData.ts.
+describe("title test (temporary)", () => {
   const PLURAL_TITLE_SLUGS = new Set(["melodics-alternative", "drumeo-alternative"]);
 
-  it.each(entries)("%s carries the title its arm of the title test calls for", (slug, data) => {
-    expect(buildCompareMetadata(data).title).toBe(
+  it.each(entries)("%s carries the title its arm calls for", (slug, data) => {
+    expect(data.title).toBe(
       PLURAL_TITLE_SLUGS.has(slug)
         ? `Free ${data.competitor} Alternatives: Try This Open Source One`
         : `Free ${data.competitor} Alternative (Open Source)`,
