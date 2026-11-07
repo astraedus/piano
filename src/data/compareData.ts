@@ -395,7 +395,8 @@ const MELODICS: CompetitorComparison = {
   path: "/compare/melodics-alternative",
   competitor: "Melodics",
   accent: "drums",
-  title: "Free Melodics Alternative (Open Source)",
+  // Plural on purpose: title test, see "title test" in app/compare/compare.test.ts.
+  title: "Free Melodics Alternatives: Try This Open Source One",
   description:
     "Looking for a free Melodics alternative? Music Practice is a free, open source drums and music app with no account and no paywall, and it needs no MIDI hardware. It teaches why each rudiment comes next. Here is an honest comparison.",
   keywords: [
@@ -466,7 +467,8 @@ const DRUMEO: CompetitorComparison = {
   path: "/compare/drumeo-alternative",
   competitor: "Drumeo",
   accent: "drums",
-  title: "Free Drumeo Alternative (Open Source)",
+  // Plural on purpose: title test, see "title test" in app/compare/compare.test.ts.
+  title: "Free Drumeo Alternatives: Try This Open Source One",
   description:
     "Looking for a free Drumeo alternative? Music Practice is a free, open source drum app with no account, no paywall, and no kit required. It teaches the rudiments on a practice pad and explains why each one comes next. Here is an honest comparison.",
   keywords: [
