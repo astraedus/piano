@@ -185,6 +185,22 @@ describe("metadata is complete and canonical", () => {
   });
 });
 
+// Title test (started 2026-11-07): melodics and drumeo carry the plural, the other four
+// pages keep the original and are the control. Pinned so a stray edit cannot contaminate
+// the comparison. Once the result is read out, delete this block and the two "Plural on
+// purpose" notes in data/compareData.ts.
+describe("title test (temporary)", () => {
+  const PLURAL_TITLE_SLUGS = new Set(["melodics-alternative", "drumeo-alternative"]);
+
+  it.each(entries)("%s carries the title its arm calls for", (slug, data) => {
+    expect(data.title).toBe(
+      PLURAL_TITLE_SLUGS.has(slug)
+        ? `Free ${data.competitor} Alternatives: Try This Open Source One`
+        : `Free ${data.competitor} Alternative (Open Source)`,
+    );
+  });
+});
+
 describe("the rendered page keeps every promise in the anatomy", () => {
   it.each(entries)("%s leads with the exact H1 and pitches free + open source", (_slug, data) => {
     const html = markupFor(data);
